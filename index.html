@@ -1295,11 +1295,14 @@ function openOpp(idx) {
 
 
 
-function buildSlide(id) {
-  // This is injected at the top of every slide
-  const oppNameBadge = opp() && opp().name
+function oppNameBadge() {
+  return opp() && opp().name
     ? `<div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:4px">${esc(opp().name)}</div>`
     : '';
+}
+
+function buildSlide(id) {
+  // oppNameBadge() is now a global function callable from any builder
   if (id === 'snapshot')     return buildSnapshot();
   if (id === 'stakeholders') return buildStakeholders();
   if (id === 'accountpov')   return buildAccountPov();
@@ -1316,7 +1319,7 @@ function buildAccountPov() {
   const t = d().accountpovteam || {};
   // Progressive: show all if any are filled, otherwise highlight Why Change first
   const hasAny = p.whyChange || p.whyNow || p.whyUs || p.whatSolution;
-  return `${oppNameBadge}<div class="slide-title">Account POV</div>
+  return `${oppNameBadge()}<div class="slide-title">Account POV</div>
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
   <div style="font-size:13px;color:var(--text-tertiary)">Start with why they'd change. The rest follows.</div>
   <button class="ai-draft-btn" onclick="draftAccountPov()" title="Draft all four from what you know">✦ Draft all</button>
@@ -1379,7 +1382,7 @@ function buildAccountPov() {
 
 function buildOppPov() {
   const o = d().opppov || {};
-  return `${oppNameBadge}<div class="slide-title">Opportunity POV</div>
+  return `${oppNameBadge()}<div class="slide-title">Opportunity POV</div>
 <div class="sec-div first">The five questions</div>
 <div class="field-full">
   <div class="field-label">1. What business problem does this solve? <span class="fmt-hint">Operational / financial pain — not technical features</span></div>
@@ -1423,7 +1426,7 @@ function buildMeddpiccSlide() {
   const { yes, total } = calcScore();
   const fc = calcForecast();
   const blockerWeak = MEDD.filter(s => s.blocker && meddStatus(s.id, s.questions.length) === 'low').length;
-  return `${oppNameBadge}<div class="slide-title">MEDDPICC</div>
+  return `${oppNameBadge()}<div class="slide-title">MEDDPICC</div>
 <div class="medd-score-bar">
   <div class="medd-score-card"><div class="lbl">Score</div><div class="val">${yes}/${total}</div></div>
   <div class="medd-score-card"><div class="lbl">Sections green</div><div class="val">${MEDD.filter(s => meddStatus(s.id, s.questions.length) === 'full').length}/7</div></div>
@@ -1522,7 +1525,7 @@ function buildGapsTable() {
 
 function buildSnapshot() {
   const s = d().snapshot;
-  return `${oppNameBadge}<div class="slide-title">Account Snapshot</div>
+  return `${oppNameBadge()}<div class="slide-title">Account Snapshot</div>
 <div class="sec-div first">Firm overview</div>
 <div class="field-grid">
   <div>
@@ -1613,7 +1616,7 @@ function buildStakeholders() {
   <button class="sc-remove" onclick="removeStakeholder(${i})">remove</button>
 </div>`;
   }).join('');
-  return `${oppNameBadge}<div class="slide-title">Stakeholder Map</div>
+  return `${oppNameBadge()}<div class="slide-title">Stakeholder Map</div>
 <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
   ${['Economic buyer', 'Executive Sponsor', 'Champion', 'Coach', 'Blocker', 'Neutral'].map(r => `<button class="action-btn" style="font-size:12px;padding:5px 12px" onclick="addStakeholder('${r}')">+ ${r}</button>`).join('')}
 </div>
@@ -1634,7 +1637,7 @@ function buildMap() {
   <td><input data-map="${i}.action" value="${esc(r.action)}" placeholder="Action or milestone"></td>
   <td><select data-map="${i}.status">${['Open', 'In progress', 'Done', 'Blocked'].map(v => `<option ${r.status === v ? 'selected' : ''}>${v}</option>`).join('')}</select></td>
 </tr>`).join('');
-  return `${oppNameBadge}<div class="slide-title">Mutual Action Plan</div>
+  return `${oppNameBadge()}<div class="slide-title">Mutual Action Plan</div>
 <div class="ask-box">
   <div class="ask-label">🚩 #1 ask — what's needed to advance this deal?</div>
   <textarea rows="2" data-f="map.topAsk" placeholder="e.g. Principal introduction via Ian to validate data trust requirements…">${esc(m.topAsk)}</textarea>
@@ -1696,7 +1699,7 @@ function buildBizAsks() {
     ? `<div style="font-size:13px;color:var(--text-tertiary);padding:16px 0;text-align:center">No asks yet. Add what the business needs to deliver to move this deal.</div>`
     : '';
 
-  return `${oppNameBadge}<div class="slide-title">Business Asks</div>
+  return `${oppNameBadge()}<div class="slide-title">Business Asks</div>
 <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;line-height:1.6">What does the account team need from <strong>Eleven internally</strong> to move this deal forward? Product roadmap commitments, legal escalation, executive calls, EBC scheduling, custom demo environments, pricing approvals.</div>
 <table class="map-table" style="width:100%">
   <thead><tr>
@@ -2347,7 +2350,7 @@ function buildCalls() {
     }).join('') + '</div>';
   }
 
-  return `${oppNameBadge}<div class="slide-title">Call Analysis & Coaching</div>
+  return `${oppNameBadge()}<div class="slide-title">Call Analysis & Coaching</div>
 ${callsHTML}
 <div class="call-form">
   <div class="call-form-title">Log a new call</div>
