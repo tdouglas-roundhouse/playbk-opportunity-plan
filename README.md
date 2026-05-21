@@ -1,2 +1,2 @@
-# playbk-opportunity-paln
+# playbk-opportunity-plan
 Playbk Opportunity Plan
