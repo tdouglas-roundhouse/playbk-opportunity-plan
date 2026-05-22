@@ -2338,11 +2338,19 @@ function setLog(entries) {
   catch(e) {}
 }
 
+function deriveStage(journey, yes, total, meddAnswers) {
+  // Stage is derived: explicit journey field if set, otherwise inferred from qualification depth
+  if (journey) return journey;
+  const pct = total ? yes / total : 0;
+  if (pct >= 0.65) return 'Expand';
+  if (pct >= 0.35) return 'Land';
+  return 'Land';
+}
+
 function buildLogEntry(a) {
-  const s = a.data.snapshot;
-  const o = a.data.opppov;
-  const m = a.data.map;
-  const ma = o.meddAnswers || {};
+  const s  = a.data.snapshot;
+  const m  = a.data.map;
+  const ma = (a.data.meddpicc && a.data.meddpicc.meddAnswers) || {};
   let yes = 0, total = 0;
   MEDD.forEach(ms => ms.questions.forEach((_, i) => {
     total++;
@@ -2351,26 +2359,28 @@ function buildLogEntry(a) {
   const bl = MEDD.filter(sec => sec.blocker);
   let bY = 0, bT = 0;
   bl.forEach(ms => ms.questions.forEach((_, i) => { bT++; if (ma[ms.id + '_' + i] === 'yes') bY++; }));
-  const p = yes / total, bp = bY / bT;
+  const p = yes / total, bp = bT ? bY / bT : 0;
   let fc = 'Omit';
   if (bp >= 0.75 && p >= 0.70) fc = 'Commit';
   else if (bp >= 0.55 && p >= 0.50) fc = 'Upside';
   else if (p >= 0.25 || yes >= 5) fc = 'Pipeline';
+  const stage = deriveStage(s.journey, yes, total, ma);
   return {
-    id: a.id || (a.id = Date.now() + '_' + Math.random().toString(36).slice(2)),
-    name: a.name,
-    firmType: s.firmType || '',
-    aum: s.aum || '',
-    currentArr: s.currentArr || '',
-    targetArr: s.targetArr || '',
-    healthStatus: s.healthStatus || '',
-    journey: s.journey || '',
-    meddScore: yes,
-    meddTotal: total,
-    forecast: fc,
-    nextTouch: m.nextTouch || '',
-    topAsk: m.topAsk || '',
-    savedAt: new Date().toISOString()
+    id:          a.id || (a.id = Date.now() + '_' + Math.random().toString(36).slice(2)),
+    name:        a.name,
+    firmType:    s.firmType    || '',
+    aum:         s.aum         || '',
+    currentArr:  s.currentArr  || '',
+    targetArr:   s.targetArr   || '',
+    healthStatus:s.healthStatus|| '',
+    journey:     stage,
+    renewalQ:    s.renewalQ    || '',
+    meddScore:   yes,
+    meddTotal:   total,
+    forecast:    fc,
+    nextTouch:   m.nextTouch   || '',
+    topAsk:      m.topAsk      || '',
+    savedAt:     new Date().toISOString()
   };
 }
 
@@ -2419,28 +2429,34 @@ function buildPipelinePage() {
   <div class="medd-score-card"><div class="lbl">Pipeline / Omit</div><div class="val"><span style="color:var(--text-warning)">${pipes}</span> <span style="font-size:14px;color:var(--text-tertiary)">/ ${omits}</span></div></div>
 </div>`;
 
+  const stageColors = { Land:'fc-pipeline', Adopt:'fc-upside', Expand:'fc-commit', Renew:'fc-upside' };
+
   const makeRow = (e, isArchived) => {
     const pct = Math.round((e.meddScore / e.meddTotal) * 100);
     const saved = new Date(e.savedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const fcClass = { Commit: 'fc-commit', Upside: 'fc-upside', Pipeline: 'fc-pipeline', Omit: 'fc-omit' }[e.forecast] || 'fc-omit';
+    const stageClass = stageColors[e.journey] || 'fc-pipeline';
     const action = isArchived
       ? `<button class="row-action restore" onclick="event.stopPropagation();restoreOpp('${e.id}')" title="Restore to active">Restore</button>`
       : `<button class="row-action" onclick="event.stopPropagation();archiveOpp('${e.id}')" title="Archive opportunity">Archive</button>`;
     return `<tr class="${isArchived ? 'archived-row' : ''}" onclick="${isArchived ? '' : `jumpToOpp('${e.id}')`}" style="cursor:${isArchived ? 'default' : 'pointer'}">
   <td>
     <div class="log-name">${esc(e.name)}</div>
-    <div class="log-sub">${esc(e.aum || '—')}${e.journey ? ' · ' + esc(e.journey) : ''}</div>
+    <div class="log-sub">${esc(e.aum || '—')}${e.firmType ? ' · ' + esc(e.firmType) : ''}</div>
   </td>
-  <td><span style="font-size:12px;color:var(--text-secondary)">${esc(e.firmType || '—')}</span></td>
   <td>
-    <div class="log-arr">${esc(e.currentArr || '—')}</div>
-    <div class="log-arr-target">→ ${esc(e.targetArr || '—')}</div>
+    ${e.journey ? `<span class="forecast-badge ${stageClass}" style="font-size:11px;padding:2px 9px">${esc(e.journey)}</span>` : '—'}
+  </td>
+  <td>
+    <div class="log-arr">${esc(e.targetArr || '—')}</div>
+    <div class="log-arr-target">${e.currentArr && e.currentArr !== '$0' ? 'from ' + esc(e.currentArr) : 'new logo'}</div>
   </td>
   <td>
     <div class="log-medd">${e.meddScore}/${e.meddTotal}</div>
     <div class="log-medd-bar"><div class="log-medd-fill" style="width:${pct}%"></div></div>
   </td>
   <td><span class="forecast-badge ${fcClass}" style="font-size:11px;padding:2px 9px">${e.forecast}</span></td>
+  <td><span style="font-size:11px;color:var(--text-secondary)">${esc(e.renewalQ || '—')}</span></td>
   <td><span class="log-next">${esc(e.nextTouch || '—')}</span></td>
   <td><span class="log-updated">${saved}</span></td>
   <td>${action}</td>
@@ -2454,6 +2470,18 @@ function buildPipelinePage() {
     ? `<div style="text-align:center;padding:32px 0;color:var(--text-tertiary);font-size:13px">No saved opportunities yet. Open any opportunity plan and hit <strong>Save to log</strong>.</div>`
     : '';
 
+  const tableHeaders = `<thead><tr>
+    <th style="width:170px">Opportunity</th>
+    <th style="width:80px">Stage</th>
+    <th style="width:100px">Target ARR</th>
+    <th style="width:90px">Qualify</th>
+    <th style="width:90px">Forecast</th>
+    <th style="width:80px">Close</th>
+    <th style="width:120px">Next touch</th>
+    <th style="width:70px">Saved</th>
+    <th style="width:70px"></th>
+  </tr></thead>`;
+
   const archivedSection = archived.length > 0 ? `
 <div class="archived-section-header" onclick="toggleArchivedSection()">
   <span id="archivedChevron">▸</span>
@@ -2461,12 +2489,7 @@ function buildPipelinePage() {
 </div>
 <div id="archivedRows" style="display:none">
   <table class="log-table" style="width:100%">
-    <thead><tr>
-      <th style="width:190px">Opportunity</th><th style="width:110px">Type</th>
-      <th style="width:110px">ARR</th><th style="width:90px">MEDDPICC</th>
-      <th>Forecast</th><th style="width:130px">Next touch</th>
-      <th style="width:80px">Saved</th><th style="width:80px"></th>
-    </tr></thead>
+    ${tableHeaders}
     <tbody>${archivedRows}</tbody>
   </table>
 </div>` : '';
@@ -2474,12 +2497,7 @@ function buildPipelinePage() {
   return `<div class="slide-title">Pipeline</div>
 ${summaryHTML}
 <table class="log-table" style="width:100%">
-  <thead><tr>
-    <th style="width:190px">Opportunity</th><th style="width:110px">Type</th>
-    <th style="width:110px">ARR</th><th style="width:90px">MEDDPICC</th>
-    <th>Forecast</th><th style="width:130px">Next touch</th>
-    <th style="width:80px">Saved</th><th style="width:80px"></th>
-  </tr></thead>
+  ${tableHeaders}
   <tbody>${activeRows}</tbody>
 </table>
 ${emptyActive}
