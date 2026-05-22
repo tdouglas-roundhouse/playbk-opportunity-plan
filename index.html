@@ -1868,31 +1868,47 @@ function buildSnapshot() {
 
 function buildStakeholders() {
   const stk = d().stakeholders;
+
+  // Sentiment drives the badge colour — role is the label
+  const sentBg = { Advocate: 'var(--bg-success)', Neutral: 'var(--bg-secondary)', Risk: 'var(--bg-danger)' };
+  const sentBorder = { Advocate: 'var(--border-success)', Neutral: 'var(--border-mid)', Risk: 'var(--border-danger)' };
+  const sentColor = { Advocate: 'var(--text-success)', Neutral: 'var(--text-secondary)', Risk: 'var(--text-danger)' };
+  const sentDot = { Advocate: 'var(--green-pip)', Neutral: 'var(--amber-pip)', Risk: '#a32d2d' };
+
   const cards = stk.map((s, i) => {
-    const rc = 'role-' + s.role.toLowerCase().replace(/\s+/g, '-');
+    const sent = s.sentiment || 'Neutral';
+    const bg   = sentBg[sent]     || sentBg.Neutral;
+    const bc   = sentBorder[sent] || sentBorder.Neutral;
+    const fc   = sentColor[sent]  || sentColor.Neutral;
+    const dot  = sentDot[sent]    || sentDot.Neutral;
+    // Cycle order: Advocate → Neutral → Risk → Advocate
+    const nextSent = { Advocate: 'Neutral', Neutral: 'Risk', Risk: 'Advocate' }[sent];
+
     return `<div class="stk-card">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-    <span class="role-badge ${rc}">${s.role}</span>
-    <div class="chip-group" style="flex-wrap:nowrap;margin:0">
-      <button class="chip${s.sentiment === 'Advocate' ? ' sel-green' : ''}" style="font-size:10px;padding:2px 7px" onclick="setStkField(${i},'sentiment','Advocate');render()">Advocate</button>
-      <button class="chip${s.sentiment === 'Neutral' ? ' sel-amber' : ''}" style="font-size:10px;padding:2px 7px" onclick="setStkField(${i},'sentiment','Neutral');render()">Neutral</button>
-      <button class="chip${s.sentiment === 'Risk' ? ' sel-red' : ''}" style="font-size:10px;padding:2px 7px" onclick="setStkField(${i},'sentiment','Risk');render()">Risk</button>
-    </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+    <button onclick="setStkField(${i},'sentiment','${nextSent}');render()"
+      style="display:inline-flex;align-items:center;gap:5px;padding:3px 8px 3px 5px;border-radius:5px;border:0.5px solid ${bc};background:${bg};cursor:pointer;font-family:var(--font);transition:all 0.12s"
+      title="Tap to change sentiment">
+      <span style="width:7px;height:7px;border-radius:50%;background:${dot};flex-shrink:0;display:inline-block"></span>
+      <span style="font-size:11px;font-weight:600;color:${fc}">${esc(s.role)}</span>
+      <span style="font-size:10px;color:${fc};opacity:0.65">· ${sent}</span>
+    </button>
   </div>
   <div style="margin-bottom:3px"><input class="stk-input stk-name" data-stk="${i}.name" value="${esc(s.name)}" placeholder="Name"></div>
   <div><input class="stk-input stk-sub" data-stk="${i}.title" value="${esc(s.title)}" placeholder="Title / role"></div>
   <div style="margin-top:6px">
-    <div class="field-label">Personal win <span class="fmt-hint">what do they gain from yes?</span></div>
-    <input class="stk-input stk-win" data-stk="${i}.win" value="${esc(s.win || '')}" placeholder="e.g. Reduces manual reporting burden they own">
+    <div class="field-label">Personal win</div>
+    <input class="stk-input stk-win" data-stk="${i}.win" value="${esc(s.win || '')}" placeholder="What do they gain from yes?">
   </div>
   <button class="sc-remove" onclick="removeStakeholder(${i})">remove</button>
 </div>`;
   }).join('');
+
   return `${oppNameBadge()}<div class="slide-title">Stakeholder Map</div>
 <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
   ${['Economic buyer', 'Executive Sponsor', 'Champion', 'Coach', 'Blocker', 'Neutral'].map(r => `<button class="action-btn" style="font-size:12px;padding:5px 12px" onclick="addStakeholder('${r}')">+ ${r}</button>`).join('')}
 </div>
-<div class="stk-grid">${cards || '<div style="font-size:13px;color:var(--text-tertiary);padding:10px 0">No stakeholders yet.</div>'}</div>
+<div class="stk-grid">${cards || '<div style="font-size:13px;color:var(--text-tertiary);padding:10px 0">No stakeholders yet — add one above.</div>'}</div>
 <div class="sec-div">Access & coverage gaps</div>
 <div class="field-full">
   <div class="field-label">Who are we missing? What access do we need?</div>
