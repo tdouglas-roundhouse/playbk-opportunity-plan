@@ -182,6 +182,19 @@ select.field-input{cursor:pointer}
 .ai-draft-btn{font-size:11px;font-family:var(--font);padding:4px 10px;border-radius:var(--radius-md);border:0.5px solid var(--border-info);background:var(--bg-info);color:var(--text-info);cursor:pointer;font-weight:500;transition:all 0.12s;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
 .ai-draft-btn:hover{opacity:0.85}
 .ai-draft-btn:disabled{opacity:0.5;cursor:not-allowed}
+
+/* ── Talk button ── */
+.talk-wrap{position:relative}
+.talk-btn{position:absolute;bottom:8px;right:8px;width:28px;height:28px;border-radius:50%;border:none;background:var(--bg-secondary);border:0.5px solid var(--border-mid);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;z-index:2;padding:0;color:var(--text-tertiary)}
+.talk-btn:hover{background:var(--bg-info);border-color:var(--border-info);color:var(--text-info)}
+.talk-btn.recording{background:#fee2e2;border-color:#fca5a5;color:#dc2626;animation:pulse-red 1s infinite}
+.talk-btn.processing{background:var(--bg-warning);border-color:var(--border-warning);color:var(--text-warning)}
+.talk-btn svg{width:13px;height:13px;fill:currentColor}
+@keyframes pulse-red{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,0.3)}50%{box-shadow:0 0 0 6px rgba(220,38,38,0)}}
+.talk-coaching{margin-top:6px;padding:8px 10px;background:linear-gradient(135deg,var(--bg-info),rgba(29,158,117,0.06));border:0.5px solid var(--border-info);border-radius:var(--radius-md);font-size:12px;color:var(--text-info);line-height:1.5;display:flex;gap:8px;align-items:flex-start}
+.talk-coaching::before{content:'💬';font-size:13px;flex-shrink:0;margin-top:1px}
+.talk-coaching strong{display:block;font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:3px}
+.talk-status{font-size:11px;color:var(--text-tertiary);margin-top:4px;min-height:16px;transition:opacity 0.2s}
 .call-summary-pill{font-size:12px;color:var(--text-secondary);background:var(--bg-secondary);border:0.5px solid var(--border-light);border-radius:var(--radius-md);padding:7px 10px;margin-bottom:10px;line-height:1.5}
 .pov-required{font-size:10px;font-weight:500;color:var(--teal);background:rgba(29,158,117,0.1);padding:1px 6px;border-radius:4px;margin-left:6px;letter-spacing:0}
 .pov-card-active{border-color:var(--border-info) !important;background:var(--bg-info) !important}
@@ -1327,19 +1340,19 @@ function buildAccountPov() {
 <div class="pov-grid">
   <div class="pov-card${!hasAny ? ' pov-card-active' : ''}">
     <div class="pov-q">Why change? <span class="pov-required">start here</span></div>
-    <textarea class="field-input" rows="2" data-f="accountpov.whyChange" placeholder="What's the cost of doing nothing?">${esc(p.whyChange)}</textarea>
+    <div class="talk-wrap"><textarea class="field-input" rows="2" data-f="accountpov.whyChange" placeholder="What's the cost of doing nothing?">${esc(p.whyChange)}</textarea><button class="talk-btn" onclick="startTalk(event,'accountpov.whyChange')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_accountpov_whyChange"></div>
   </div>
   <div class="pov-card">
     <div class="pov-q">Why now?</div>
-    <textarea class="field-input" rows="2" data-f="accountpov.whyNow" placeholder="Trigger event, renewal window, exec pressure?">${esc(p.whyNow)}</textarea>
+    <div class="talk-wrap"><textarea class="field-input" rows="2" data-f="accountpov.whyNow" placeholder="Trigger event, renewal window, exec pressure?">${esc(p.whyNow)}</textarea><button class="talk-btn" onclick="startTalk(event,'accountpov.whyNow')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_accountpov_whyNow"></div>
   </div>
   <div class="pov-card">
     <div class="pov-q">Why us?</div>
-    <textarea class="field-input" rows="2" data-f="accountpov.whyUs" placeholder="Unique angle for this account specifically?">${esc(p.whyUs)}</textarea>
+    <div class="talk-wrap"><textarea class="field-input" rows="2" data-f="accountpov.whyUs" placeholder="Unique angle for this account specifically?">${esc(p.whyUs)}</textarea><button class="talk-btn" onclick="startTalk(event,'accountpov.whyUs')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_accountpov_whyUs"></div>
   </div>
   <div class="pov-card">
     <div class="pov-q">What solution?</div>
-    <textarea class="field-input" rows="2" data-f="accountpov.whatSolution" placeholder="Which modules? Quantified ROI?">${esc(p.whatSolution)}</textarea>
+    <div class="talk-wrap"><textarea class="field-input" rows="2" data-f="accountpov.whatSolution" placeholder="Which modules? Quantified ROI?">${esc(p.whatSolution)}</textarea><button class="talk-btn" onclick="startTalk(event,'accountpov.whatSolution')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_accountpov_whatSolution"></div>
   </div>
 </div>
 <div class="sec-div">12-month objectives</div>
@@ -1386,26 +1399,26 @@ function buildOppPov() {
 <div class="sec-div first">The five questions</div>
 <div class="field-full">
   <div class="field-label">1. What business problem does this solve? <span class="fmt-hint">Operational / financial pain — not technical features</span></div>
-  <textarea class="field-input" rows="2" data-f="opppov.businessProblem" placeholder="e.g. The principal's team spends 3 days per month reconciling data across 6 systems with no single view of net worth or exposure. This is a control and reputational risk problem, not a reporting problem.">${esc(o.businessProblem)}</textarea>
+  <div class="talk-wrap"><textarea class="field-input" rows="2" data-f="opppov.businessProblem" placeholder="e.g. The principal's team spends 3 days per month reconciling data across 6 systems with no single view of net worth or exposure. This is a control and reputational risk problem, not a reporting problem.">${esc(o.businessProblem)}</textarea><button class="talk-btn" onclick="startTalk(event,'opppov.businessProblem')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_opppov_businessProblem"></div>
 </div>
 <div class="field-full">
   <div class="field-label">2. How is success measured? <span class="fmt-hint">Quantified outcomes the champion can take to the EB</span></div>
-  <textarea class="field-input" rows="2" data-f="opppov.successMetric" placeholder="e.g. Reduce monthly reporting prep from 3 days to 2 hours. Single dashboard the principal reviews weekly without advisor involvement.">${esc(o.successMetric)}</textarea>
+  <div class="talk-wrap"><textarea class="field-input" rows="2" data-f="opppov.successMetric" placeholder="e.g. Reduce monthly reporting prep from 3 days to 2 hours. Single dashboard the principal reviews weekly without advisor involvement.">${esc(o.successMetric)}</textarea><button class="talk-btn" onclick="startTalk(event,'opppov.successMetric')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_opppov_successMetric"></div>
 </div>
 <div class="field-full">
   <div class="field-label">3. What is the alternative? <span class="fmt-hint">"Good enough" is usually the real competitor — what would move the needle enough to act?</span></div>
-  <textarea class="field-input" rows="2" data-f="opppov.alternative" placeholder="e.g. Status quo is Excel + Addepar reports emailed monthly. Champion says it works 'well enough' but the CFO had an embarrassing data discrepancy in front of the principal last quarter. That's the trigger.">${esc(o.alternative)}</textarea>
+  <div class="talk-wrap"><textarea class="field-input" rows="2" data-f="opppov.alternative" placeholder="e.g. Status quo is Excel + Addepar reports emailed monthly. Champion says it works 'well enough' but the CFO had an embarrassing data discrepancy in front of the principal last quarter. That's the trigger.">${esc(o.alternative)}</textarea><button class="talk-btn" onclick="startTalk(event,'opppov.alternative')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_opppov_alternative"></div>
 </div>
 <div class="sec-div">Opportunity scope</div>
 <div class="field-full">
   <div class="field-label">Whitespace & expansion</div>
-  <textarea class="field-input" rows="2" data-f="opppov.whitespace" placeholder="e.g. Core platform + reporting module; expansion to 2nd entity in Y2">${esc(o.whitespace)}</textarea>
+  <div class="talk-wrap"><textarea class="field-input" rows="2" data-f="opppov.whitespace" placeholder="e.g. Core platform + reporting module; expansion to 2nd entity in Y2">${esc(o.whitespace)}</textarea><button class="talk-btn" onclick="startTalk(event,'opppov.whitespace')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_opppov_whitespace"></div>
 </div>
 <div class="sec-div">Competitive landscape</div>
 <div class="field-grid">
   <div>
     <div class="field-label">Real competition (name it)</div>
-    <textarea class="field-input" rows="3" data-f="opppov.incumbents" placeholder="e.g. Addepar + Excel; internal ops team">${esc(o.incumbents)}</textarea>
+    <div class="talk-wrap"><textarea class="field-input" rows="3" data-f="opppov.incumbents" placeholder="e.g. Addepar + Excel; internal ops team">${esc(o.incumbents)}</textarea><button class="talk-btn" onclick="startTalk(event,'opppov.incumbents')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_opppov_incumbents"></div>
   </div>
   <div>
     <div class="field-label">Our strategy</div>
@@ -1417,7 +1430,7 @@ function buildOppPov() {
         ['Defend',           'We\'re the incumbent — protect and expand']
       ].map(([v, tip]) => `<button class="chip${o.competitiveStrategy === v ? ' sel-blue' : ''}" onclick="setDeep('opppov.competitiveStrategy','${v}');render()" title="${tip}">${v}</button>`).join('')}
     </div>
-    <textarea class="field-input" rows="2" style="margin-top:8px" data-f="opppov.competitive" placeholder="How do we win? Differentiated angle vs. the incumbent?">${esc(o.competitive)}</textarea>
+    <div class="talk-wrap"><textarea class="field-input" rows="2" style="margin-top:8px" data-f="opppov.competitive" placeholder="How do we win? Differentiated angle vs. the incumbent?">${esc(o.competitive)}</textarea><button class="talk-btn" onclick="startTalk(event,'opppov.competitive')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_opppov_competitive"></div>
   </div>
 </div>`;
 }
@@ -1590,7 +1603,7 @@ function buildSnapshot() {
     <div class="field-label" style="margin-bottom:0">2–3 sentences on what matters most right now</div>
     <button class="ai-draft-btn" onclick="draftSnapshotBrief()" title="Draft from snapshot data">✦ Draft</button>
   </div>
-  <textarea class="field-input" rows="3" id="snapshotBriefTA" data-f="snapshot.notes" placeholder="What's the situation, key risk, and top opportunity for this account right now?">${esc(s.notes)}</textarea>
+  <div class="talk-wrap"><textarea class="field-input" rows="3" id="snapshotBriefTA" data-f="snapshot.notes" placeholder="What's the situation, key risk, and top opportunity for this account right now?">${esc(s.notes)}</textarea><button class="talk-btn" onclick="startTalk(event,'snapshot.notes')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_snapshot_notes"></div>
 </div>`;
 }
 
@@ -1624,7 +1637,7 @@ function buildStakeholders() {
 <div class="sec-div">Access & coverage gaps</div>
 <div class="field-full">
   <div class="field-label">Who are we missing? What access do we need?</div>
-  <textarea class="field-input" rows="2" data-f="snapshot.stakeholderGaps" placeholder="e.g. No direct access to principal yet — working through Chief of Staff…">${esc(d().snapshot.stakeholderGaps)}</textarea>
+  <div class="talk-wrap"><textarea class="field-input" rows="2" data-f="snapshot.stakeholderGaps" placeholder="e.g. No direct access to principal yet — working through Chief of Staff…">${esc(d().snapshot.stakeholderGaps)}</textarea><button class="talk-btn" onclick="startTalk(event,'snapshot.stakeholderGaps')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_snapshot_stakeholderGaps"></div>
 </div>`;
 }
 
@@ -1640,7 +1653,7 @@ function buildMap() {
   return `${oppNameBadge()}<div class="slide-title">Mutual Action Plan</div>
 <div class="ask-box">
   <div class="ask-label">🚩 #1 ask — what's needed to advance this deal?</div>
-  <textarea rows="2" data-f="map.topAsk" placeholder="e.g. Principal introduction via Ian to validate data trust requirements…">${esc(m.topAsk)}</textarea>
+  <div class="talk-wrap"><textarea rows="2" data-f="map.topAsk" placeholder="e.g. Principal introduction via Ian to validate data trust requirements…">${esc(m.topAsk)}</textarea><button class="talk-btn" onclick="startTalk(event,'map.topAsk')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_map_topAsk"></div>
 </div>
 <div class="sec-div first">Action timeline</div>
 <table class="map-table">
@@ -2680,6 +2693,185 @@ Return ONLY JSON: { "asks": [
     render();
   }
   if (btn) { btn.disabled = false; btn.textContent = '✦ Generate from gaps'; }
+}
+
+/* ================================================================
+   TALK ENGINE — voice input for every textarea
+   Uses Web Speech API for prototype. Whisper-ready architecture.
+   ================================================================ */
+
+let _recognition = null;
+let _talkField   = null;
+let _talkBtn     = null;
+let _talkActive  = false;
+
+// Field context — tells Claude what each field is about
+const TALK_CONTEXT = {
+  'snapshot.notes':          'Account situation brief — 2-3 sentences on situation, key risk, and top opportunity',
+  'snapshot.stakeholderGaps':'Stakeholder gaps — who is missing from the map, who have we not met yet',
+  'accountpov.whyChange':    'Why Change — what is the cost of doing nothing for this account',
+  'accountpov.whyNow':       'Why Now — what is the trigger event, renewal window, or exec pressure creating urgency',
+  'accountpov.whyUs':        'Why Us — what is our unique angle for this specific account',
+  'accountpov.whatSolution': 'What Solution — which modules, what is the quantified ROI or value',
+  'opppov.businessProblem':  'Business Problem — what operational or financial pain does this solve (not technical features)',
+  'opppov.successMetric':    'Success Metric — how will success be measured, what is the quantified outcome',
+  'opppov.alternative':      'The Alternative — what is the status quo, what would they do if we lost, what is good enough',
+  'opppov.whitespace':       'Whitespace — what is the expansion opportunity, which modules or entities',
+  'opppov.incumbents':       'Competition — what are they currently using, who are we really competing against',
+  'opppov.competitive':      'Competitive strategy — how do we win, what is our differentiated angle',
+  'map.topAsk':              'Top ask — what is the single most important thing needed to advance this deal',
+};
+
+function talkContext(fieldPath) {
+  return TALK_CONTEXT[fieldPath] || 'Sales opportunity field — extract relevant information';
+}
+
+function startTalk(e, fieldPath) {
+  e.preventDefault();
+  e.stopPropagation();
+
+  const btn = e.currentTarget;
+
+  // Stop if already recording this field
+  if (_talkActive && _talkField === fieldPath) {
+    stopTalk();
+    return;
+  }
+
+  // Stop any existing session
+  if (_talkActive) stopTalk();
+
+  // Check support
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    showTalkStatus(fieldPath, '⚠ Voice not supported in this browser — try Chrome or Safari');
+    return;
+  }
+
+  _talkField  = fieldPath;
+  _talkBtn    = btn;
+  _talkActive = true;
+
+  btn.classList.add('recording');
+  showTalkStatus(fieldPath, '🔴 Listening… tap mic to stop');
+
+  _recognition = new SR();
+  _recognition.continuous     = true;
+  _recognition.interimResults = false;
+  _recognition.lang           = 'en-US';
+
+  let fullTranscript = '';
+
+  _recognition.onresult = (ev) => {
+    for (let i = ev.resultIndex; i < ev.results.length; i++) {
+      if (ev.results[i].isFinal) fullTranscript += ev.results[i][0].transcript + ' ';
+    }
+  };
+
+  _recognition.onerror = (ev) => {
+    stopTalk();
+    showTalkStatus(fieldPath, '⚠ ' + ev.error + ' — try again');
+  };
+
+  _recognition.onend = () => {
+    if (_talkActive && fullTranscript.trim()) {
+      processTalk(fieldPath, fullTranscript.trim());
+    } else if (_talkActive) {
+      stopTalk();
+      showTalkStatus(fieldPath, '');
+    }
+  };
+
+  _recognition.start();
+}
+
+function stopTalk() {
+  _talkActive = false;
+  if (_recognition) { try { _recognition.stop(); } catch(e) {} _recognition = null; }
+  if (_talkBtn) { _talkBtn.classList.remove('recording', 'processing'); _talkBtn = null; }
+}
+
+async function processTalk(fieldPath, transcript) {
+  if (_talkBtn) { _talkBtn.classList.remove('recording'); _talkBtn.classList.add('processing'); }
+  showTalkStatus(fieldPath, '⏳ Extracting…');
+
+  const oppName  = opp() ? opp().name : 'unknown';
+  const firmType = d().snapshot.firmType || 'unknown';
+  const context  = talkContext(fieldPath);
+
+  const prompt = `You are an expert B2B sales coach helping an AE document their opportunity in real time.
+
+The AE just said this about their deal:
+"${transcript}"
+
+Field context: ${context}
+Opportunity: ${oppName} | Firm type: ${firmType}
+
+Your job:
+1. Extract a clean, concise value for this field from what was said (1-3 sentences max, factual, no fluff)
+2. Identify the single most important follow-up question based on what was said AND what seems missing
+
+Return ONLY valid JSON:
+{
+  "extracted": "the clean extracted value for the field",
+  "question": "one specific follow-up question the AE should answer next (max 15 words, conversational)"
+}
+
+If nothing relevant was said for this field, return { "extracted": "", "question": "" }`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 400,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
+
+    const raw    = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+    const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+
+    if (parsed.extracted) {
+      // Set the field value
+      setDeep(fieldPath, parsed.extracted);
+
+      // Update the actual textarea DOM element
+      const ta = document.querySelector(`[data-f="${fieldPath}"]`);
+      if (ta) ta.value = parsed.extracted;
+
+      showTalkStatus(fieldPath, '');
+
+      // Show coaching question inline
+      if (parsed.question) {
+        const safeId = fieldPath.replace(/\./g, '_');
+        const statusEl = document.getElementById('ts_' + safeId);
+        if (statusEl) {
+          statusEl.innerHTML = `<div class="talk-coaching"><div><strong>Follow-up</strong>${parsed.question}</div></div>`;
+        }
+      }
+    } else {
+      showTalkStatus(fieldPath, "Nothing clear extracted — try again with more detail");
+    }
+  } catch(err) {
+    showTalkStatus(fieldPath, '⚠ ' + err.message);
+  } finally {
+    stopTalk();
+  }
+}
+
+function showTalkStatus(fieldPath, msg) {
+  const safeId = fieldPath.replace(/\./g, '_');
+  const el = document.getElementById('ts_' + safeId);
+  if (el && msg && !msg.startsWith('<')) {
+    el.textContent = msg;
+  } else if (el && !msg) {
+    // Don't clear if there's a coaching question in there
+    if (!el.querySelector('.talk-coaching')) el.textContent = '';
+  }
 }
 
 /* ================================================================
