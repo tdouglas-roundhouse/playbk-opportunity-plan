@@ -342,7 +342,27 @@ select.field-input{cursor:pointer}
 .sidebar-health-label{font-size:10px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.07em;line-height:1.4}
 .sidebar-health-score{font-size:20px;font-weight:700;margin-left:auto;letter-spacing:-0.02em}
 
-.call-log{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.coaching-banner{background:linear-gradient(135deg,#0f2027,#1a2f3a);border:0.5px solid rgba(29,158,117,0.25);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:18px;position:relative;overflow:hidden}
+.coaching-banner::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#1D9E75,#185fa5,#1D9E75);background-size:200% 100%;animation:shimmer 3s linear infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.coaching-banner-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.coaching-banner-title{font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.45)}
+.coaching-banner-refresh{font-size:10px;font-family:var(--font);background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;padding:0;transition:color 0.15s}
+.coaching-banner-refresh:hover{color:rgba(255,255,255,0.6)}
+.coaching-actions{display:flex;flex-direction:column;gap:6px}
+.coaching-action-item{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:var(--radius-md);background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.06);cursor:pointer;transition:all 0.15s;text-align:left;font-family:var(--font);width:100%}
+.coaching-action-item:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.12)}
+.coaching-action-num{font-size:10px;font-weight:700;color:#1D9E75;flex-shrink:0;width:14px;margin-top:1px}
+.coaching-action-body{flex:1}
+.coaching-action-text{font-size:12px;font-weight:500;color:rgba(255,255,255,0.85);line-height:1.4;margin-bottom:2px}
+.coaching-action-why{font-size:11px;color:rgba(255,255,255,0.4);line-height:1.4}
+.coaching-action-tag{font-size:9px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:#1D9E75;background:rgba(29,158,117,0.12);border-radius:3px;padding:1px 5px;margin-top:4px;display:inline-block}
+.coaching-action-arrow{font-size:12px;color:rgba(255,255,255,0.2);flex-shrink:0;margin-top:2px}
+.coaching-loading{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,0.35);font-size:12px;padding:4px 0}
+.coaching-dot{width:5px;height:5px;border-radius:50%;background:#1D9E75;animation:blink 1.2s infinite}
+.coaching-dot:nth-child(2){animation-delay:0.2s}
+.coaching-dot:nth-child(3){animation-delay:0.4s}
+@keyframes blink{0%,100%{opacity:0.3}50%{opacity:1}}
 .call-entry{background:var(--bg-secondary);border:0.5px solid var(--border-light);border-radius:var(--radius-md);overflow:hidden}
 .call-entry-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;user-select:none}
 .call-entry-header:hover{background:var(--bg-tertiary)}
@@ -922,7 +942,40 @@ function renderBottomBar() {
     bar.innerHTML = `
       <button class="action-btn" onclick="saveToLog()">Save to log</button>
       <button class="action-btn primary" onclick="exportPlan()">Export summary</button>
+      <button class="action-btn" onclick="publishDeck()" style="background:var(--bg-info);color:var(--text-info);border-color:var(--border-info)">▶ Publish deal review</button>
       <button class="delete-opp-btn" onclick="deleteOpp()" style="margin-left:auto">Delete opportunity</button>`;
+  }
+}
+
+async function publishDeck() {
+  const btn = document.querySelector('[onclick="publishDeck()"]');
+  if (btn) { btn.textContent = '⏳ Building deck…'; btn.disabled = true; }
+
+  try {
+    // Send opp data to our Node generator via a fetch to a local endpoint
+    // For prototype: call the Anthropic API to get a base64 pptx back
+    // Actual approach: POST opp JSON to a Vercel serverless function
+    // For now: open a new tab with instructions + export the JSON for manual generation
+    const oppData = JSON.stringify(opp(), null, 2);
+    const blob = new Blob([oppData], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = (opp().name || 'opportunity').replace(/\s+/g,'_') + '_plan.json';
+    a.click();
+    URL.revokeObjectURL(url);
+
+    // Also show modal with next step
+    showModal({
+      title: 'Deal review ready to generate',
+      desc: 'Your plan data has been exported. To generate the PowerPoint: run node generate_deal_review.js with the downloaded JSON, or deploy the Vercel function for one-click deck generation.',
+      confirmLabel: 'Got it',
+      onConfirm: () => {}
+    });
+  } catch(e) {
+    showModal({ title: 'Export failed', desc: e.message, confirmLabel: 'OK', onConfirm: () => {} });
+  } finally {
+    if (btn) { btn.textContent = '▶ Publish deal review'; btn.disabled = false; }
   }
 }
 
@@ -1055,11 +1108,217 @@ function renderCurrentSlide() {
   const sid = SLIDES[idx] ? SLIDES[idx].id : SLIDES[1].id;
   const slide = document.createElement('div');
   slide.className = 'slide visible';
-  slide.innerHTML = buildSlide(sid);
+  // Coaching banner prepended to every opportunity section
+  slide.innerHTML = buildCoachingBanner() + buildSlide(sid);
   c.appendChild(slide);
   attachListeners();
   attachFormatters();
+  // Trigger async coaching generation if stale
+  maybeRefreshCoaching();
 }
+
+/* ================================================================
+   COACHING BANNER — top 3 next best actions, context-aware
+   ================================================================ */
+
+const SLIDE_NAV_IDX = {
+  snapshot: 1, stakeholders: 2, accountpov: 3, opppov: 4,
+  meddpicc: 5, map: 6, bizasks: 7, calls: 8
+};
+
+function buildCoachingBanner() {
+  const coaching = opp() && opp().coaching;
+  if (!coaching) {
+    // Show loading state on first render
+    return `<div class="coaching-banner">
+  <div class="coaching-banner-header">
+    <span class="coaching-banner-title">⚡ Next best actions</span>
+    <button class="coaching-banner-refresh" onclick="refreshCoaching()">Refresh</button>
+  </div>
+  <div class="coaching-loading">
+    <div class="coaching-dot"></div><div class="coaching-dot"></div><div class="coaching-dot"></div>
+    <span>Reading your plan…</span>
+  </div>
+</div>`;
+  }
+  if (coaching === 'loading') {
+    return `<div class="coaching-banner">
+  <div class="coaching-banner-header">
+    <span class="coaching-banner-title">⚡ Next best actions</span>
+  </div>
+  <div class="coaching-loading">
+    <div class="coaching-dot"></div><div class="coaching-dot"></div><div class="coaching-dot"></div>
+    <span>Analysing deal…</span>
+  </div>
+</div>`;
+  }
+  const actions = coaching.actions || [];
+  const stage   = coaching.stage || '';
+  const stageLabel = { early: 'Early stage', mid: 'Mid stage', late: 'Late stage' }[stage] || '';
+  const actionsHTML = actions.map((a, i) => {
+    const navIdx = SLIDE_NAV_IDX[a.section] || 1;
+    return `<button class="coaching-action-item" onclick="navigateToSection(${navIdx})">
+  <div class="coaching-action-num">${i + 1}</div>
+  <div class="coaching-action-body">
+    <div class="coaching-action-text">${esc(a.action)}</div>
+    <div class="coaching-action-why">${esc(a.why)}</div>
+    ${a.section ? `<span class="coaching-action-tag">${esc(a.section.replace('_',' '))}</span>` : ''}
+  </div>
+  <div class="coaching-action-arrow">›</div>
+</button>`;
+  }).join('');
+  return `<div class="coaching-banner">
+  <div class="coaching-banner-header">
+    <span class="coaching-banner-title">⚡ Next best actions${stageLabel ? ' · ' + stageLabel : ''}</span>
+    <button class="coaching-banner-refresh" onclick="refreshCoaching()">↻ Refresh</button>
+  </div>
+  <div class="coaching-actions">${actionsHTML || '<div style="font-size:12px;color:rgba(255,255,255,0.3)">No actions generated yet — tap Refresh.</div>'}</div>
+</div>`;
+}
+
+function navigateToSection(idx) {
+  opp().currentSlide = idx;
+  render();
+}
+
+function maybeRefreshCoaching() {
+  if (!opp()) return;
+  const now = Date.now();
+  const lastGen = opp().coachingGeneratedAt || 0;
+  const stale = now - lastGen > 5 * 60 * 1000; // 5 min cache
+  if (!opp().coaching || (stale && opp().coaching !== 'loading')) {
+    generateCoaching();
+  }
+}
+
+function refreshCoaching() {
+  if (!opp()) return;
+  opp().coachingGeneratedAt = 0;
+  generateCoaching();
+}
+
+async function generateCoaching() {
+  if (!opp()) return;
+  opp().coaching = 'loading';
+  // Re-render banner in loading state without full render
+  const banner = document.querySelector('.coaching-banner');
+  if (banner) {
+    banner.innerHTML = `<div class="coaching-banner-header">
+      <span class="coaching-banner-title">⚡ Next best actions</span>
+    </div>
+    <div class="coaching-loading">
+      <div class="coaching-dot"></div><div class="coaching-dot"></div><div class="coaching-dot"></div>
+      <span>Analysing deal…</span>
+    </div>`;
+  }
+
+  // Build plan summary for Claude
+  const data = d();
+  const ma   = (data.meddpicc && data.meddpicc.meddAnswers) || {};
+  const mn   = (data.meddpicc && data.meddpicc.meddNotes)   || {};
+  const hs   = calcHealthScore();
+  const { yes, total } = calcScore();
+  const fc   = calcForecast();
+
+  // Blocker section summaries
+  const blockerSummary = MEDD.filter(s => s.blocker).map(s => {
+    const y = meddYes(s.id, s.questions.length);
+    const t = s.questions.length;
+    return `${s.title}: ${y}/${t} (${meddStatus(s.id, t)})${mn[s.id] ? ' — ' + mn[s.id] : ''}`;
+  }).join('\n');
+
+  const stakeCount   = data.stakeholders.length;
+  const champion     = data.stakeholders.find(s => s.role === 'Champion');
+  const eb           = data.stakeholders.find(s => s.role === 'Economic buyer');
+  const openMapRows  = (data.map.rows || []).filter(r => r.status === 'Open').length;
+  const overdueAsks  = (data.bizasks && data.bizasks.rows || []).filter(r => r.status === 'Open').length;
+  const daysSinceTouch = data.map.lastEngagement
+    ? Math.floor((Date.now() - new Date(data.map.lastEngagement).getTime()) / 86400000)
+    : null;
+
+  const prompt = `You are an expert B2B sales coach. Analyse this opportunity plan and return the top 3 most important next actions for the AE right now.
+
+OPPORTUNITY: ${opp().name}
+Firm: ${data.snapshot.firmName || 'unknown'} | Type: ${data.snapshot.firmType || 'unknown'} | ARR target: ${data.snapshot.targetArr || 'unknown'}
+Journey stage: ${data.snapshot.journey || 'Land'} | Health score: ${hs}/100 | Forecast: ${fc}
+MEDDPICC: ${yes}/${total}
+
+BLOCKER SECTIONS (most important):
+${blockerSummary}
+
+STAKEHOLDERS: ${stakeCount} mapped
+Champion: ${champion ? champion.name + ' (' + (champion.sentiment || 'unknown') + ')' : 'NOT IDENTIFIED'}
+Economic buyer: ${eb ? eb.name + ' — direct access: ' + (eb.sentiment || 'unknown') : 'NOT IDENTIFIED'}
+Stakeholder gaps: ${data.snapshot.stakeholderGaps || 'none noted'}
+
+PLAN STATE:
+Why change: ${data.accountpov.whyChange ? 'filled' : 'EMPTY'}
+Business problem: ${data.opppov.businessProblem ? 'filled' : 'EMPTY'}
+Success metric: ${data.opppov.successMetric ? 'filled' : 'EMPTY'}
+Alternative/competition: ${data.opppov.alternative ? 'filled' : 'EMPTY'}
+Top ask: ${data.map.topAsk || 'EMPTY'}
+Open MAP actions: ${openMapRows}
+Open business asks: ${overdueAsks}
+Last engagement: ${data.map.lastEngagement || 'not recorded'}
+Next touch: ${data.map.nextTouch || 'not scheduled'}
+
+Determine the deal stage (early/mid/late) based on the data above:
+- Early: champion not identified, EB unknown, most MEDDPICC empty, <3 stakeholders
+- Mid: champion known, EB identified but not fully engaged, some blockers weak, plan partially filled
+- Late: champion strong, EB engaged, most sections filled, paper process in motion
+
+Return ONLY valid JSON:
+{
+  "stage": "early|mid|late",
+  "actions": [
+    {
+      "action": "specific action max 12 words — what to DO, not what to think about",
+      "why": "one sentence tied to actual data in this plan, max 20 words",
+      "section": "one of: snapshot|stakeholders|accountpov|opppov|meddpicc|map|bizasks|calls"
+    }
+  ]
+}
+
+Rules:
+- Exactly 3 actions, ranked by urgency
+- Actions must be specific to THIS deal — not generic sales advice
+- Prioritise blocker sections that are weak
+- If EB is not directly engaged, that is almost always action #1 at mid/late stage
+- If last engagement is >14 days ago, flag staleness
+- If MAP has no next touch scheduled, flag it
+- Section must be one of the exact values listed above`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 600,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data2 = await resp.json();
+    if (data2.error) throw new Error(data2.error.message);
+    const raw    = data2.content.filter(b => b.type === 'text').map(b => b.text).join('');
+    const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    opp().coaching = parsed;
+    opp().coachingGeneratedAt = Date.now();
+  } catch(e) {
+    opp().coaching = { stage: 'mid', actions: [
+      { action: 'Coaching unavailable — check connection', why: e.message, section: 'snapshot' }
+    ]};
+  }
+  // Re-render just the banner
+  const bannerEl = document.querySelector('.coaching-banner');
+  if (bannerEl) {
+    bannerEl.outerHTML = buildCoachingBanner();
+  } else {
+    renderCurrentSlide();
+  }
+}
+
+
 
 /* ================================================================
    HEALTH SCORE  0–100
@@ -2696,14 +2955,17 @@ Return ONLY JSON: { "asks": [
 }
 
 /* ================================================================
-   TALK ENGINE — voice input for every textarea
-   Uses Web Speech API for prototype. Whisper-ready architecture.
+   TALK ENGINE — MediaRecorder → Whisper → Claude extraction
+   Works on all browsers including Safari iOS/desktop.
+   OpenAI key stored in localStorage under 'playbk_openai_key'.
    ================================================================ */
 
-let _recognition = null;
-let _talkField   = null;
-let _talkBtn     = null;
-let _talkActive  = false;
+let _mediaRecorder = null;
+let _audioChunks   = [];
+let _talkField     = null;
+let _talkBtn       = null;
+let _talkActive    = false;
+let _talkStream    = null;
 
 // Field context — tells Claude what each field is about
 const TALK_CONTEXT = {
@@ -2726,75 +2988,152 @@ function talkContext(fieldPath) {
   return TALK_CONTEXT[fieldPath] || 'Sales opportunity field — extract relevant information';
 }
 
-function startTalk(e, fieldPath) {
+function getOpenAIKey() {
+  let key = localStorage.getItem('playbk_openai_key');
+  if (!key) {
+    showModal({
+      title: 'OpenAI API key needed',
+      desc: 'Voice input uses Whisper for transcription. Enter your OpenAI API key — stored locally, never sent anywhere except OpenAI.',
+      input: true,
+      placeholder: 'sk-...',
+      confirmLabel: 'Save & continue',
+      onConfirm: (k) => {
+        if (k && k.startsWith('sk-')) {
+          localStorage.setItem('playbk_openai_key', k.trim());
+        }
+      }
+    });
+    return null;
+  }
+  return key;
+}
+
+async function startTalk(e, fieldPath) {
   e.preventDefault();
   e.stopPropagation();
 
   const btn = e.currentTarget;
 
-  // Stop if already recording this field
+  // If already recording this field — stop and process
   if (_talkActive && _talkField === fieldPath) {
-    stopTalk();
+    stopRecording();
     return;
   }
 
   // Stop any existing session
   if (_talkActive) stopTalk();
 
-  // Check support
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) {
-    showTalkStatus(fieldPath, '⚠ Voice not supported in this browser — try Chrome or Safari');
+  // Check for OpenAI key
+  const key = getOpenAIKey();
+  if (!key) return;
+
+  // Request mic access
+  try {
+    _talkStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch(err) {
+    showTalkStatus(fieldPath, 'Mic access denied — check browser permissions');
     return;
   }
 
   _talkField  = fieldPath;
   _talkBtn    = btn;
   _talkActive = true;
+  _audioChunks = [];
 
   btn.classList.add('recording');
-  showTalkStatus(fieldPath, '🔴 Listening… tap mic to stop');
+  showTalkStatus(fieldPath, '🔴 Recording… tap mic to stop');
 
-  _recognition = new SR();
-  _recognition.continuous     = true;
-  _recognition.interimResults = false;
-  _recognition.lang           = 'en-US';
+  // Pick best supported format for Safari/Chrome
+  const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+    ? 'audio/webm;codecs=opus'
+    : MediaRecorder.isTypeSupported('audio/webm')
+      ? 'audio/webm'
+      : 'audio/mp4';
 
-  let fullTranscript = '';
+  _mediaRecorder = new MediaRecorder(_talkStream, { mimeType });
 
-  _recognition.onresult = (ev) => {
-    for (let i = ev.resultIndex; i < ev.results.length; i++) {
-      if (ev.results[i].isFinal) fullTranscript += ev.results[i][0].transcript + ' ';
-    }
+  _mediaRecorder.ondataavailable = (e) => {
+    if (e.data.size > 0) _audioChunks.push(e.data);
   };
 
-  _recognition.onerror = (ev) => {
-    stopTalk();
-    showTalkStatus(fieldPath, '⚠ ' + ev.error + ' — try again');
-  };
-
-  _recognition.onend = () => {
-    if (_talkActive && fullTranscript.trim()) {
-      processTalk(fieldPath, fullTranscript.trim());
-    } else if (_talkActive) {
+  _mediaRecorder.onstop = async () => {
+    const ext  = mimeType.includes('mp4') ? 'mp4' : 'webm';
+    const blob = new Blob(_audioChunks, { type: mimeType });
+    _talkStream.getTracks().forEach(t => t.stop());
+    _talkStream = null;
+    if (blob.size > 1000) {
+      await transcribeAndProcess(fieldPath, blob, ext);
+    } else {
+      showTalkStatus(fieldPath, 'Nothing recorded — try again');
       stopTalk();
-      showTalkStatus(fieldPath, '');
     }
   };
 
-  _recognition.start();
+  _mediaRecorder.start(100); // collect in 100ms chunks
+}
+
+function stopRecording() {
+  if (_mediaRecorder && _mediaRecorder.state !== 'inactive') {
+    _mediaRecorder.stop();
+  }
+  if (_talkBtn) _talkBtn.classList.remove('recording');
 }
 
 function stopTalk() {
   _talkActive = false;
-  if (_recognition) { try { _recognition.stop(); } catch(e) {} _recognition = null; }
+  if (_mediaRecorder && _mediaRecorder.state !== 'inactive') {
+    try { _mediaRecorder.stop(); } catch(e) {}
+  }
+  _mediaRecorder = null;
+  if (_talkStream) { _talkStream.getTracks().forEach(t => t.stop()); _talkStream = null; }
   if (_talkBtn) { _talkBtn.classList.remove('recording', 'processing'); _talkBtn = null; }
 }
 
-async function processTalk(fieldPath, transcript) {
-  if (_talkBtn) { _talkBtn.classList.remove('recording'); _talkBtn.classList.add('processing'); }
-  showTalkStatus(fieldPath, '⏳ Extracting…');
+async function transcribeAndProcess(fieldPath, blob, ext) {
+  if (_talkBtn) _talkBtn.classList.add('processing');
+  showTalkStatus(fieldPath, '⏳ Transcribing…');
 
+  const key = localStorage.getItem('playbk_openai_key');
+  if (!key) { showTalkStatus(fieldPath, 'No API key — reload and try again'); stopTalk(); return; }
+
+  try {
+    // Step 1 — Whisper transcription
+    const formData = new FormData();
+    formData.append('file', blob, 'audio.' + ext);
+    formData.append('model', 'whisper-1');
+    formData.append('language', 'en');
+
+    const whisperResp = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + key },
+      body: formData
+    });
+
+    if (!whisperResp.ok) {
+      const err = await whisperResp.json();
+      throw new Error(err.error?.message || 'Whisper error');
+    }
+
+    const whisperData = await whisperResp.json();
+    const transcript  = (whisperData.text || '').trim();
+
+    if (!transcript) {
+      showTalkStatus(fieldPath, 'Nothing heard — try again');
+      stopTalk();
+      return;
+    }
+
+    // Step 2 — Claude extraction
+    showTalkStatus(fieldPath, '⏳ Extracting…');
+    await processTalk(fieldPath, transcript);
+
+  } catch(err) {
+    showTalkStatus(fieldPath, '⚠ ' + err.message);
+    stopTalk();
+  }
+}
+
+async function processTalk(fieldPath, transcript) {
   const oppName  = opp() ? opp().name : 'unknown';
   const firmType = d().snapshot.firmType || 'unknown';
   const context  = talkContext(fieldPath);
@@ -2836,25 +3175,19 @@ If nothing relevant was said for this field, return { "extracted": "", "question
     const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
 
     if (parsed.extracted) {
-      // Set the field value
       setDeep(fieldPath, parsed.extracted);
-
-      // Update the actual textarea DOM element
       const ta = document.querySelector(`[data-f="${fieldPath}"]`);
       if (ta) ta.value = parsed.extracted;
-
       showTalkStatus(fieldPath, '');
-
-      // Show coaching question inline
       if (parsed.question) {
-        const safeId = fieldPath.replace(/\./g, '_');
+        const safeId  = fieldPath.replace(/\./g, '_');
         const statusEl = document.getElementById('ts_' + safeId);
         if (statusEl) {
           statusEl.innerHTML = `<div class="talk-coaching"><div><strong>Follow-up</strong>${parsed.question}</div></div>`;
         }
       }
     } else {
-      showTalkStatus(fieldPath, "Nothing clear extracted — try again with more detail");
+      showTalkStatus(fieldPath, 'Nothing clear extracted — try again with more detail');
     }
   } catch(err) {
     showTalkStatus(fieldPath, '⚠ ' + err.message);
@@ -2866,10 +3199,10 @@ If nothing relevant was said for this field, return { "extracted": "", "question
 function showTalkStatus(fieldPath, msg) {
   const safeId = fieldPath.replace(/\./g, '_');
   const el = document.getElementById('ts_' + safeId);
-  if (el && msg && !msg.startsWith('<')) {
+  if (!el) return;
+  if (msg && !msg.startsWith('<')) {
     el.textContent = msg;
-  } else if (el && !msg) {
-    // Don't clear if there's a coaching question in there
+  } else if (!msg) {
     if (!el.querySelector('.talk-coaching')) el.textContent = '';
   }
 }
@@ -2886,7 +3219,8 @@ function saveState() {
     // Sets can't be JSON serialised — convert openMedd to array
     const serialisable = opps.map(o => ({
       ...o,
-      openMedd: [...(o.openMedd || [])]
+      openMedd: [...(o.openMedd || [])],
+      coaching: o.coaching && o.coaching !== 'loading' ? o.coaching : undefined
     }));
     localStorage.setItem(STATE_KEY, JSON.stringify({
       opps: serialisable,
@@ -2897,10 +3231,172 @@ function saveState() {
   } catch(e) { /* localStorage full or unavailable */ }
 }
 
+function buildExampleOpp() {
+  const data = freshData();
+
+  // Account Snapshot
+  data.snapshot = {
+    firmName: 'Meridian Capital Partners',
+    firmType: 'Institutional WM',
+    aum: '$2B–$5B',
+    contactCount: '4',
+    healthStatus: 'Amber',
+    journey: 'Land',
+    currentArr: '$0',
+    targetArr: '$120K',
+    renewalQ: '09/30/25',
+    notes: 'Meridian manages 14 UHNW family relationships and a growing RIA practice. Core pain is fragmented reporting — principals see data from 3 custodians plus estate docs monthly, reconciled by hand in Excel. CFO flagged a data discrepancy in front of a principal last quarter. That incident created urgency. Key risk is trust — they have never put operational data in a cloud platform. Top opportunity is the reporting consolidation use case, which is fully contained and low-risk as a land.',
+    stakeholderGaps: 'Have not met the principal directly — all access through Marcus. Need to confirm whether compliance officer has a view on cloud data policy before we go deeper.'
+  };
+
+  // Stakeholders
+  data.stakeholders = [
+    { name: 'Marcus Webb', title: 'CIO', role: 'Champion', sentiment: 'Advocate', win: 'Eliminate the monthly reporting reconciliation that consumes 2 days of his team. Wants to look good in front of the principal after the data error.' },
+    { name: 'Sarah Chen', title: 'Director of Operations', role: 'Coach', sentiment: 'Advocate', win: 'Reduce manual data entry burden on her team. Has been coordinating all meetings — strong internal ally.' },
+    { name: 'Robert Hargrove', title: 'Managing Principal', role: 'Economic buyer', sentiment: 'Neutral', win: 'Single view of family wealth without calling three advisors. Values privacy and control above cost.' },
+    { name: 'David Okafor', title: 'Chief Compliance Officer', role: 'Neutral', sentiment: 'Risk', win: 'Unknown — has not engaged yet. Could become a blocker on cloud data policy.' }
+  ];
+
+  // Account POV
+  data.accountpov = {
+    whyChange: 'A data discrepancy surfaced in front of the managing principal last quarter — wrong net worth figure in a board-level summary. The CFO was embarrassed. Manual Excel reconciliation across three custodians is no longer acceptable at this AUM level.',
+    whyNow: 'Post-incident pressure from the principal to "get this right before year-end." Marcus has budget authority to act without an extended procurement cycle. Q3 renewal window creates a natural forcing function.',
+    whyUs: 'Only platform built specifically for the operational complexity of UHNW family offices — not a generic wealth aggregator. Data trust architecture and the principal UX are the differentiators Marcus keeps coming back to.',
+    whatSolution: 'Phase 1: reporting consolidation across 3 custodians (Schwab, Fidelity, Northern Trust) + estate document layer. Target ARR $120K. Phase 2 expansion to full life management suite in Y2 if land succeeds.',
+    objective1: 'Discovery complete — all stakeholders mapped and data scope confirmed',
+    obj1date: 'Q2 2025',
+    objective2: 'Pilot agreement signed — Phase 1 scope, timeline, and success metrics agreed',
+    obj2date: 'Q3 2025',
+    objective3: 'First custodian integration live and principal dashboard active',
+    obj3date: 'Q4 2025'
+  };
+
+  // Opportunity POV
+  data.opppov = {
+    businessProblem: 'Meridian reconciles wealth data from 3 custodians manually every month — a 2-day process that introduces human error at the exact moment principals expect precision. The Q3 data incident made this a leadership-level problem, not just an ops issue.',
+    successMetric: 'Monthly reporting prep reduced from 2 days to under 2 hours. Principal has a real-time single dashboard without calling Marcus. Zero data discrepancies in first 6 months.',
+    alternative: 'Status quo is Excel plus custodian PDFs emailed monthly. Marcus acknowledges it "works" but the principal incident has made inertia politically untenable. Competing platform is Addepar — evaluated 18 months ago but rejected as too complex for their team size.',
+    whitespace: 'Phase 1 reporting consolidation is the land. Phase 2 is full life management — travel, estate, legal calendar, concierge layer. Could expand to 3 additional family relationships Meridian manages if principal endorses.',
+    incumbents: 'Excel + custodian PDFs (current state). Addepar (evaluated, rejected). Internal ops team as the de facto system.',
+    competitiveStrategy: 'Flank',
+    competitive: 'Addepar lost on complexity — we win on simplicity and the principal UX. The land is deliberately narrow: reporting consolidation only. Prove data trust, then expand. Do not over-scope the initial proposal.'
+  };
+
+  // MEDDPICC — B+ means strong but with visible gaps
+  data.meddpicc = {
+    meddAnswers: {
+      // Economic buyer — identified but not fully engaged
+      'economic_buyer_0': 'yes',  // EB named (Robert Hargrove)
+      'economic_buyer_1': 'no',   // No direct access — through Marcus only
+      'economic_buyer_2': 'yes',  // EB expressed view on consolidation
+      'economic_buyer_3': 'no',   // No EB meeting path confirmed yet
+      // Champion — strong
+      'champion_0': 'yes',  // Marcus has power
+      'champion_1': 'yes',  // Marcus has personal win
+      'champion_2': 'yes',  // Marcus proactively sharing intel
+      'champion_3': 'yes',  // Engaged within 3 weeks
+      // Paper process — unknown, weak
+      'paper_process_0': 'no',   // Process not mapped
+      'paper_process_1': 'no',   // Legal not engaged
+      'paper_process_2': 'no',   // Redlines unknown
+      'paper_process_3': 'yes',  // Timeline discussed roughly
+      // Decision process — partial
+      'decision_process_0': 'yes', // Steps described
+      'decision_process_1': 'no',  // No PoC agreed yet
+      'decision_process_2': 'yes', // Timeline discussed
+      'decision_process_3': 'yes', // No RFP — can move fast
+      // Data integration — partial
+      'data_integration_0': 'yes', // Data sources known
+      'data_integration_1': 'no',  // Legal/privacy not cleared
+      'data_integration_2': 'yes', // Data owner is Sarah Chen
+      'data_integration_3': 'yes', // Schwab integration confirmed accessible
+      // Metrics — strong
+      'metrics_0': 'yes',  // Cost of fragmented reporting quantified
+      'metrics_1': 'yes',  // Specific metric identified (2 days → 2 hours)
+      'metrics_2': 'yes',  // Metric linked to principal priority
+      'metrics_3': 'no',   // Baseline not formally established yet
+      // Decision criteria — partial
+      'decision_criteria_0': 'yes', // Eval criteria described
+      'decision_criteria_1': 'yes', // Differentiation mapped
+      'decision_criteria_2': 'yes', // Incumbents compared
+      'decision_criteria_3': 'no',  // Compliance/privacy reqs not fully surfaced
+      // Competition — good
+      'competition_0': 'yes',  // Real competitor named (Addepar + Excel)
+      'competition_1': 'yes',  // Status quo acknowledged as costly
+      'competition_2': 'yes',  // No parallel evaluation in progress
+      'competition_3': 'yes',  // Positioning resonated with champion
+    },
+    meddNotes: {
+      'economic_buyer': 'Robert Hargrove is the EB but all access is through Marcus. Need a direct touchpoint — Marcus to arrange a 20-min intro call framed around principal experience, not product.',
+      'paper_process': 'Biggest unknown. David Okafor (CCO) has not engaged. Cloud data policy could be a blocker. Need to surface this before the pilot proposal.',
+      'data_integration': 'Sarah Chen owns the data side and is willing. Schwab API confirmed. Fidelity and Northern Trust not yet confirmed — need to scope in discovery session.',
+      'metrics': 'The 2-day → 2-hour metric is strong and Marcus validated it. Need to formalize as baseline in the pilot agreement so success is measurable at review.'
+    },
+    gapOverrides: { __manual: [] }
+  };
+
+  // Mutual Action Plan
+  data.map = {
+    topAsk: 'Marcus to arrange a 20-minute intro with Robert Hargrove (Managing Principal) — framed as "understanding how you review your family relationships today" not a product demo. This is the trust signal that unlocks the deal.',
+    lastEngagement: 'May 14 — 60-min discovery call with Marcus Webb and Sarah Chen. Confirmed pain, data scope, and decision timeline. Action: follow-up with pilot proposal outline by May 28.',
+    nextTouch: 'May 28 — Tim to send pilot proposal outline to Marcus for review before sharing with Robert.',
+    rows: [
+      { date: 'May 28', ownerEleven: 'Tim', ownerAccount: 'Marcus Webb', action: 'Pilot proposal outline shared for review — scope, timeline, success metrics', status: 'Open' },
+      { date: 'Jun 4',  ownerEleven: 'Tim', ownerAccount: 'Marcus Webb', action: 'Principal intro call arranged — 20 min, Robert Hargrove', status: 'Open' },
+      { date: 'Jun 11', ownerEleven: 'Austin', ownerAccount: 'Sarah Chen', action: 'Technical discovery — custodian data scope, Fidelity and Northern Trust API access confirmed', status: 'Open' },
+      { date: 'Jun 18', ownerEleven: 'Tim', ownerAccount: 'David Okafor', action: 'Compliance intro — cloud data policy, DPA requirements surfaced', status: 'Open' },
+      { date: 'Jul 1',  ownerEleven: 'Tim', ownerAccount: 'Marcus Webb', action: 'Pilot agreement signed — Phase 1 scope locked', status: 'Open' }
+    ]
+  };
+
+  // Account team
+  data.accountpovteam = {
+    se: 'Austin (Founder/CTO)',
+    execSponsor: 'Tim (Fractional CRO)',
+    productOwner: 'Austin'
+  };
+
+  // Business Asks
+  data.bizasks = {
+    rows: [
+      { ask: 'Confirm Schwab and Fidelity custodian integration on current roadmap — Marcus needs this for pilot proposal', team: 'Product', priority: 'High', by: 'May 26', status: 'Open' },
+      { ask: 'DPA template for UHNW family office — Okafor will ask for this before compliance sign-off', team: 'Legal', priority: 'High', by: 'Jun 10', status: 'Open' },
+      { ask: 'Austin availability for technical discovery call with Sarah Chen week of Jun 9', team: 'Executive', priority: 'Medium', by: 'Jun 4', status: 'Open' }
+    ]
+  };
+
+  return data;
+}
+
+function buildExampleCoaching() {
+  return {
+    stage: 'mid',
+    actions: [
+      {
+        action: 'Arrange direct meeting with Robert Hargrove — economic buyer not yet engaged',
+        why: 'Marcus controls access but cannot sign. Every week without EB contact increases veto risk at proposal stage.',
+        section: 'stakeholders'
+      },
+      {
+        action: 'Surface cloud data policy with David Okafor before pilot proposal',
+        why: 'CCO has not engaged. Paper Process is your weakest blocker at 1/4 — compliance could kill this after you invest in scoping.',
+        section: 'meddpicc'
+      },
+      {
+        action: 'Confirm Fidelity and Northern Trust API access with Sarah Chen',
+        why: 'Schwab is confirmed but two of three custodians are unvalidated. Pilot scope cannot be locked without this.',
+        section: 'map'
+      }
+    ],
+    generatedAt: Date.now()
+  };
+}
+
+
 function loadState() {
   try {
     const raw = localStorage.getItem(STATE_KEY);
-    if (!raw) { render(); updateLogCount(); return; }
+    if (!raw) { opps = [{ id: 'example_meridian', name: 'Meridian Capital Partners', currentSlide: 1, openMedd: new Set(['economic_buyer']), data: buildExampleOpp(), coaching: buildExampleCoaching(), coachingGeneratedAt: Date.now(), updatedAt: Date.now() }]; currentOpp = 0; showDashboard = true; render(); updateLogCount(); return; }
     const saved = JSON.parse(raw);
     if (saved.opps && saved.opps.length) {
       opps = saved.opps.map(o => ({
