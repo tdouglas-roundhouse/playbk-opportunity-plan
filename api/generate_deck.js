@@ -5,7 +5,23 @@ const NAVY='0f1923',NAVY2='162030',TEAL='1D9E75',TEAL2='15755a',
       WHITE='FFFFFF',SLATE='8fa3b1',DIM='4a6070',AMBER='EF9F27',
       LIGHT_BG='F8F7F4';
 
-const clean = s => (s||'').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>').trim();
+const clean = s => {
+  if (!s) return '';
+  return String(s)
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&apos;/g, "'")
+    .replace(/[\u2018\u2019]/g, "'")   // curly single quotes
+    .replace(/[\u201C\u201D]/g, '"')   // curly double quotes
+    .replace(/\u2014/g, '-')           // em dash
+    .replace(/\u2013/g, '-')           // en dash
+    .replace(/\u2026/g, '...')         // ellipsis
+    .replace(/\u00A0/g, ' ')           // non-breaking space
+    .replace(/[^\x00-\x7F\u00C0-\u024F]/g, '') // strip remaining non-latin
+    .trim();
+};
 const trunc = (s,n) => { const c=clean(s); return c.length>n?c.slice(0,n-1)+'…':c; };
 const makeShadow = () => ({type:'outer',blur:8,offset:2,angle:135,color:'000000',opacity:0.08});
 
