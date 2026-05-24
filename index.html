@@ -1059,28 +1059,27 @@ async function publishDeck() {
   if (btn) { btn.textContent = '⏳ Building deck…'; btn.disabled = true; }
 
   try {
-    // Send opp data to our Node generator via a fetch to a local endpoint
-    // For prototype: call the Anthropic API to get a base64 pptx back
-    // Actual approach: POST opp JSON to a Vercel serverless function
-    // For now: open a new tab with instructions + export the JSON for manual generation
-    const oppData = JSON.stringify(opp(), null, 2);
-    const blob = new Blob([oppData], { type: 'application/json' });
+    const resp = await fetch('/api/generate-deck', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(opp())
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error || 'Deck generation failed');
+    }
+
+    const blob = await resp.blob();
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href     = url;
-    a.download = (opp().name || 'opportunity').replace(/\s+/g,'_') + '_plan.json';
+    a.download = (opp().name || 'deal-review').replace(/[^a-z0-9]/gi, '_') + '_deal_review.pptx';
     a.click();
     URL.revokeObjectURL(url);
 
-    // Also show modal with next step
-    showModal({
-      title: 'Deal review ready to generate',
-      desc: 'Your plan data has been exported. To generate the PowerPoint: run node generate_deal_review.js with the downloaded JSON, or deploy the Vercel function for one-click deck generation.',
-      confirmLabel: 'Got it',
-      onConfirm: () => {}
-    });
   } catch(e) {
-    showModal({ title: 'Export failed', desc: e.message, confirmLabel: 'OK', onConfirm: () => {} });
+    showModal({ title: 'Deck generation failed', desc: e.message, confirmLabel: 'OK', onConfirm: () => {} });
   } finally {
     if (btn) { btn.textContent = '▶ Publish deal review'; btn.disabled = false; }
   }
