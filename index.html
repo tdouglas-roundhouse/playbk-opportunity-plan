@@ -1059,10 +1059,17 @@ async function publishDeck() {
   if (btn) { btn.textContent = '⏳ Building deck…'; btn.disabled = true; }
 
   try {
+    // Serialise safely — convert Set and non-JSON types
+    const o = opp();
+    const payload = JSON.stringify({
+      ...o,
+      openMedd: [...(o.openMedd || [])],
+    });
+
     const resp = await fetch('/api/generate-deck', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(opp())
+      body: payload
     });
 
     if (!resp.ok) {
@@ -1074,7 +1081,7 @@ async function publishDeck() {
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href     = url;
-    a.download = (opp().name || 'deal-review').replace(/[^a-z0-9]/gi, '_') + '_deal_review.pptx';
+    a.download = (o.name || 'deal-review').replace(/[^a-z0-9]/gi, '_') + '_deal_review.pptx';
     a.click();
     URL.revokeObjectURL(url);
 
