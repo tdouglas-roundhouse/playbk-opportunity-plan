@@ -281,7 +281,7 @@ export default async function handler(req, res) {
     slideBizAsks       (pres, opp);
     slideCoaching      (pres, opp);
 
-    const buffer = await pres.write({ outputType: 'nodebuffer' });
+    const buffer = await pres.write('nodebuffer');
     const filename = (opp.name || 'deal-review').replace(/[^a-z0-9]/gi, '_') + '_deal_review.pptx';
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.presentationml.presentation');
