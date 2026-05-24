@@ -1401,7 +1401,7 @@ Rules:
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-5',
         max_tokens: 600,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -2907,7 +2907,7 @@ Return this exact structure — all three keys required:
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-5',
         max_tokens: 1000,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -2999,7 +2999,7 @@ async function callClaude(prompt, btnId, loadingText) {
     const resp = await fetch('/api/claude', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000,
+      body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 1000,
         messages: [{ role: 'user', content: prompt }] })
     });
     const data = await resp.json();
@@ -3279,7 +3279,7 @@ If nothing relevant was said for this field, return { "extracted": "", "question
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-5',
         max_tokens: 400,
         messages: [{ role: 'user', content: prompt }]
       })
