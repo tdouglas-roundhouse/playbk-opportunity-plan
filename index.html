@@ -542,7 +542,7 @@ select.field-input{cursor:pointer}
   <nav class="sidebar">
     <div class="sidebar-brand">
       <h1>Playbk Labs</h1>
-      <p id="brandContext">Brick &amp; Mortar · Portfolio</p>
+      <p id="brandContext">Eleven Systems</p>
       <div class="sidebar-score" id="headerScore">
         <span class="save-indicator" id="saveIndicator">&#10003; Saved</span>
       </div>
@@ -562,242 +562,75 @@ select.field-input{cursor:pointer}
 
 <script>
 /* ================================================================
-   TREE NAVIGATION
-   Hierarchical: Portfolio → Segment → Company → Team → AE → Deal
+   TREE NAVIGATION — Eleven Systems context
    ================================================================ */
 
-// Tree open/closed state
-const treeOpen = new Set(['portfolio_bm', 'seg_fintech', 'seg_enterprise']);
-
-// Current tree selection
-let treeSelection = { type: 'deal', oppIdx: 0 };
-
-// ── Tree data structure ──────────────────────────────────────────
-const TREE = {
-  id: 'portfolio_bm',
-  type: 'portfolio',
-  name: 'Brick & Mortar Ventures',
-  meta: 'San Francisco · Seed & Series A',
-  icon: '<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
-  children: [
-    {
-      id: 'seg_fintech',
-      type: 'segment',
-      name: 'Fintech & WealthTech',
-      meta: '4 portfolio companies',
-      icon: '<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>',
-      children: [
-        {
-          id: 'co_eleven',
-          type: 'company',
-          name: 'Eleven Systems',
-          meta: 'Series Seed · UHNW WealthTech',
-          icon: '<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>',
-          children: [
-            {
-              id: 'team_gtm',
-              type: 'team',
-              name: 'GTM Team',
-              meta: 'Tim · Beth · Austin',
-              icon: '<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>',
-              children: [
-                {
-                  id: 'ae_tim',
-                  type: 'ae',
-                  name: 'Tim (Fractional CRO)',
-                  meta: 'TCD Advisory',
-                  icon: '<circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0112 0v2"/>',
-                  deals: true  // maps to opps array
-                }
-              ]
-            }
-          ]
-        },
-        {
-          id: 'co_playbk',
-          type: 'company',
-          name: 'Playbk Labs',
-          meta: 'Pre-Seed · Sales Intelligence',
-          icon: '<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>',
-          children: []
-        },
-      ]
-    },
-    {
-      id: 'seg_enterprise',
-      type: 'segment',
-      name: 'Enterprise SaaS',
-      meta: '6 portfolio companies',
-      icon: '<rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>',
-      children: [
-        {
-          id: 'co_acme',
-          type: 'company',
-          name: 'Acme RevOps',
-          meta: 'Series A · Revenue Operations',
-          icon: '<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>',
-          children: []
-        },
-        {
-          id: 'co_nova',
-          type: 'company',
-          name: 'Nova GTM',
-          meta: 'Series A · GTM Analytics',
-          icon: '<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>',
-          children: []
-        }
-      ]
-    },
-    {
-      id: 'seg_climate',
-      type: 'segment',
-      name: 'Climate Tech',
-      meta: '3 portfolio companies',
-      icon: '<path d="M12 2a10 10 0 110 20A10 10 0 0112 2z"/><path d="M12 8v4l3 3"/>',
-      children: []
-    }
-  ]
-};
-
-// ── Render tree nav ──────────────────────────────────────────────
 function renderTreeNav() {
   const container = document.getElementById('treeNav');
   if (!container) return;
   container.innerHTML = '';
 
-  function nodeHTML(node, depth) {
-    const hasChildren = (node.children && node.children.length > 0) || node.deals;
-    const isOpen = treeOpen.has(node.id);
-    const isSelected = treeSelection.nodeId === node.id;
+  const fcBg   = { Commit:'rgba(29,158,117,0.2)', Upside:'rgba(24,95,165,0.2)', Pipeline:'rgba(239,159,39,0.2)', Omit:'rgba(163,45,45,0.2)' };
+  const fcClr  = { Commit:'#5DCAA5', Upside:'#85b7eb', Pipeline:'#FAC775', Omit:'#f09595' };
+  const dealSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`;
 
-    // Build badge for company/team nodes
-    let badge = '';
-    if (node.type === 'ae' && node.deals) {
-      const active = opps.filter(o => !o.archived);
-      const fc = active.length > 0 ? oppForecast(active[0]) : 'Omit';
-      const cls = { Commit:'commit', Upside:'upside', Pipeline:'pipeline', Omit:'omit' }[fc] || 'omit';
-      if (active.length) badge = `<span class="tree-badge ${cls}">${fc}</span>`;
-    }
-    if (node.type === 'portfolio') {
-      const total = opps.filter(o => !o.archived).length;
-      if (total) badge = `<span class="tree-badge health">${total} deals</span>`;
-    }
+  // ── Eleven Systems (company node / dashboard) ──────────────────
+  const compBtn = document.createElement('button');
+  compBtn.style.cssText = `display:flex;align-items:center;width:100%;padding:6px 8px;border:none;cursor:pointer;border-radius:6px;font-family:inherit;text-align:left;transition:background 0.1s;background:${showDashboard ? 'rgba(255,255,255,0.1)' : 'transparent'}`;
+  compBtn.innerHTML = `
+    <span style="width:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.2);font-size:8px">▾</span>
+    <span style="color:#1D9E75;margin-right:7px;flex-shrink:0;display:flex">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+      </svg>
+    </span>
+    <span style="flex:1;min-width:0">
+      <div style="font-size:12px;font-weight:${showDashboard?'600':'400'};color:${showDashboard?'#fff':'rgba(255,255,255,0.7)'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Eleven Systems</div>
+      <div style="font-size:9.5px;color:rgba(255,255,255,0.25);margin-top:1px">UHNW WealthTech · Seed</div>
+    </span>`;
+  compBtn.onmouseenter = e => { if (!showDashboard) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; };
+  compBtn.onmouseleave = e => { if (!showDashboard) e.currentTarget.style.background = 'transparent'; };
+  compBtn.onclick = () => { showDashboard = true; showPipeline = false; render(); };
+  container.appendChild(compBtn);
 
-    const div = document.createElement('div');
-    div.className = `tree-node tree-depth-${depth}`;
+  // ── Deal nodes ─────────────────────────────────────────────────
+  opps.filter(o => !o.archived).forEach((a, idx) => {
+    const isActive = !showDashboard && !showPipeline && idx === currentOpp;
+    const hs  = calcHealthScore(a.data);
+    const hsc = hs >= 70 ? '#5DCAA5' : hs >= 40 ? '#EF9F27' : '#f09595';
+    const fc  = oppForecast(a);
 
     const btn = document.createElement('button');
-    btn.className = 'tree-btn' + (isSelected ? ' active' : '');
+    btn.style.cssText = `display:flex;align-items:center;width:100%;padding:5px 8px 5px 26px;border:none;cursor:pointer;border-radius:6px;font-family:inherit;text-align:left;transition:background 0.1s;background:${isActive?'rgba(255,255,255,0.1)':'transparent'}`;
     btn.innerHTML = `
-      <span class="tree-toggle ${hasChildren && isOpen ? 'open' : ''}" style="visibility:${hasChildren ? 'visible' : 'hidden'}">
-        ${isOpen ? '▾' : '▸'}
-      </span>
-      <span class="tree-icon" style="color:${iconColor(node.type)}">
-        <svg viewBox="0 0 24 24">${node.icon}</svg>
-      </span>
-      <span class="tree-label">
-        <div class="tree-name">${esc(node.name)}${badge}</div>
-        ${node.meta ? `<div class="tree-meta">${esc(node.meta)}</div>` : ''}
+      <span style="color:rgba(255,255,255,0.3);margin-right:7px;flex-shrink:0;display:flex">${dealSvg}</span>
+      <span style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:4px">
+          <span style="font-size:11.5px;color:${isActive?'#fff':'rgba(255,255,255,0.6)'};font-weight:${isActive?'500':'400'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0">${esc(a.name)}</span>
+          <span style="font-size:9px;font-weight:600;padding:1px 5px;border-radius:3px;flex-shrink:0;background:${fcBg[fc]||'rgba(255,255,255,0.08)'};color:${fcClr[fc]||'rgba(255,255,255,0.4)'}">${fc}</span>
+        </div>
+        <div style="font-size:9.5px;color:rgba(255,255,255,0.25);margin-top:1px"><span style="color:${hsc};font-weight:600">${hs}</span> health · ${esc(a.data.snapshot.firmType||'Prospect')}</div>
       </span>`;
+    btn.onmouseenter = e => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; };
+    btn.onmouseleave = e => { if (!isActive) e.currentTarget.style.background = 'transparent'; };
+    btn.onclick = () => { showDashboard = false; showPipeline = false; currentOpp = idx; opp().currentSlide = 1; render(); };
+    container.appendChild(btn);
+  });
 
-    btn.onclick = (e) => {
-      e.stopPropagation();
-      if (hasChildren) {
-        if (isOpen) treeOpen.delete(node.id);
-        else treeOpen.add(node.id);
-      }
-      treeSelection = { nodeId: node.id, type: node.type };
-      if (node.deals && opps.length > 0) {
-        showDashboard = false;
-        showPipeline = false;
-        currentOpp = 0;
-        opp().currentSlide = 1;
-      }
-      render();
-    };
-
-    div.appendChild(btn);
-
-    // Children
-    if (hasChildren) {
-      const childDiv = document.createElement('div');
-      childDiv.className = 'tree-children' + (isOpen ? ' open' : '');
-
-      if (node.deals && isOpen) {
-        // Render live deals from opps array
-        opps.filter(o => !o.archived).forEach((a, idx) => {
-          const hs = calcHealthScore(a.data);
-          const hsColor = hs >= 70 ? '#5DCAA5' : hs >= 40 ? '#EF9F27' : '#f09595';
-          const fc = oppForecast(a);
-          const fcCls = { Commit:'commit', Upside:'upside', Pipeline:'pipeline', Omit:'omit' }[fc] || 'omit';
-          const isActiveDeal = !showDashboard && !showPipeline && idx === currentOpp;
-
-          const dealDiv = document.createElement('div');
-          dealDiv.className = `tree-node tree-depth-${depth + 1}`;
-          const dealBtn = document.createElement('button');
-          dealBtn.className = 'tree-btn' + (isActiveDeal ? ' active' : '');
-          dealBtn.innerHTML = `
-            <span class="tree-toggle" style="visibility:hidden">▸</span>
-            <span class="tree-icon" style="color:rgba(255,255,255,0.35)">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
-            </span>
-            <span class="tree-label">
-              <div class="tree-name" style="font-size:11px">${esc(a.name)}<span class="tree-badge ${fcCls}" style="margin-left:4px">${fc}</span></div>
-              <div class="tree-meta" style="display:flex;align-items:center;gap:4px">
-                <span style="color:${hsColor};font-weight:600">${hs}</span>
-                <span>·</span>
-                <span>${a.data.snapshot.firmType || 'Prospect'}</span>
-              </div>
-            </span>`;
-          dealBtn.onclick = (e) => {
-            e.stopPropagation();
-            showDashboard = false;
-            showPipeline = false;
-            currentOpp = idx;
-            opp().currentSlide = 1;
-            treeSelection = { nodeId: 'deal_' + idx, type: 'deal' };
-            render();
-          };
-          dealDiv.appendChild(dealBtn);
-          childDiv.appendChild(dealDiv);
-        });
-
-        // Add opportunity button
-        const addDiv = document.createElement('div');
-        addDiv.className = `tree-node tree-depth-${depth + 1}`;
-        const addBtn = document.createElement('button');
-        addBtn.className = 'tree-btn';
-        addBtn.innerHTML = `
-          <span class="tree-toggle" style="visibility:hidden">▸</span>
-          <span class="tree-icon" style="color:rgba(255,255,255,0.2)">
-            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          </span>
-          <span class="tree-name" style="font-size:11px;color:rgba(255,255,255,0.3)">Add opportunity</span>`;
-        addBtn.onclick = (e) => { e.stopPropagation(); addOpp(); };
-        addDiv.appendChild(addBtn);
-        childDiv.appendChild(addDiv);
-      }
-
-      if (node.children) {
-        node.children.forEach(child => {
-          childDiv.appendChild(nodeHTML(child, depth + 1));
-        });
-      }
-
-      div.appendChild(childDiv);
-    }
-
-    return div;
-  }
-
-  function iconColor(type) {
-    return { portfolio:'#1D9E75', segment:'rgba(255,255,255,0.4)',
-      company:'rgba(255,255,255,0.5)', team:'rgba(255,255,255,0.4)',
-      ae:'rgba(255,255,255,0.5)', deal:'rgba(255,255,255,0.3)' }[type] || 'rgba(255,255,255,0.4)';
-  }
-
-  container.appendChild(nodeHTML(TREE, 0));
+  // ── Add opportunity ────────────────────────────────────────────
+  const addBtn = document.createElement('button');
+  addBtn.style.cssText = 'display:flex;align-items:center;width:100%;padding:5px 8px 5px 26px;border:none;background:transparent;cursor:pointer;border-radius:6px;font-family:inherit;text-align:left;transition:all 0.1s';
+  addBtn.innerHTML = `
+    <span style="color:rgba(255,255,255,0.2);margin-right:7px;flex-shrink:0;display:flex">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </span>
+    <span style="font-size:11px;color:rgba(255,255,255,0.3)">Add opportunity</span>`;
+  addBtn.onmouseenter = e => { e.currentTarget.style.background='rgba(255,255,255,0.04)'; };
+  addBtn.onmouseleave = e => { e.currentTarget.style.background='transparent'; };
+  addBtn.onclick = () => addOpp();
+  container.appendChild(addBtn);
 }
+
 
 
 
@@ -1191,8 +1024,8 @@ function renderHeaderScore() {
 
   // Update breadcrumb context
   if (ctx) {
-    if (showPipeline) ctx.textContent = 'Brick & Mortar · Pipeline';
-    else if (showDashboard) ctx.textContent = 'Brick & Mortar · Portfolio';
+    if (showPipeline) ctx.textContent = 'Eleven Systems · Pipeline';
+    else if (showDashboard) ctx.textContent = 'Eleven Systems';
     else if (opp()) ctx.textContent = 'Eleven Systems · ' + (opp().name.length > 18 ? opp().name.slice(0,16) + '…' : opp().name);
   }
 
