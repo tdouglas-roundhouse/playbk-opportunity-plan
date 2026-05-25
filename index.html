@@ -2927,6 +2927,7 @@ Return this exact structure — all three keys required:
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
         max_tokens: 4000,
+        temperature: 0,
         messages: [{ role: 'user', content: prompt }]
       })
     });
@@ -3262,8 +3263,7 @@ async function transcribeAndProcess(fieldPath, blob, ext) {
   if (_talkBtn) _talkBtn.classList.add('processing');
   showTalkStatus(fieldPath, '⏳ Transcribing…');
 
-  const key = localStorage.getItem('playbk_openai_key');
-  if (!key) { showTalkStatus(fieldPath, 'No API key — reload and try again'); stopTalk(); return; }
+  const key = localStorage.getItem('playbk_openai_key') || 'proxy';
 
   try {
     // Step 1 — Whisper transcription
@@ -3782,8 +3782,7 @@ async function transcribeAndProcessStk(idx, field, blob, ext) {
   if (_talkBtn) _talkBtn.classList.add('processing');
   showStkTalkStatus(idx, field, '⏳ Transcribing…');
 
-  const key = localStorage.getItem('playbk_openai_key');
-  if (!key) { showStkTalkStatus(idx, field, 'No API key'); stopTalk(); return; }
+  const key = localStorage.getItem('playbk_openai_key') || 'proxy';
 
   try {
     const formData = new FormData();
