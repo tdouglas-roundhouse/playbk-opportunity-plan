@@ -414,7 +414,7 @@ select.field-input{cursor:pointer}
 .coaching-body{flex:1}
 .coaching-action{font-size:12px;font-weight:500;color:var(--text-primary);line-height:1.45;margin-bottom:2px}
 .coaching-rationale{font-size:11px;color:var(--text-tertiary);line-height:1.4}
-.coaching-tag{font-size:10px;font-weight:500;color:var(--text-tertiary);background:var(--bg-secondary);border:0.5px solid var(--border-light);border-radius:4px;padding:1px 6px;margin-top:4px;display:inline-block;text-transform:uppercase;letter-spacing:0.04em}
+.coaching-tag{font-size:10px;font-weight:500;color:var(--text-tertiary);background:var(--bg-secondary);border:0.5px solid var(--border-light);border-radius:4px;padding:1px 6px;margin-top:4px;display:inline-block;letter-spacing:0.03em}
 .red-flag-label{font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-danger);margin-bottom:4px}
 .red-flag-text{font-size:13px;color:var(--text-primary)}
 
@@ -2756,7 +2756,7 @@ function buildCalls() {
     <div class="coaching-body">
       <div class="coaching-action">${esc(cs.action)}</div>
       ${cs.rationale ? `<div class="coaching-rationale">${esc(cs.rationale)}</div>` : ''}
-      ${cs.section ? `<span class="coaching-tag">${esc(cs.section)}</span>` : ''}
+      ${cs.section ? '<span class="coaching-tag">' + esc(({'snapshot':'Snapshot','stakeholders':'Stakeholders','accountpov':'Account','opppov':'Opportunity','meddpicc':'Qualification','map':'Mutual Action Plan','bizasks':'Business Asks','calls':'Calls & Coaching','pov':'POV','stakeholder':'Stakeholders','bizask':'Business Asks'}[cs.section] || cs.section)) + '</span>' : ''}
     </div>
   </div>`).join('')}
 </div>`;
