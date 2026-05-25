@@ -1,3 +1,5 @@
+export const config = { api: { bodyParser: false } };
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -9,7 +11,13 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Forward the multipart form data as-is to OpenAI
+    // Collect raw body chunks
+    const chunks = [];
+    for await (const chunk of req) {
+      chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+    }
+    const body = Buffer.concat(chunks);
+
     const contentType = req.headers['content-type'] || '';
 
     const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
@@ -18,7 +26,7 @@ export default async function handler(req, res) {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': contentType
       },
-      body: req
+      body
     });
 
     const data = await response.json();
