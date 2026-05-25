@@ -44,8 +44,7 @@ body{font-family:var(--font);background:var(--bg-secondary);color:var(--text-pri
   display:flex;flex-direction:column;
   position:sticky;top:0;height:100vh;overflow-y:auto;
 }
-.sidebar-brand{padding:22px 18px 16px;border-bottom:0.5px solid rgba(255,255,255,0.08)}
-.sidebar-brand h1{font-size:14px;font-weight:600;color:#ffffff;letter-spacing:-0.01em;line-height:1.3}
+.sidebar-brand{padding:20px 18px 14px;border-bottom:0.5px solid rgba(255,255,255,0.08)}
 .sidebar-brand p{font-size:11px;color:rgba(255,255,255,0.4);margin-top:3px}
 .sidebar-score{display:flex;align-items:center;gap:7px;margin-top:8px}
 .sidebar-score .sc{font-size:12px;color:rgba(255,255,255,0.55)}
@@ -95,8 +94,8 @@ select.field-input{cursor:pointer}
 .chip.sel-amber{background:var(--bg-warning);color:var(--text-warning);border-color:var(--border-warning);font-weight:500}
 .chip.sel-red{background:var(--bg-danger);color:var(--text-danger);border-color:var(--border-danger);font-weight:500}
 .chip.sel-blue{background:var(--bg-info);color:var(--text-info);border-color:var(--border-info);font-weight:500}
-.stk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:10px}
-.stk-card{background:var(--bg-secondary);border:0.5px solid var(--border-light);border-radius:var(--radius-md);padding:10px 12px;position:relative;padding-bottom:28px}
+.stk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-bottom:10px}
+.stk-card{background:var(--bg-secondary);border:0.5px solid var(--border-light);border-radius:var(--radius-md);padding:12px 14px;position:relative;padding-bottom:32px;min-height:160px}
 .role-badge{font-size:10px;font-weight:500;padding:2px 6px;border-radius:4px;margin-bottom:8px;display:inline-block}
 .role-economic-buyer{background:var(--bg-info);color:var(--text-info);border:0.5px solid var(--border-info)}
 .role-executive-sponsor{background:#2d1b69;color:#b794f4;border:0.5px solid #6b46c1}
@@ -107,7 +106,7 @@ select.field-input{cursor:pointer}
 .stk-input{background:transparent;border:none;outline:none;font-family:var(--font);width:100%}
 .stk-name{font-size:13px;font-weight:500;color:var(--text-primary)}
 .stk-sub{font-size:11px;color:var(--text-tertiary)}
-.stk-win{font-size:11px;color:var(--text-secondary);border-bottom:0.5px solid var(--border-light);padding:2px 0;margin-top:6px}
+.stk-win{font-size:11px;color:var(--text-secondary);border-bottom:0.5px solid var(--border-light);padding:3px 0;margin-top:4px}
 .sc-remove{position:absolute;bottom:8px;right:8px;font-size:11px;color:var(--text-tertiary);background:none;border:none;cursor:pointer;font-family:var(--font)}
 .sc-remove:hover{color:var(--text-danger)}
 .pov-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
@@ -210,7 +209,7 @@ select.field-input{cursor:pointer}
 .bottom-bar{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap;padding:0 0 32px}
 .action-btn{font-size:13px;font-family:var(--font);padding:8px 16px;border-radius:var(--radius-md);border:0.5px solid var(--border-mid);background:var(--bg-primary);color:var(--text-primary);cursor:pointer;font-weight:500;transition:background 0.12s}
 .action-btn:hover{background:var(--bg-tertiary)}
-.action-btn.primary{background:var(--text-primary);color:var(--bg-primary);border-color:var(--text-primary)}
+.action-btn.primary{background:#141f2e;color:#ffffff;border-color:#1a3a5c}
 .action-btn.primary:hover{opacity:0.85}
 /* ── Mobile top bar (hidden by default, shown on mobile) ── */
 .mobile-topbar{
@@ -342,8 +341,8 @@ select.field-input{cursor:pointer}
 .sidebar-health-label{font-size:10px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.07em;line-height:1.4}
 .sidebar-health-score{font-size:20px;font-weight:700;margin-left:auto;letter-spacing:-0.02em}
 
-.coaching-banner{background:linear-gradient(135deg,#0f2027,#1a2f3a);border:0.5px solid rgba(29,158,117,0.25);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:18px;position:relative;overflow:hidden}
-.coaching-banner::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#1D9E75,#185fa5,#1D9E75);background-size:200% 100%;animation:shimmer 3s linear infinite}
+.coaching-banner{background:linear-gradient(135deg,#0d1c2e,#1a3a5c);border:0.5px solid rgba(74,144,194,0.3);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:18px;position:relative;overflow:hidden}
+.coaching-banner::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#1a3a5c,#4a90c2,#1a3a5c);background-size:200% 100%;animation:shimmer 3s linear infinite}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 .coaching-banner-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .coaching-banner-title{font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.45)}
@@ -476,23 +475,25 @@ select.field-input{cursor:pointer}
 }
 
 /* ── Deal Conviction ─────────────────────────────── */
-.conviction-card{background:var(--bg-secondary);border:0.5px solid var(--border-light);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:18px}
-.conviction-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.conviction-card{background:var(--bg-secondary);border:0.5px solid var(--border-light);border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:18px}
+.conviction-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .conviction-card-title{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-tertiary)}
+.conviction-questions{display:flex;flex-direction:row;align-items:center;gap:0;margin-bottom:10px;flex-wrap:nowrap}
+.conviction-question{display:flex;align-items:center;gap:6px;padding:0 16px 0 0;flex-shrink:0}
+.conviction-question:first-child{padding-left:0}
+.conviction-q{font-size:12px;color:var(--text-secondary);font-weight:500;white-space:nowrap}
+.conviction-sep{width:0.5px;height:20px;background:var(--border-mid);flex-shrink:0;margin-right:16px}
 .conviction-badge{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:3px 10px;border-radius:20px}
 .conviction-badge.green{background:var(--bg-success);color:var(--text-success);border:0.5px solid var(--border-success)}
 .conviction-badge.amber{background:var(--bg-warning,rgba(239,159,39,0.12));color:var(--text-warning,#b87800);border:0.5px solid var(--border-warning,rgba(239,159,39,0.4))}
 .conviction-badge.red{background:var(--bg-danger);color:var(--text-danger);border:0.5px solid var(--border-danger)}
 .conviction-badge.none{background:var(--bg-tertiary);color:var(--text-tertiary);border:0.5px solid var(--border-light)}
-.conviction-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid var(--border-light)}
-.conviction-row:last-of-type{border-bottom:none}
-.conviction-q{font-size:13px;color:var(--text-primary);font-weight:500}
-.conviction-chips{display:flex;gap:5px}
-.conviction-chip{font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;border:0.5px solid var(--border-mid);background:var(--bg-primary);color:var(--text-secondary);cursor:pointer;transition:all 0.15s;font-family:var(--font)}
-.conviction-chip:hover{border-color:var(--text-tertiary);color:var(--text-primary)}
-.conviction-chip.sel-yes{background:var(--bg-success);border-color:var(--border-success);color:var(--text-success)}
-.conviction-chip.sel-uncertain{background:var(--bg-warning,rgba(239,159,39,0.12));border-color:var(--border-warning,rgba(239,159,39,0.4));color:var(--text-warning,#b87800)}
-.conviction-chip.sel-no{background:var(--bg-danger);border-color:var(--border-danger);color:var(--text-danger)}
+.conviction-chips{display:flex;gap:4px}
+.conviction-chip{font-size:11px;font-weight:600;padding:5px 14px;border-radius:20px;border:1.5px solid var(--border-mid);background:var(--bg-primary);color:var(--text-tertiary);cursor:pointer;transition:all 0.15s;font-family:var(--font)}
+.conviction-chip:hover{border-color:var(--text-secondary);color:var(--text-primary);background:var(--bg-secondary)}
+.conviction-chip.sel-yes{background:#1D9E75;border-color:#1D9E75;color:#fff;box-shadow:0 2px 6px rgba(29,158,117,0.35)}
+.conviction-chip.sel-uncertain{background:#EF9F27;border-color:#EF9F27;color:#fff;box-shadow:0 2px 6px rgba(239,159,39,0.35)}
+.conviction-chip.sel-no{background:#c0392b;border-color:#c0392b;color:#fff;box-shadow:0 2px 6px rgba(192,57,43,0.35)}
 .conviction-note{margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border-light)}
 .conviction-note-label{font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:6px}
 /* Modal — dark overlay, dark card (works in both modes) */
@@ -518,8 +519,23 @@ select.field-input{cursor:pointer}
 <!-- Mobile top bar (hidden on desktop) -->
 <div class="mobile-topbar">
   <div class="mobile-topbar-brand">
-    <h1>Playbk Labs</h1>
-    <p id="mobileSubtitle">Opportunity Plan</p>
+    <svg width="90" height="35" viewBox="0 0 260 100" style="display:block;flex-shrink:0" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="aw3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M2 2L8 5L2 8" fill="none" stroke="#f0ede6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ar3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M2 2L8 5L2 8" fill="none" stroke="#cc2200" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <line x1="16" y1="78" x2="38" y2="78" stroke="#f0ede6" stroke-width="4.5" stroke-linecap="round"/>
+  <circle cx="27" cy="78" r="7.5" fill="#f0ede6"/>
+  <path d="M27,70 L27,28 L88,28" fill="none" stroke="#f0ede6" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#aw3)"/>
+  <path d="M27,70 L76,10" fill="none" stroke="#cc2200" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#ar3)"/>
+  <text x="108" y="58" font-family="system-ui,-apple-system,sans-serif" font-weight="500" font-size="38" fill="#f0ede6">Playbk</text>
+  <text x="109" y="80" font-family="system-ui,-apple-system,sans-serif" font-weight="500" font-size="13" letter-spacing="0.26em" fill="#cc2200">LABS</text>
+</svg>
+    <p id="mobileSubtitle" style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:2px">Opportunity Plan</p>
   </div>
   <button class="hamburger-btn" onclick="openDrawer()" aria-label="Open menu">
     <span></span><span></span><span></span>
@@ -532,8 +548,23 @@ select.field-input{cursor:pointer}
   <div class="drawer-panel" id="drawerPanel">
     <button class="drawer-close" onclick="closeDrawer()">&#x2715;</button>
     <div class="sidebar-brand" style="padding-right:44px">
-      <h1>Playbk Labs</h1>
-      <p>Opportunity Plan</p>
+      <svg width="174" height="67" viewBox="0 0 260 100" style="display:block;flex-shrink:0" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="aw2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M2 2L8 5L2 8" fill="none" stroke="#f0ede6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ar2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M2 2L8 5L2 8" fill="none" stroke="#cc2200" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <line x1="16" y1="78" x2="38" y2="78" stroke="#f0ede6" stroke-width="4.5" stroke-linecap="round"/>
+  <circle cx="27" cy="78" r="7.5" fill="#f0ede6"/>
+  <path d="M27,70 L27,28 L88,28" fill="none" stroke="#f0ede6" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#aw2)"/>
+  <path d="M27,70 L76,10" fill="none" stroke="#cc2200" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#ar2)"/>
+  <text x="108" y="58" font-family="system-ui,-apple-system,sans-serif" font-weight="500" font-size="38" fill="#f0ede6">Playbk</text>
+  <text x="109" y="80" font-family="system-ui,-apple-system,sans-serif" font-weight="500" font-size="13" letter-spacing="0.26em" fill="#cc2200">LABS</text>
+</svg>
+      <p style="margin-top:6px;font-size:13px;font-weight:500;color:#ffffff;letter-spacing:0.01em">Eleven Systems</p>
       <div class="sidebar-score" id="drawerScore"></div>
     </div>
     <div class="sidebar-opp">
@@ -547,8 +578,23 @@ select.field-input{cursor:pointer}
   <!-- Dark navy sidebar -->
   <nav class="sidebar">
     <div class="sidebar-brand">
-      <h1>Playbk Labs</h1>
-      <p>Opportunity Plan</p>
+      <svg width="174" height="67" viewBox="0 0 260 100" style="display:block;flex-shrink:0" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="aw2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M2 2L8 5L2 8" fill="none" stroke="#f0ede6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ar2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M2 2L8 5L2 8" fill="none" stroke="#cc2200" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <line x1="16" y1="78" x2="38" y2="78" stroke="#f0ede6" stroke-width="4.5" stroke-linecap="round"/>
+  <circle cx="27" cy="78" r="7.5" fill="#f0ede6"/>
+  <path d="M27,70 L27,28 L88,28" fill="none" stroke="#f0ede6" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#aw2)"/>
+  <path d="M27,70 L76,10" fill="none" stroke="#cc2200" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#ar2)"/>
+  <text x="108" y="58" font-family="system-ui,-apple-system,sans-serif" font-weight="500" font-size="38" fill="#f0ede6">Playbk</text>
+  <text x="109" y="80" font-family="system-ui,-apple-system,sans-serif" font-weight="500" font-size="13" letter-spacing="0.26em" fill="#cc2200">LABS</text>
+</svg>
+      <p style="margin-top:6px;font-size:13px;font-weight:500;color:#ffffff;letter-spacing:0.01em">Eleven Systems</p>
       <div class="sidebar-score" id="headerScore">
         <span class="save-indicator" id="saveIndicator">&#10003; Saved</span>
       </div>
@@ -686,11 +732,11 @@ function attachFormatters() {
 
 const SLIDES = [
   { id: 'dashboard',    title: 'Dashboard'          },
-  { id: 'snapshot',     title: 'Account Snapshot'   },
-  { id: 'stakeholders', title: 'Stakeholder Map'     },
-  { id: 'accountpov',   title: 'Account POV'         },
-  { id: 'opppov',       title: 'Opportunity POV'     },
-  { id: 'meddpicc',     title: 'MEDDPICC'            },
+  { id: 'snapshot',     title: 'Snapshot'           },
+  { id: 'stakeholders', title: 'Stakeholders'         },
+  { id: 'accountpov',   title: 'Account'             },
+  { id: 'opppov',       title: 'Opportunity'         },
+  { id: 'meddpicc',     title: 'Qualification'        },
   { id: 'map',          title: 'Mutual Action Plan'  },
   { id: 'calls',        title: 'Call Analysis & Coaching' },
   { id: 'bizasks',      title: 'Business Asks'       },
@@ -778,7 +824,7 @@ function freshData() {
     opppov:       { whitespace: '', businessProblem: '', successMetric: '', alternative: '', incumbents: '', competitiveStrategy: '', competitive: '' },
     meddpicc:     { meddAnswers: {}, meddNotes: {}, gapOverrides: { __manual: [] } },
     map:          { rows: [], topAsk: '', lastEngagement: '', nextTouch: '' },
-    accountpovteam: { se: '', execSponsor: '', productOwner: '' },
+    accountpovteam: { execSponsor: '', ae: '', se: '', csm: '' },
     bizasks:      { rows: [] },
     calls:        []
   };
@@ -825,6 +871,30 @@ function calcForecast() {
   return 'Omit';
 }
 const FC_CLASS = { Commit: 'fc-commit', Upside: 'fc-upside', Pipeline: 'fc-pipeline', Omit: 'fc-omit' };
+function calcForecastForData(data) {
+  const a = (data && data.meddpicc && data.meddpicc.meddAnswers) || {};
+  const bl = MEDD.filter(s => s.blocker);
+  let bY = 0, bT = 0, tY = 0, tQ = 0;
+  bl.forEach(s => s.questions.forEach((_, i) => { bT++; if (a[s.id + '_' + i] === 'yes') bY++; }));
+  MEDD.forEach(s => s.questions.forEach((_, i) => { tQ++; if (a[s.id + '_' + i] === 'yes') tY++; }));
+  const p = tQ ? tY / tQ : 0, bp = bT ? bY / bT : 0;
+  if (bp >= 0.75 && p >= 0.70) return 'Commit';
+  if (bp >= 0.55 && p >= 0.50) return 'Upside';
+  if (p >= 0.25 || tY >= 5) return 'Pipeline';
+  return 'Omit';
+}
+function calcForecastForData(data) {
+  const a = (data && data.meddpicc && data.meddpicc.meddAnswers) || {};
+  const bl = MEDD.filter(s => s.blocker);
+  let bY = 0, bT = 0, tY = 0, tQ = 0;
+  bl.forEach(s => s.questions.forEach((_, i) => { bT++; if (a[s.id + '_' + i] === 'yes') bY++; }));
+  MEDD.forEach(s => s.questions.forEach((_, i) => { tQ++; if (a[s.id + '_' + i] === 'yes') tY++; }));
+  const p = tY / tQ, bp = bT ? bY / bT : 0;
+  if (bp >= 0.75 && p >= 0.70) return 'Commit';
+  if (bp >= 0.55 && p >= 0.50) return 'Upside';
+  if (p >= 0.25 || tY >= 5) return 'Pipeline';
+  return 'Omit';
+}
 
 /* ================================================================
    RENDER
@@ -975,13 +1045,13 @@ function renderBottomBar() {
   const bar = document.getElementById('bottomBar');
   if (!bar) return;
   if (showDashboard || showPipeline) {
-    bar.innerHTML = `<button class="action-btn primary" onclick="exportPlan()">Export summary</button>`;
+    bar.innerHTML = `<button class="action-btn primary" onclick="exportPlan()">Export Summary</button>`;
   } else {
     bar.innerHTML = `
-      <button class="action-btn" onclick="saveToLog()">Save to log</button>
-      <button class="action-btn primary" onclick="exportPlan()">Export summary</button>
-      <button class="action-btn" onclick="publishDeck()" style="background:var(--bg-info);color:var(--text-info);border-color:var(--border-info)">▶ Publish deal review</button>
-      <button class="delete-opp-btn" onclick="deleteOpp()" style="margin-left:auto">Delete opportunity</button>`;
+      <button class="action-btn" onclick="saveToLog()">Save to Log</button>
+      <button class="action-btn primary" onclick="exportPlan()">Export Summary</button>
+      <button class="action-btn" onclick="publishDeck()" style="background:var(--bg-info);color:var(--text-info);border-color:var(--border-info)">▶ Publish Deal Review</button>
+      <button class="delete-opp-btn" onclick="deleteOpp()" style="margin-left:auto">Delete Opportunity</button>`;
   }
 }
 
@@ -1056,7 +1126,6 @@ function renderSidebar() {
 
   // Opportunity section pills — only visible when inside an opp
   if (!showDashboard && !showPipeline) {
-    // Subtle divider label
     const divLabel = document.createElement('div');
     divLabel.style.cssText = 'font-size:10px;letter-spacing:0.07em;text-transform:uppercase;color:rgba(255,255,255,0.25);padding:10px 10px 4px;font-weight:500';
     divLabel.textContent = opp().name.length > 18 ? opp().name.slice(0, 16) + '…' : opp().name;
@@ -1091,15 +1160,7 @@ function renderSidebar() {
   }
   nav.appendChild(healthDiv);
 
-  // Conviction signal — only when in an opp
-  const convDiv = document.createElement('div');
-  convDiv.id = 'sidebarConvictionWrap';
-  if (!showDashboard && !showPipeline) {
-    const st = convictionStatus();
-    convDiv.className = 'sidebar-conviction';
-    convDiv.innerHTML = `<div id="sidebarConviction" class="conviction-dot ${st}"></div><span class="sidebar-conviction-label">${convictionLabel()}</span>`;
-  }
-  nav.appendChild(convDiv);
+
 
   // PIPELINE pill — inside nav, pushed to bottom with margin-top:auto spacer
   const pipelineSpacer = document.createElement('div');
@@ -1180,7 +1241,7 @@ function buildCoachingBanner() {
     // Show loading state on first render
     return `<div class="coaching-banner">
   <div class="coaching-banner-header">
-    <span class="coaching-banner-title">⚡ Next best actions</span>
+    <span class="coaching-banner-title">Next best actions</span>
     <button class="coaching-banner-refresh" onclick="refreshCoaching()">Refresh</button>
   </div>
   <div class="coaching-loading">
@@ -1192,7 +1253,7 @@ function buildCoachingBanner() {
   if (coaching === 'loading') {
     return `<div class="coaching-banner">
   <div class="coaching-banner-header">
-    <span class="coaching-banner-title">⚡ Next best actions</span>
+    <span class="coaching-banner-title">Next best actions</span>
   </div>
   <div class="coaching-loading">
     <div class="coaching-dot"></div><div class="coaching-dot"></div><div class="coaching-dot"></div>
@@ -1217,7 +1278,7 @@ function buildCoachingBanner() {
   }).join('');
   return `<div class="coaching-banner">
   <div class="coaching-banner-header">
-    <span class="coaching-banner-title">⚡ Next best actions${stageLabel ? ' · ' + stageLabel : ''}</span>
+    <span class="coaching-banner-title">Next best actions${stageLabel ? ' · ' + stageLabel : ''}</span>
     <button class="coaching-banner-refresh" onclick="refreshCoaching()">↻ Refresh</button>
   </div>
   <div class="coaching-actions">${actionsHTML || '<div style="font-size:12px;color:rgba(255,255,255,0.3)">No actions generated yet — tap Refresh.</div>'}</div>
@@ -1252,7 +1313,7 @@ async function generateCoaching() {
   const banner = document.querySelector('.coaching-banner');
   if (banner) {
     banner.innerHTML = `<div class="coaching-banner-header">
-      <span class="coaching-banner-title">⚡ Next best actions</span>
+      <span class="coaching-banner-title">Next best actions</span>
     </div>
     <div class="coaching-loading">
       <div class="coaching-dot"></div><div class="coaching-dot"></div><div class="coaching-dot"></div>
@@ -1646,7 +1707,7 @@ function buildAccountPov() {
   const t = d().accountpovteam || {};
   // Progressive: show all if any are filled, otherwise highlight Why Change first
   const hasAny = p.whyChange || p.whyNow || p.whyUs || p.whatSolution;
-  return `${oppNameBadge()}<div class="slide-title">Account POV</div>
+  return `${oppNameBadge()}<div class="slide-title">Account</div>
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
   <div style="font-size:13px;color:var(--text-tertiary)">Start with why they'd change. The rest follows.</div>
   <button class="ai-draft-btn" onclick="draftAccountPov()" title="Draft all four from what you know">✦ Draft all</button>
@@ -1669,47 +1730,41 @@ function buildAccountPov() {
     <div class="talk-wrap"><textarea class="field-input" rows="2" data-f="accountpov.whatSolution" placeholder="Which modules? Quantified ROI?">${esc(p.whatSolution)}</textarea><button class="talk-btn" onclick="startTalk(event,'accountpov.whatSolution')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_accountpov_whatSolution"></div>
   </div>
 </div>
-<div class="sec-div">12-month objectives</div>
+<div class="sec-div">Team coverage</div>
 <table class="obj-table">
   <thead><tr>
-    <th style="width:80px">Owner</th><th>Objective</th>
-    <th style="width:120px">Target <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;opacity:0.7">Q# YYYY</span></th>
+    <th style="width:160px">Role</th>
+    <th>12-month objective</th>
+    <th style="width:100px">Target <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;opacity:0.7">Q# YYYY</span></th>
   </tr></thead>
   <tbody>
-    <tr><td>AE</td>
-      <td><input class="field-input" style="padding:4px 6px;font-size:12px" data-f="accountpov.objective1" value="${esc(p.objective1)}" placeholder="e.g. Signed onboarding agreement"></td>
-      <td><input class="field-input" style="padding:4px 6px;font-size:12px" data-f="accountpov.obj1date" value="${esc(p.obj1date)}" placeholder="Q2 2025"></td>
+    <tr>
+      <td style="font-weight:600;color:var(--text-secondary)">Executive Sponsor</td>
+      <td><input class="field-input" style="padding:4px 6px;font-size:12px" data-f="accountpov.objective_exec" value="${esc(p.objective_exec || '')}" placeholder="e.g. Executive alignment secured, pilot approved"></td>
+      <td><input class="field-input" style="padding:4px 6px;font-size:12px" data-f="accountpov.objdate_exec" value="${esc(p.objdate_exec || '')}" placeholder="Q3 2025"></td>
     </tr>
-    <tr><td>AE</td>
-      <td><input class="field-input" style="padding:4px 6px;font-size:12px" data-f="accountpov.objective2" value="${esc(p.objective2)}" placeholder="e.g. Principal demo completed"></td>
-      <td><input class="field-input" style="padding:4px 6px;font-size:12px" data-f="accountpov.obj2date" value="${esc(p.obj2date)}" placeholder="Q3 2025"></td>
+    <tr>
+      <td style="font-weight:600;color:var(--text-secondary)">AE</td>
+      <td><input class="field-input" style="padding:4px 6px;font-size:12px" data-f="accountpov.objective_ae" value="${esc(p.objective_ae || p.objective1 || '')}" placeholder="e.g. Signed onboarding agreement"></td>
+      <td><input class="field-input" style="padding:4px 6px;font-size:12px" data-f="accountpov.objdate_ae" value="${esc(p.objdate_ae || p.obj1date || '')}" placeholder="Q2 2025"></td>
     </tr>
-    <tr><td>AE/CSM</td>
-      <td><input class="field-input" style="padding:4px 6px;font-size:12px" data-f="accountpov.objective3" value="${esc(p.objective3)}" placeholder="e.g. First data integration live"></td>
-      <td><input class="field-input" style="padding:4px 6px;font-size:12px" data-f="accountpov.obj3date" value="${esc(p.obj3date)}" placeholder="Q4 2025"></td>
+    <tr>
+      <td style="font-weight:600;color:var(--text-secondary)">SE</td>
+      <td><input class="field-input" style="padding:4px 6px;font-size:12px" data-f="accountpov.objective_se" value="${esc(p.objective_se || '')}" placeholder="e.g. Technical discovery complete, integration scoped"></td>
+      <td><input class="field-input" style="padding:4px 6px;font-size:12px" data-f="accountpov.objdate_se" value="${esc(p.objdate_se || '')}" placeholder="Q2 2025"></td>
+    </tr>
+    <tr>
+      <td style="font-weight:600;color:var(--text-secondary)">CSM</td>
+      <td><input class="field-input" style="padding:4px 6px;font-size:12px" data-f="accountpov.objective_csm" value="${esc(p.objective_csm || p.objective3 || '')}" placeholder="e.g. First data integration live, onboarding complete"></td>
+      <td><input class="field-input" style="padding:4px 6px;font-size:12px" data-f="accountpov.objdate_csm" value="${esc(p.objdate_csm || p.obj3date || '')}" placeholder="Q4 2025"></td>
     </tr>
   </tbody>
-</table>
-<div class="sec-div">Eleven team coverage</div>
-<div class="field-grid-3">
-  <div>
-    <div class="field-label">SE / SC</div>
-    <input class="field-input" data-f="accountpovteam.se" placeholder="Solutions engineer name" value="${esc(t.se || '')}">
-  </div>
-  <div>
-    <div class="field-label">Executive Sponsor</div>
-    <input class="field-input" data-f="accountpovteam.execSponsor" placeholder="Eleven exec sponsoring this deal" value="${esc(t.execSponsor || '')}">
-  </div>
-  <div>
-    <div class="field-label">Product Owner</div>
-    <input class="field-input" data-f="accountpovteam.productOwner" placeholder="Product DRI for roadmap asks" value="${esc(t.productOwner || '')}">
-  </div>
-</div>`;
+</table>`;
 }
 
 function buildOppPov() {
   const o = d().opppov || {};
-  return `${oppNameBadge()}<div class="slide-title">Opportunity POV</div>
+  return `${oppNameBadge()}<div class="slide-title">Opportunity</div>
 <div class="sec-div first">The five questions</div>
 <div class="field-full">
   <div class="field-label">1. What business problem does this solve? <span class="fmt-hint">Operational / financial pain — not technical features</span></div>
@@ -1753,7 +1808,7 @@ function buildMeddpiccSlide() {
   const { yes, total } = calcScore();
   const fc = calcForecast();
   const blockerWeak = MEDD.filter(s => s.blocker && meddStatus(s.id, s.questions.length) === 'low').length;
-  return `${oppNameBadge()}<div class="slide-title">MEDDPICC</div>
+  return `${oppNameBadge()}<div class="slide-title">Qualification</div>
 <div class="medd-score-bar">
   <div class="medd-score-card"><div class="lbl">Score</div><div class="val">${yes}/${total}</div></div>
   <div class="medd-score-card"><div class="lbl">Sections green</div><div class="val">${MEDD.filter(s => meddStatus(s.id, s.questions.length) === 'full').length}/7</div></div>
@@ -1852,11 +1907,11 @@ function buildGapsTable() {
 
 function buildSnapshot() {
   const s = d().snapshot;
-  return `${oppNameBadge()}<div class="slide-title">Account Snapshot</div>
-<div class="sec-div first">Firm overview</div>
+  return `${oppNameBadge()}<div class="slide-title">Snapshot</div>
+<div class="sec-div first">Account overview</div>
 <div class="field-grid">
   <div>
-    <div class="field-label">Firm name</div>
+    <div class="field-label">Account name</div>
     <input class="field-input" data-f="snapshot.firmName" placeholder="e.g. Strauss Family Office" value="${esc(s.firmName)}">
   </div>
   <div>
@@ -1880,18 +1935,18 @@ function buildSnapshot() {
     <input class="field-input" data-f="snapshot.contactCount" placeholder="e.g. 3" value="${esc(s.contactCount)}">
   </div>
   <div>
-    <div class="field-label">Renewal / close <span class="fmt-hint">mm/dd/yy</span></div>
+    <div class="field-label">Opportunity close date</div>
     <input class="field-input" data-f="snapshot.renewalQ" placeholder="09/30/25" value="${esc(s.renewalQ)}">
   </div>
 </div>
 <div class="sec-div">Pipeline & health</div>
 <div class="field-grid">
   <div>
-    <div class="field-label">Current ARR <span class="fmt-hint">48k → $48K</span></div>
+    <div class="field-label">Current ARR</div>
     <input class="field-input" data-f="snapshot.currentArr" placeholder="$0 (prospect)" value="${esc(s.currentArr)}">
   </div>
   <div>
-    <div class="field-label">Target ARR <span class="fmt-hint">120k → $120K</span></div>
+    <div class="field-label">Target ARR</div>
     <input class="field-input" data-f="snapshot.targetArr" placeholder="e.g. $48K" value="${esc(s.targetArr)}">
   </div>
 </div>
@@ -1955,13 +2010,14 @@ function buildStakeholders() {
   <div><input class="stk-input stk-sub" data-stk="${i}.title" value="${esc(s.title)}" placeholder="Title / role"></div>
   <div style="margin-top:6px">
     <div class="field-label">Personal win</div>
-    <input class="stk-input stk-win" data-stk="${i}.win" value="${esc(s.win || '')}" placeholder="What do they gain from yes?">
+    <div class="talk-wrap"><textarea class="stk-input stk-win" data-stk="${i}.win" rows="3" placeholder="What do they gain from yes?" style="resize:none;line-height:1.4">${esc(s.win || '')}</textarea><button class="talk-btn" onclick="startStkTalk(event,${i},'win')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div>
+    <div class="talk-status" id="ts_stk_${i}_win"></div>
   </div>
   <button class="sc-remove" onclick="removeStakeholder(${i})">remove</button>
 </div>`;
   }).join('');
 
-  return `${oppNameBadge()}<div class="slide-title">Stakeholder Map</div>
+  return `${oppNameBadge()}<div class="slide-title">Stakeholders</div>
 <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
   ${['Economic buyer', 'Executive Sponsor', 'Champion', 'Coach', 'Blocker', 'Neutral'].map(r => `<button class="action-btn" style="font-size:12px;padding:5px 12px" onclick="addStakeholder('${r}')">+ ${r}</button>`).join('')}
 </div>
@@ -1977,8 +2033,8 @@ function buildMap() {
   const m = d().map;
   const rows = (m.rows || []).map((r, i) => `<tr>
   <td><input data-map="${i}.date" value="${esc(r.date)}" placeholder="Jun 15"></td>
-  <td><input data-map="${i}.ownerEleven" value="${esc(r.ownerEleven || '')}" placeholder="Eleven name"></td>
-  <td><input data-map="${i}.ownerAccount" value="${esc(r.ownerAccount || '')}" placeholder="Account name"></td>
+  <td><input data-map="${i}.ownerEleven" value="${esc(r.ownerEleven || '')}" placeholder="Opportunity owner"></td>
+  <td><input data-map="${i}.ownerAccount" value="${esc(r.ownerAccount || '')}" placeholder="Account owner"></td>
   <td><input data-map="${i}.action" value="${esc(r.action)}" placeholder="Action or milestone"></td>
   <td><select data-map="${i}.status">${['Open', 'In progress', 'Done', 'Blocked'].map(v => `<option ${r.status === v ? 'selected' : ''}>${v}</option>`).join('')}</select></td>
 </tr>`).join('');
@@ -1991,8 +2047,8 @@ function buildMap() {
 <table class="map-table">
   <thead><tr>
     <th style="width:80px">Date</th>
-    <th style="width:100px">Eleven owner</th>
-    <th style="width:110px">Account owner</th>
+    <th style="width:120px">Opportunity owner</th>
+    <th style="width:120px">Account owner</th>
     <th>Action / milestone</th>
     <th style="width:96px">Status</th>
   </tr></thead>
@@ -2524,7 +2580,7 @@ function buildPipelinePage() {
   const archivedRows = archived.map(e => makeRow(e, true)).join('');
 
   const emptyActive = active.length === 0
-    ? `<div style="text-align:center;padding:32px 0;color:var(--text-tertiary);font-size:13px">No saved opportunities yet. Open any opportunity plan and hit <strong>Save to log</strong>.</div>`
+    ? `<div style="text-align:center;padding:32px 0;color:var(--text-tertiary);font-size:13px">No saved opportunities yet. Open any opportunity plan and hit <strong>Save to Log</strong>.</div>`
     : '';
 
   const tableHeaders = `<thead><tr>
@@ -3015,7 +3071,7 @@ async function suggestMapActions() {
   const prompt = `You are a B2B sales coach. Suggest 3 specific MAP actions to address these MEDDPICC gaps: ${gaps}.
 Opportunity: ${opp().name} | Firm type: ${d().snapshot.firmType || 'unknown'}
 Return ONLY JSON: { "actions": [
-  { "date": "suggested timeframe e.g. Jun 15", "ownerEleven": "suggested Eleven owner e.g. AE", "ownerAccount": "suggested account owner e.g. Champion", "action": "specific action", "status": "Open" }
+  { "date": "suggested timeframe e.g. Jun 15", "ownerEleven": "suggested opportunity owner e.g. AE", "ownerAccount": "suggested account owner e.g. Champion", "action": "specific action", "status": "Open" }
 ]}`;
   const result = await callClaude(prompt, null, '…');
   if (result && result.actions) {
@@ -3443,7 +3499,7 @@ function buildExampleOpp() {
   // Account team
   data.accountpovteam = {
     se: 'Austin (Founder/CTO)',
-    execSponsor: 'Tim (Fractional CRO)',
+    execSponsor: 'Tim (Fractional CRO)', ae: 'Tim', se: '', csm: '',
     productOwner: 'Austin'
   };
 
@@ -3504,7 +3560,7 @@ function loadState() {
         data: { ...freshData(), ...o.data,
           meddpicc: { meddAnswers:{}, meddNotes:{}, gapOverrides:{__manual:[]}, ...(o.data.meddpicc||{}) },
           accountpov: { ...freshData().accountpov, ...(o.data.accountpov || o.data.pov || {}) },
-          accountpovteam: { se:"", execSponsor:"", productOwner:"", ...(o.data.accountpovteam||{}) },
+          accountpovteam: { execSponsor:"", ae:"", se:"", csm:"", ...(o.data.accountpovteam||{}) },
           opppov: { ...freshData().opppov, ...(o.data.opppov || {}) },
           map: { rows:[], topAsk:'', lastEngagement:'', nextTouch:'', ...(o.data.map||{}) },
           bizasks: { rows:[], ...(o.data.bizasks||{}) },
@@ -3528,20 +3584,21 @@ loadState();
 
 /* ── Deal Conviction ─────────────────────────────── */
 function getConviction() {
-  return d().conviction || { deal: null, win: null, play: null, note: '' };
+  if (!d().conviction) d().conviction = { deal: null, win: null, play: null, note: '' };
+  return d().conviction;
 }
 
 function setConviction(key, val) {
-  if (!d().conviction) d().conviction = { deal: null, win: null, play: null, note: '' };
-  // If tapping same chip again — deselect
-  if (d().conviction[key] === val) { d().conviction[key] = null; }
-  else { d().conviction[key] = val; }
-
-  // If any answer flipped to No — show modal
-  if (val === 'no' && d().conviction[key] === 'no') {
-    showConvictionModal(key);
+  getConviction(); // ensures d().conviction is initialised before setDeep
+  const current = d().conviction[key];
+  if (current === val) {
+    // deselect
+    setDeep('conviction.' + key, null);
+  } else {
+    setDeep('conviction.' + key, val);
+    if (val === 'no') showConvictionModal(key);
   }
-  saveAll(); renderConvictionCard(); renderConvictionSidebar();
+  render();
 }
 
 function convictionStatus() {
@@ -3585,31 +3642,26 @@ function buildConvictionCard() {
     { key: 'win',  label: 'Can we win?' },
     { key: 'play', label: 'Should we play?' }
   ];
-  const rows = questions.map(q => {
+  const mic = `<button class="talk-btn" onclick="startTalk(event,'conviction.note')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button>`;
+  const qRow = questions.map((q, i) => {
     const v = c[q.key];
-    return `<div class="conviction-row">
-  <span class="conviction-q">${q.label}</span>
-  <div class="conviction-chips">
-    <button class="conviction-chip${v === 'yes' ? ' sel-yes' : ''}" onclick="setConviction('${q.key}','yes')">Yes</button>
-    <button class="conviction-chip${v === 'uncertain' ? ' sel-uncertain' : ''}" onclick="setConviction('${q.key}','uncertain')">Uncertain</button>
-    <button class="conviction-chip${v === 'no' ? ' sel-no' : ''}" onclick="setConviction('${q.key}','no')">No</button>
-  </div>
-</div>`;
+    const divider = i < 2 ? '<span style="width:0.5px;height:20px;background:var(--border-mid);flex-shrink:0;margin:0 14px"></span>' : '';
+    return `<span style="display:inline-flex;align-items:center;gap:6px;flex-shrink:0">
+  <span style="font-size:12px;font-weight:500;color:var(--text-secondary);white-space:nowrap">${q.label}</span>
+  <button class="chip${v === 'yes' ? ' sel-green' : ''}" onclick="setConviction('${q.key}','yes')">Yes</button>
+  <button class="chip${v === 'uncertain' ? ' sel-amber' : ''}" onclick="setConviction('${q.key}','uncertain')">Uncertain</button>
+  <button class="chip${v === 'no' ? ' sel-red' : ''}" onclick="setConviction('${q.key}','no')">No</button>
+</span>${divider}`;
   }).join('');
 
-  const noteHtml = `<div class="conviction-note">
-  <div class="conviction-note-label">Conviction note</div>
-  <div class="talk-wrap"><textarea class="field-input" rows="2" style="font-size:12px" data-f="conviction.note" placeholder="What's your gut read on this deal?" oninput="setDeep('conviction.note',this.value);saveAll()">${esc(c.note || '')}</textarea><button class="talk-btn" onclick="startTalk(event,'conviction.note')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div>
-  <div class="talk-status" id="ts_conviction_note"></div>
-</div>`;
-
   return `<div class="conviction-card" id="convictionCard">
-  <div class="conviction-card-header">
-    <span class="conviction-card-title">Deal Conviction</span>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+    <span style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-tertiary)">Deal Conviction</span>
     <span class="conviction-badge ${st}">${badge}</span>
   </div>
-  ${rows}
-  ${noteHtml}
+  <div style="display:flex;flex-direction:row;align-items:center;flex-wrap:nowrap;margin-bottom:10px;overflow-x:auto">${qRow}</div>
+  <div class="talk-wrap"><textarea class="field-input" rows="2" style="font-size:12px" data-f="conviction.note" placeholder="Conviction note — what's your gut read on this deal?" oninput="setDeep('conviction.note',this.value);saveAll()">${esc(c.note || '')}</textarea>${mic}</div>
+  <div class="talk-status" id="ts_conviction_note"></div>
 </div>`;
 }
 
@@ -3663,6 +3715,110 @@ function startTalkModal() {
   if (!btn) return;
   const fakeEvent = { preventDefault: ()=>{}, stopPropagation: ()=>{}, currentTarget: btn };
   startTalk(fakeEvent, 'conviction._modalDraft');
+}
+
+
+/* ── Stakeholder voice helper ─────────────────────────────────── */
+async function startStkTalk(e, idx, field) {
+  e.preventDefault();
+  e.stopPropagation();
+  const btn = e.currentTarget;
+  const fakeFieldPath = 'stk_' + idx + '_' + field;
+
+  if (_talkActive && _talkField === fakeFieldPath) { stopRecording(); return; }
+  if (_talkActive) stopTalk();
+
+  const key = getOpenAIKey();
+  if (!key) return;
+
+  try {
+    _talkStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch(err) {
+    showStkTalkStatus(idx, field, 'Mic access denied'); return;
+  }
+
+  _talkField  = fakeFieldPath;
+  _talkBtn    = btn;
+  _talkActive = true;
+  _audioChunks = [];
+
+  btn.classList.add('recording');
+  showStkTalkStatus(idx, field, '🔴 Recording… tap mic to stop');
+
+  const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus'
+    : MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
+  _mediaRecorder = new MediaRecorder(_talkStream, { mimeType });
+  _mediaRecorder.ondataavailable = e => { if (e.data.size > 0) _audioChunks.push(e.data); };
+  _mediaRecorder.onstop = async () => {
+    const ext  = mimeType.includes('mp4') ? 'mp4' : 'webm';
+    const blob = new Blob(_audioChunks, { type: mimeType });
+    await transcribeAndProcessStk(idx, field, blob, ext);
+  };
+  _mediaRecorder.start();
+}
+
+async function transcribeAndProcessStk(idx, field, blob, ext) {
+  if (_talkBtn) _talkBtn.classList.add('processing');
+  showStkTalkStatus(idx, field, '⏳ Transcribing…');
+
+  const key = localStorage.getItem('playbk_openai_key');
+  if (!key) { showStkTalkStatus(idx, field, 'No API key'); stopTalk(); return; }
+
+  try {
+    const formData = new FormData();
+    formData.append('file', blob, 'audio.' + ext);
+    formData.append('model', 'whisper-1');
+    formData.append('language', 'en');
+
+    const whisperResp = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST', headers: { 'Authorization': 'Bearer ' + key }, body: formData
+    });
+    if (!whisperResp.ok) throw new Error('Whisper error');
+    const transcript = ((await whisperResp.json()).text || '').trim();
+    if (!transcript) { showStkTalkStatus(idx, field, 'Nothing heard — try again'); stopTalk(); return; }
+
+    showStkTalkStatus(idx, field, '⏳ Extracting…');
+
+    const stk = d().stakeholders[idx] || {};
+    const prompt = `You are a B2B sales coach. The AE just described what a stakeholder personally gains from this deal succeeding.
+Stakeholder: ${stk.name || 'unknown'} (${stk.role || 'unknown'}, ${stk.title || 'unknown'})
+AE said: "${transcript}"
+Extract a clean 1-2 sentence personal win for this stakeholder.
+Return ONLY JSON: { "extracted": "the personal win", "question": "one short follow-up question max 15 words" }`;
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 300, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
+    const parsed = JSON.parse(data.content.filter(b => b.type === 'text').map(b => b.text).join('').replace(/```json|```/g,'').trim());
+
+    if (parsed.extracted) {
+      setStkField(idx, field, parsed.extracted);
+      const ta = document.querySelector(`[data-stk="${idx}.${field}"]`);
+      if (ta) ta.value = parsed.extracted;
+      showStkTalkStatus(idx, field, '');
+      if (parsed.question) {
+        const el = document.getElementById('ts_stk_' + idx + '_' + field);
+        if (el) el.innerHTML = `<div class="talk-coaching"><div><strong>Follow-up</strong> ${parsed.question}</div></div>`;
+      }
+    } else {
+      showStkTalkStatus(idx, field, 'Nothing clear extracted — try again');
+    }
+  } catch(err) {
+    showStkTalkStatus(idx, field, '⚠ ' + err.message);
+  } finally {
+    stopTalk();
+  }
+}
+
+function showStkTalkStatus(idx, field, msg) {
+  const el = document.getElementById('ts_stk_' + idx + '_' + field);
+  if (!el) return;
+  if (msg && !msg.startsWith('<')) el.textContent = msg;
+  else if (!msg) { if (!el.querySelector('.talk-coaching')) el.textContent = ''; }
 }
 
 </script>
