@@ -2716,7 +2716,7 @@ function buildCalls() {
         }
         findingsHTML += '<div class="findings-list">' + others.map((f, fi) => {
           const typeClass = { meddpicc: 'ft-meddpicc', pov: 'ft-pov', stakeholder: 'ft-stakeholder', gap: 'ft-gap', action: 'ft-action' }[f.type] || 'ft-action';
-          const typeLabel = { meddpicc: 'MEDDPICC', pov: 'POV update', stakeholder: 'Stakeholder', gap: 'Gap', action: 'Next action' }[f.type] || f.type;
+          const typeLabel = { meddpicc: 'Qualification', pov: 'POV update', stakeholder: 'Stakeholder', gap: 'Gap', action: 'Next action' }[f.type] || f.type;
           const cardClass = f.status === 'accepted' ? ' accepted' : f.status === 'rejected' ? ' rejected' : '';
           return `<div class="finding-card${cardClass}">
   <div class="finding-header">
@@ -2793,7 +2793,7 @@ ${callsHTML}
     <button class="analyse-btn" id="analyseBtn" onclick="analyseCall()">
       <span id="analyseBtnText">Analyse against plan</span>
     </button>
-    <span style="font-size:11px;color:var(--text-tertiary)">Claude will map findings to your MEDDPICC, POV, stakeholders, and gaps. You review before anything is applied.</span>
+    <span style="font-size:11px;color:var(--text-tertiary)">Claude will map findings to your Qualification, POV, stakeholders, and gaps. You review before anything is applied.</span>
   </div>
   <div id="analyseError" style="font-size:12px;color:var(--text-danger);margin-top:8px;display:none"></div>
 </div>`;
@@ -2915,7 +2915,7 @@ Return this exact structure — all three keys required:
       headers: { 'Content-Type': 'application/json', 'x-api-key': localStorage.getItem('playbk_claude_key') || '', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
-        max_tokens: 1000,
+        max_tokens: 4000,
         messages: [{ role: 'user', content: prompt }]
       })
     });
