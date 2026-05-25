@@ -1308,6 +1308,8 @@ function refreshCoaching() {
 
 async function generateCoaching() {
   if (!opp()) return;
+  const claudeKey = getClaudeKey();
+  if (!claudeKey) return;
   opp().coaching = 'loading';
   // Re-render banner in loading state without full render
   const banner = document.querySelector('.coaching-banner');
@@ -1400,7 +1402,7 @@ Rules:
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-api-key': localStorage.getItem('playbk_claude_key') || '', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 600,
@@ -2910,7 +2912,7 @@ Return this exact structure — all three keys required:
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-api-key': localStorage.getItem('playbk_claude_key') || '', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
@@ -2998,12 +3000,14 @@ function dismissFinding(ci, fi) {
    ================================================================ */
 
 async function callClaude(prompt, btnId, loadingText) {
+  const claudeKey = getClaudeKey();
+  if (!claudeKey) return null;
   const btn = document.getElementById(btnId);
   if (btn) { btn.disabled = true; btn.textContent = loadingText; }
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-api-key': localStorage.getItem('playbk_claude_key') || '', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000,
         messages: [{ role: 'user', content: prompt }] })
     });
@@ -3105,6 +3109,7 @@ Return ONLY JSON: { "asks": [
    TALK ENGINE — MediaRecorder → Whisper → Claude extraction
    Works on all browsers including Safari iOS/desktop.
    OpenAI key stored in localStorage under 'playbk_openai_key'.
+   Anthropic key stored in localStorage under 'playbk_claude_key'.
    ================================================================ */
 
 let _mediaRecorder = null;
@@ -3147,6 +3152,28 @@ function getOpenAIKey() {
       onConfirm: (k) => {
         if (k && k.startsWith('sk-')) {
           localStorage.setItem('playbk_openai_key', k.trim());
+        }
+      }
+    });
+    return null;
+  }
+  return key;
+}
+
+function getClaudeKey() {
+  let key = localStorage.getItem('playbk_claude_key');
+  if (!key) {
+    showModal({
+      title: 'Anthropic API key needed',
+      desc: 'AI coaching, call analysis, and drafting use the Anthropic API. Enter your API key — stored locally, never sent anywhere except Anthropic.',
+      input: true,
+      placeholder: 'sk-ant-…',
+      confirmLabel: 'Save key',
+      onConfirm: (k) => {
+        if (k && k.startsWith('sk-ant-')) {
+          localStorage.setItem('playbk_claude_key', k.trim());
+          // Retry after key saved
+          setTimeout(() => generateCoaching(), 300);
         }
       }
     });
@@ -3308,7 +3335,7 @@ If nothing relevant was said for this field, return { "extracted": "", "question
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-api-key': localStorage.getItem('playbk_claude_key') || '', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 400,
@@ -3788,7 +3815,7 @@ Return ONLY JSON: { "extracted": "the personal win", "question": "one short foll
 
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-api-key': localStorage.getItem('playbk_claude_key') || '', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 300, messages: [{ role: 'user', content: prompt }] })
     });
     const data = await resp.json();
