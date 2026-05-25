@@ -2735,7 +2735,7 @@ function buildCalls() {
     <div class="finding-body">
       <div class="finding-title">${esc(f.title)}</div>
       ${f.evidence ? '<div class="finding-evidence">"' + esc(f.evidence) + '"</div>' : ''}
-      ${f.suggestion ? `<div class="finding-suggestion">→ ${esc(f.suggestion)}</div>` : ''}
+      ${f.suggestion ? '<div class="finding-suggestion">→ ' + esc(f.suggestion) + '</div>' : ''}
     </div>
   </div>
   ${f.status ? '<div style="font-size:11px;padding:0 12px 8px;color:' + (f.status === 'accepted' ? 'var(--text-success)' : 'var(--text-tertiary)') + '">✓ ' + (f.status === 'accepted' ? 'Accepted' : 'Dismissed') + '</div>' :
