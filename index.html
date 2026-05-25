@@ -44,7 +44,7 @@ body{font-family:var(--font);background:var(--bg-secondary);color:var(--text-pri
   display:flex;flex-direction:column;
   position:sticky;top:0;height:100vh;overflow-y:auto;
 }
-.sidebar-brand{padding:20px 18px 14px;border-bottom:0.5px solid rgba(255,255,255,0.08)}
+.sidebar-brand{padding:20px 18px 14px;border-bottom:0.5px solid rgba(255,255,255,0.08);overflow:visible}
 .sidebar-brand p{font-size:11px;color:rgba(255,255,255,0.4);margin-top:3px}
 .sidebar-score{display:flex;align-items:center;gap:7px;margin-top:8px}
 .sidebar-score .sc{font-size:12px;color:rgba(255,255,255,0.55)}
@@ -548,7 +548,7 @@ select.field-input{cursor:pointer}
   <div class="drawer-panel" id="drawerPanel">
     <button class="drawer-close" onclick="closeDrawer()">&#x2715;</button>
     <div class="sidebar-brand" style="padding-right:44px">
-      <svg width="174" height="67" viewBox="-4 -4 268 108" style="display:block;flex-shrink:0;overflow:visible" xmlns="http://www.w3.org/2000/svg">
+      <svg width="100%" height="52" viewBox="0 0 260 100" preserveAspectRatio="xMinYMid meet" style="display:block" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <marker id="aw2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
       <path d="M2 2L8 5L2 8" fill="none" stroke="#f0ede6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -578,7 +578,7 @@ select.field-input{cursor:pointer}
   <!-- Dark navy sidebar -->
   <nav class="sidebar">
     <div class="sidebar-brand">
-      <svg width="174" height="67" viewBox="-4 -4 268 108" style="display:block;flex-shrink:0;overflow:visible" xmlns="http://www.w3.org/2000/svg">
+      <svg width="100%" height="52" viewBox="0 0 260 100" preserveAspectRatio="xMinYMid meet" style="display:block" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <marker id="aw2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
       <path d="M2 2L8 5L2 8" fill="none" stroke="#f0ede6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1271,7 +1271,7 @@ function buildCoachingBanner() {
   <div class="coaching-action-body">
     <div class="coaching-action-text">${esc(a.action)}</div>
     <div class="coaching-action-why">${esc(a.why)}</div>
-    ${a.section ? `<span class="coaching-action-tag">${esc(a.section.replace('_',' '))}</span>` : ''}
+    ${a.section ? `<span class="coaching-action-tag">${esc(({'snapshot':'Snapshot','stakeholders':'Stakeholders','accountpov':'Account','opppov':'Opportunity','meddpicc':'Qualification','map':'Mutual Action Plan','bizasks':'Business Asks','calls':'Calls & Coaching'}[a.section] || a.section).replace('_',' '))}</span>` : ''}
   </div>
   <div class="coaching-action-arrow">›</div>
 </button>`;
@@ -1385,7 +1385,7 @@ Return ONLY valid JSON:
     {
       "action": "specific action max 12 words — what to DO, not what to think about",
       "why": "one sentence tied to actual data in this plan, max 20 words",
-      "section": "one of: snapshot|stakeholders|accountpov|opppov|meddpicc|map|bizasks|calls"
+      "section": "one of: snapshot|stakeholders|accountpov|opppov|meddpicc|map|bizasks|calls"  // meddpicc displays as Qualification
     }
   ]
 }
