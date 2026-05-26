@@ -1,280 +1,381 @@
 import PptxGenJS from 'pptxgenjs';
 
-// Colours matching Playbk Labs brand
-const NAVY   = '141f2e';
-const BLUE   = '1a3a5c';
-const ACCENT = '4a90c2';
-const GREEN  = '1D9E75';
-const RED    = 'c0392b';
-const AMBER  = 'EF9F27';
-const WHITE  = 'FFFFFF';
-const OFFWHITE = 'F4F5F7';
-const MUTED  = '8A99A8';
+// ── Brand palette ─────────────────────────────────────────────────────────────
+const C = {
+  navy:    '0D1B2A',
+  blue:    '1a3a5c',
+  accent:  '4a90c2',
+  green:   '1D9E75',
+  red:     'C0392B',
+  amber:   'EF9F27',
+  white:   'FFFFFF',
+  offwhite:'F7F8FA',
+  light:   'EDF0F4',
+  muted:   '8A99A8',
+  text:    '1C2B3A',
+  border:  'DDE3EA',
+};
 
-function healthColour(score) {
-  if (score >= 70) return GREEN;
-  if (score >= 40) return AMBER;
-  return RED;
+const FONT = 'Calibri';
+
+function pct(yes, total) { return total ? Math.round((yes / total) * 100) : 0; }
+function hColor(score) { return score >= 70 ? C.green : score >= 40 ? C.amber : C.red; }
+function fcColor(fc) { return { Commit: C.green, Upside: C.accent, Pipeline: C.amber, Omit: C.red }[fc] || C.muted; }
+function sentColor(s) { return { green: C.green, amber: C.amber, red: C.red }[s] || C.muted; }
+function priorityColor(p) { return { High: C.red, Medium: C.amber, Low: C.green }[p] || C.muted; }
+
+function slideHeader(slide, num, title) {
+  // Section number badge
+  slide.addShape('rect', { x: 0.4, y: 0.25, w: 0.45, h: 0.3, fill: { color: C.accent }, rectRadius: 0.04 });
+  slide.addText(String(num).padStart(2, '0'), { x: 0.4, y: 0.25, w: 0.45, h: 0.3, align: 'center', fontSize: 10, bold: true, color: C.white, fontFace: FONT });
+  slide.addText(title, { x: 1.0, y: 0.25, w: 8.5, h: 0.32, fontSize: 18, bold: true, color: C.text, fontFace: FONT });
 }
 
-function forecastColour(fc) {
-  const map = { Commit: GREEN, Upside: ACCENT, Pipeline: AMBER, Omit: RED };
-  return map[fc] || MUTED;
-}
-
-function addSlide(pptx, title, bgColor = OFFWHITE) {
-  const slide = pptx.addSlide();
-  // Background
-  slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: '100%', h: '100%', fill: { color: bgColor } });
-  // Left accent bar
-  slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 0.06, h: '100%', fill: { color: NAVY } });
-  // Title
-  slide.addText(title, { x: 0.35, y: 0.22, w: 9, h: 0.45, fontSize: 22, bold: true, color: NAVY, fontFace: 'Calibri' });
-  // Thin rule under title
-  slide.addShape(pptx.ShapeType.rect, { x: 0.35, y: 0.7, w: 9.3, h: 0.02, fill: { color: ACCENT } });
-  return slide;
+function progressBar(slide, x, y, w, pctVal, color) {
+  const h = 0.1;
+  slide.addShape('rect', { x, y, w, h, fill: { color: C.light }, rectRadius: 0.05 });
+  if (pctVal > 0) slide.addShape('rect', { x, y, w: w * pctVal / 100, h, fill: { color }, rectRadius: 0.05 });
 }
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
-
   let body = '';
   for await (const chunk of req) body += chunk;
   const { opp } = JSON.parse(body);
-  const d = opp.data || {};
-  const snap = d.snapshot || {};
-  const medd = d.meddpicc || {};
-  const answers = medd.meddAnswers || {};
-  const stk = d.stakeholders || [];
-  const accountpov = d.accountpov || {};
-  const opppov = d.opppov || {};
-  const conviction = d.conviction || {};
-  const map = d.map || {};
-  const mapRows = (map.rows || []).slice(0, 6);
+  const d    = opp.data || {};
+  const snap = d.snapshot   || {};
+  const medd = d.meddpicc   || {};
+  const ans  = medd.meddAnswers || {};
+  const stk  = d.stakeholders  || [];
+  const apov = d.accountpov    || {};
+  const opov = d.opppov        || {};
+  const conv = d.conviction    || {};
+  const map  = d.map           || {};
+  const biz  = d.bizasks       || {};
+  const calls= d.calls         || [];
 
-  // Score helpers
-  const totalQ = 28;
-  const yesCount = Object.values(answers).filter(v => v === 'yes').length;
-  const healthScore = opp.healthScore || Math.round((yesCount / totalQ) * 100);
-  const hColor = healthColour(healthScore);
+  // Scores
+  const MEDD_SECTIONS = [
+    { label: 'Metrics',           id: 'metrics',     q: 4 },
+    { label: 'Economic Buyer',    id: 'eb',          q: 4 },
+    { label: 'Decision Criteria', id: 'dc',          q: 3 },
+    { label: 'Decision Process',  id: 'dp',          q: 4 },
+    { label: 'Paper Process',     id: 'pp',          q: 3, blocker: true },
+    { label: 'Identify Pain',     id: 'pain',        q: 4 },
+    { label: 'Champion',          id: 'champion',    q: 4 },
+    { label: 'Competition',       id: 'competition', q: 2 },
+  ];
+  const totalQ = MEDD_SECTIONS.reduce((a, s) => a + s.q, 0);
+  const totalY = MEDD_SECTIONS.reduce((a, s) => {
+    for (let i = 0; i < s.q; i++) if (ans[s.id + '_' + i] === 'yes') a++;
+    return a;
+  }, 0);
+  const healthScore = opp.healthScore || Math.round((totalY / totalQ) * 100);
+  const hCol = hColor(healthScore);
 
-  const convStatus = [conviction.deal, conviction.win, conviction.play].every(v => v === 'yes') ? 'Convicted'
-    : [conviction.deal, conviction.win, conviction.play].some(v => v === 'no') ? 'Walk Away?'
-    : 'Uncertain';
-  const convColor = convStatus === 'Convicted' ? GREEN : convStatus === 'Walk Away?' ? RED : AMBER;
+  const convAnswers = [conv.deal, conv.win, conv.play];
+  const convStatus = convAnswers.every(v => v === 'yes') ? 'Convicted'
+    : convAnswers.some(v => v === 'no') ? 'Walk Away?' : 'Uncertain';
+
+  // Latest coaching for slide 8
+  const latestCall = [...calls].sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+  const coaching = latestCall?.coaching || {};
+  const nba = coaching.actions || [];
+  const stage = coaching.stage || '';
 
   const pptx = new PptxGenJS();
   pptx.layout = 'LAYOUT_WIDE';
   pptx.author = 'Playbk Labs';
 
-  // ── SLIDE 1: Cover ────────────────────────────────────────────────────────
+  // ── SLIDE 1: Cover ──────────────────────────────────────────────────────────
   {
-    const slide = pptx.addSlide();
-    slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: '100%', h: '100%', fill: { color: NAVY } });
-    slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 0.5, h: '100%', fill: { color: BLUE } });
-    slide.addShape(pptx.ShapeType.rect, { x: 0.5, y: 3.2, w: 9.2, h: 0.04, fill: { color: ACCENT } });
+    const s = pptx.addSlide();
+    // Dark background
+    s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.navy } });
+    // Left stats panel
+    s.addShape('rect', { x: 0, y: 0, w: 3.1, h: '100%', fill: { color: C.blue } });
 
-    slide.addText('DEAL REVIEW', { x: 0.8, y: 1.0, w: 8.5, h: 0.5, fontSize: 13, color: ACCENT, bold: true, charSpacing: 4, fontFace: 'Calibri' });
-    slide.addText(snap.firmName || opp.name || 'Opportunity', { x: 0.8, y: 1.6, w: 8.5, h: 1.1, fontSize: 40, bold: true, color: WHITE, fontFace: 'Calibri' });
-    slide.addText(snap.firmType || '', { x: 0.8, y: 2.75, w: 8.5, h: 0.4, fontSize: 16, color: MUTED, fontFace: 'Calibri' });
+    // Logo area
+    s.addText('PLAYBK', { x: 0.25, y: 0.3, w: 2.6, h: 0.35, fontSize: 14, bold: true, color: C.white, charSpacing: 3, fontFace: FONT });
+    s.addText('Deal Review', { x: 0.25, y: 0.65, w: 2.6, h: 0.28, fontSize: 11, color: C.accent, fontFace: FONT });
 
-    // Stats row
+    // Stats
     const stats = [
-      { label: 'TARGET ARR', value: snap.targetArr || '—' },
-      { label: 'DEAL HEALTH', value: String(healthScore) },
-      { label: 'CLOSE DATE', value: snap.renewalQ || '—' },
-      { label: 'CONVICTION', value: convStatus },
+      { label: 'FIRM TYPE',     val: snap.firmType   || '—' },
+      { label: 'AUM',           val: snap.aum        || '—' },
+      { label: 'CURRENT ARR',   val: snap.currentArr || '$0' },
+      { label: 'TARGET ARR',    val: snap.targetArr  || '—' },
+      { label: 'JOURNEY',       val: snap.journey    || '—' },
+      { label: 'CLOSE / RENEW', val: snap.renewalQ   || '—' },
     ];
-    stats.forEach((s, i) => {
-      const x = 0.8 + i * 2.4;
-      slide.addShape(pptx.ShapeType.rect, { x, y: 3.6, w: 2.1, h: 1.1, fill: { color: BLUE }, line: { color: ACCENT, width: 0.5 }, rounding: true });
-      slide.addText(s.value, { x, y: 3.7, w: 2.1, h: 0.55, align: 'center', fontSize: 22, bold: true, color: i === 1 ? hColor : i === 3 ? convColor : WHITE, fontFace: 'Calibri' });
-      slide.addText(s.label, { x, y: 4.25, w: 2.1, h: 0.3, align: 'center', fontSize: 9, color: MUTED, charSpacing: 2, fontFace: 'Calibri' });
+    stats.forEach((st, i) => {
+      const y = 1.15 + i * 0.72;
+      s.addShape('rect', { x: 0.15, y, w: 2.8, h: 0.02, fill: { color: 'FFFFFF', transparency: 80 } });
+      s.addText(st.label, { x: 0.25, y: y + 0.07, w: 2.6, h: 0.2, fontSize: 8, color: C.muted, charSpacing: 1.5, fontFace: FONT });
+      s.addText(st.val,   { x: 0.25, y: y + 0.28, w: 2.6, h: 0.28, fontSize: 13, bold: true, color: C.white, fontFace: FONT });
     });
 
-    slide.addText('Prepared by Playbk Labs', { x: 0.8, y: 5.1, w: 8, h: 0.3, fontSize: 10, color: MUTED, fontFace: 'Calibri' });
-  }
+    // Main title area
+    s.addText(snap.firmName || opp.name || 'Opportunity', {
+      x: 3.4, y: 1.6, w: 6.0, h: 1.3, fontSize: 38, bold: true, color: C.white, fontFace: FONT, wrap: true
+    });
+    s.addText(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), {
+      x: 3.4, y: 2.95, w: 6.0, h: 0.35, fontSize: 13, color: C.muted, fontFace: FONT
+    });
 
-  // ── SLIDE 2: Situation Brief ──────────────────────────────────────────────
-  {
-    const slide = addSlide(pptx, 'Situation Brief');
-    const brief = snap.notes || 'No situation brief recorded.';
-    const journey = snap.journey || '—';
-    const health = snap.healthStatus || '—';
+    // Health + Forecast badges
+    s.addShape('ellipse', { x: 3.4, y: 3.5, w: 1.3, h: 1.3, fill: { color: C.blue }, line: { color: hCol, width: 3 } });
+    s.addText(String(healthScore), { x: 3.4, y: 3.72, w: 1.3, h: 0.55, align: 'center', fontSize: 28, bold: true, color: hCol, fontFace: FONT });
+    s.addText('HEALTH', { x: 3.4, y: 4.28, w: 1.3, h: 0.22, align: 'center', fontSize: 8, color: C.muted, charSpacing: 1, fontFace: FONT });
 
-    slide.addShape(pptx.ShapeType.rect, { x: 0.35, y: 0.85, w: 6.4, h: 3.8, fill: { color: WHITE }, line: { color: OFFWHITE, width: 1 }, rounding: true });
-    slide.addText(brief, { x: 0.55, y: 1.0, w: 6.0, h: 3.5, fontSize: 14, color: NAVY, fontFace: 'Calibri', valign: 'top', wrap: true });
+    const fc = snap.forecast || 'Pipeline';
+    s.addShape('rect', { x: 5.1, y: 3.6, w: 1.5, h: 0.9, fill: { color: fcColor(fc), transparency: 80 }, rectRadius: 0.08 });
+    s.addText(fc, { x: 5.1, y: 3.72, w: 1.5, h: 0.5, align: 'center', fontSize: 18, bold: true, color: fcColor(fc), fontFace: FONT });
+    s.addText('FORECAST', { x: 5.1, y: 4.18, w: 1.5, h: 0.22, align: 'center', fontSize: 8, color: C.muted, charSpacing: 1, fontFace: FONT });
 
-    // Right panel stats
-    const pills = [
-      { label: 'Journey Stage', val: journey },
-      { label: 'Account Health', val: health },
-      { label: 'AUM', val: snap.aum || '—' },
-      { label: 'Current ARR', val: snap.currentArr || '$0' },
-      { label: 'Target ARR', val: snap.targetArr || '—' },
-    ];
-    pills.forEach((p, i) => {
-      const y = 0.9 + i * 0.75;
-      slide.addText(p.label.toUpperCase(), { x: 7.0, y, w: 2.5, h: 0.22, fontSize: 8, color: MUTED, charSpacing: 1.5, fontFace: 'Calibri' });
-      slide.addText(p.val, { x: 7.0, y: y + 0.22, w: 2.5, h: 0.38, fontSize: 15, bold: true, color: NAVY, fontFace: 'Calibri' });
+    s.addText('Confidential · Prepared with Playbk Labs', {
+      x: 3.4, y: 5.25, w: 6.0, h: 0.28, fontSize: 9, color: C.muted, fontFace: FONT
     });
   }
 
-  // ── SLIDE 3: Deal Conviction ──────────────────────────────────────────────
+  // ── SLIDE 2: Situation ──────────────────────────────────────────────────────
   {
-    const slide = addSlide(pptx, 'Deal Conviction');
-    const qs = [
-      { q: 'Is there a deal?', ans: conviction.deal },
-      { q: 'Can we win?',      ans: conviction.win },
-      { q: 'Should we play?',  ans: conviction.play },
-    ];
-    qs.forEach((item, i) => {
-      const y = 0.95 + i * 1.35;
-      const col = item.ans === 'yes' ? GREEN : item.ans === 'no' ? RED : AMBER;
-      const label = (item.ans || 'Not set').charAt(0).toUpperCase() + (item.ans || 'not set').slice(1);
-      slide.addShape(pptx.ShapeType.rect, { x: 0.35, y, w: 9.3, h: 1.1, fill: { color: WHITE }, line: { color: OFFWHITE, width: 1 }, rounding: true });
-      slide.addShape(pptx.ShapeType.rect, { x: 0.35, y, w: 0.18, h: 1.1, fill: { color: col }, rounding: true });
-      slide.addText(item.q, { x: 0.75, y: y + 0.15, w: 6.5, h: 0.4, fontSize: 16, bold: true, color: NAVY, fontFace: 'Calibri' });
-      slide.addText(label, { x: 7.8, y: y + 0.2, w: 1.6, h: 0.65, align: 'center', fontSize: 18, bold: true, color: col, fontFace: 'Calibri' });
+    const s = pptx.addSlide();
+    s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
+    slideHeader(s, 1, 'SITUATION');
+    s.addText(snap.firmName || opp.name || '', { x: 0.4, y: 0.62, w: 9.2, h: 0.32, fontSize: 22, bold: true, color: C.text, fontFace: FONT });
+
+    // Situation brief
+    s.addText(snap.notes || apov.problemStatement || 'No situation brief recorded.', {
+      x: 0.4, y: 1.05, w: 5.8, h: 1.4, fontSize: 11, color: C.text, fontFace: FONT, wrap: true, valign: 'top'
     });
-    if (conviction.note) {
-      slide.addText('AE NOTE: ' + conviction.note, { x: 0.35, y: 5.0, w: 9.3, h: 0.5, fontSize: 11, color: MUTED, italic: true, fontFace: 'Calibri', wrap: true });
+
+    // 4 why boxes
+    const whys = [
+      { label: 'WHY CHANGE?', val: apov.whyChangeNow || apov.problemStatement || '—' },
+      { label: 'WHY NOW?',    val: apov.whyNow        || snap.notes || '—' },
+      { label: 'WHY US?',     val: opov.winTheme      || apov.valueProposition || '—' },
+      { label: 'WHAT SOLUTION?', val: opov.solution   || apov.valueProposition || '—' },
+    ];
+    whys.forEach((w, i) => {
+      const col = i % 2, row = Math.floor(i / 2);
+      const x = 0.4 + col * 4.85;
+      const y = 2.6 + row * 1.5;
+      s.addShape('rect', { x, y, w: 4.6, h: 1.35, fill: { color: C.offwhite }, line: { color: C.border, width: 0.5 }, rectRadius: 0.06 });
+      s.addText(w.label, { x: x + 0.18, y: y + 0.1, w: 4.2, h: 0.22, fontSize: 8, bold: true, color: C.accent, charSpacing: 1.5, fontFace: FONT });
+      s.addText(w.val,   { x: x + 0.18, y: y + 0.35, w: 4.2, h: 0.9, fontSize: 10, color: C.text, fontFace: FONT, wrap: true, valign: 'top' });
+    });
+  }
+
+  // ── SLIDE 3: Stakeholder Map ────────────────────────────────────────────────
+  {
+    const s = pptx.addSlide();
+    s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
+    slideHeader(s, 2, 'STAKEHOLDER MAP');
+    s.addText('Stakeholder Map', { x: 0.4, y: 0.62, w: 9.2, h: 0.32, fontSize: 22, bold: true, color: C.text, fontFace: FONT });
+
+    // Stakeholder cards — 2 per row, up to 4
+    stk.slice(0, 4).forEach((st, i) => {
+      const col = i % 2, row = Math.floor(i / 2);
+      const x = 0.4 + col * 4.9;
+      const y = 1.05 + row * 1.95;
+      const sc = sentColor(st.sentiment);
+
+      // Role badge
+      const roleColors = { Champion: C.green, 'Economic buyer': C.amber, Coach: C.accent, Neutral: C.muted, Blocker: C.red };
+      const rc = roleColors[st.role] || C.muted;
+      s.addShape('rect', { x, y, w: 4.6, h: 1.75, fill: { color: C.offwhite }, line: { color: C.border, width: 0.5 }, rectRadius: 0.06 });
+      s.addShape('rect', { x, y, w: 1.2, h: 0.28, fill: { color: rc }, rectRadius: 0.04 });
+      s.addText(st.role || '—', { x, y, w: 1.2, h: 0.28, align: 'center', fontSize: 9, bold: true, color: C.white, fontFace: FONT });
+
+      // Sentiment dot
+      s.addShape('ellipse', { x: x + 4.25, y: y + 0.05, w: 0.18, h: 0.18, fill: { color: sc } });
+      const sentLabel = { green: 'Advocate', amber: 'Neutral', red: 'Risk' }[st.sentiment] || '—';
+      s.addText(sentLabel, { x: x + 3.2, y: y + 0.04, w: 1.0, h: 0.22, align: 'right', fontSize: 8, color: sc, fontFace: FONT });
+
+      s.addText(st.name  || 'Unknown',  { x: x + 0.15, y: y + 0.35, w: 4.2, h: 0.3,  fontSize: 14, bold: true, color: C.text, fontFace: FONT });
+      s.addText(st.title || '',          { x: x + 0.15, y: y + 0.65, w: 4.2, h: 0.22, fontSize: 10, color: C.muted, fontFace: FONT });
+      s.addText(st.win   || '—',         { x: x + 0.15, y: y + 0.92, w: 4.2, h: 0.72, fontSize: 10, color: C.text, fontFace: FONT, wrap: true, valign: 'top' });
+    });
+
+    // Coverage gap
+    if (d.stakeholders?.length === 0 || stk[0]?.coverageGap || d.snapshot?.coverageGap) {
+      const gap = '⚠  ' + (d.snapshot?.coverageGap || 'Review stakeholder coverage and access gaps.');
+      s.addShape('rect', { x: 0.4, y: 5.0, w: 9.2, h: 0.52, fill: { color: 'FFF3CD' }, line: { color: C.amber, width: 0.5 }, rectRadius: 0.05 });
+      s.addText(gap, { x: 0.6, y: 5.05, w: 8.8, h: 0.42, fontSize: 9, color: '7A5800', fontFace: FONT, wrap: true });
     }
   }
 
-  // ── SLIDE 4: Stakeholders ─────────────────────────────────────────────────
+  // ── SLIDE 4: Opportunity POV ────────────────────────────────────────────────
   {
-    const slide = addSlide(pptx, 'Stakeholder Map');
-    const cols = 2;
-    stk.slice(0, 6).forEach((s, i) => {
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      const x = 0.35 + col * 4.85;
-      const y = 0.9 + row * 1.55;
-      const sentColor = s.sentiment === 'green' ? GREEN : s.sentiment === 'amber' ? AMBER : s.sentiment === 'red' ? RED : MUTED;
+    const s = pptx.addSlide();
+    s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
+    slideHeader(s, 3, 'THE DEAL');
+    s.addText('Opportunity POV', { x: 0.4, y: 0.62, w: 9.2, h: 0.32, fontSize: 22, bold: true, color: C.text, fontFace: FONT });
 
-      slide.addShape(pptx.ShapeType.rect, { x, y, w: 4.5, h: 1.35, fill: { color: WHITE }, line: { color: OFFWHITE, width: 1 }, rounding: true });
-      slide.addShape(pptx.ShapeType.ellipse, { x: x + 0.12, y: y + 0.12, w: 0.22, h: 0.22, fill: { color: sentColor } });
-      slide.addText(s.name || 'Unknown', { x: x + 0.45, y: y + 0.1, w: 3.8, h: 0.35, fontSize: 13, bold: true, color: NAVY, fontFace: 'Calibri' });
-      slide.addText((s.role || '') + (s.title ? ' · ' + s.title : ''), { x: x + 0.45, y: y + 0.42, w: 3.8, h: 0.28, fontSize: 10, color: MUTED, fontFace: 'Calibri' });
-      slide.addText(s.win || '—', { x: x + 0.15, y: y + 0.73, w: 4.1, h: 0.5, fontSize: 10, color: NAVY, fontFace: 'Calibri', wrap: true });
+    const blocks = [
+      { num: '1.', label: 'BUSINESS PROBLEM', val: opov.businessProblem || apov.problemStatement || '—' },
+      { num: '2.', label: 'SUCCESS METRIC',   val: opov.successMetric   || opov.metrics || '—' },
+      { num: '3.', label: 'THE ALTERNATIVE',  val: (opov.alternative    || '—') + (opov.competition ? '\n\nCompetition: ' + opov.competition : '') },
+    ];
+    blocks.forEach((b, i) => {
+      const y = 1.1 + i * 1.45;
+      s.addText(b.num + ' ' + b.label, { x: 0.4, y, w: 9.2, h: 0.25, fontSize: 9, bold: true, color: C.accent, charSpacing: 1.5, fontFace: FONT });
+      s.addText(b.val, { x: 0.4, y: y + 0.28, w: 9.2, h: 1.0, fontSize: 11, color: C.text, fontFace: FONT, wrap: true, valign: 'top' });
+      if (i < blocks.length - 1) s.addShape('rect', { x: 0.4, y: y + 1.35, w: 9.2, h: 0.015, fill: { color: C.border } });
     });
+
+    if (opov.competition) {
+      s.addText('Competition: ' + opov.competition, { x: 0.4, y: 5.25, w: 9.2, h: 0.3, fontSize: 9, color: C.muted, fontFace: FONT, italic: true });
+    }
   }
 
-  // ── SLIDE 5: Qualification (MEDDPPICC) ────────────────────────────────────
+  // ── SLIDE 5: Qualification ──────────────────────────────────────────────────
   {
-    const slide = addSlide(pptx, 'Qualification (MEDDPPICC)');
-    const sections = [
-      { label: 'Metrics',           id: 'metrics',    q: 4 },
-      { label: 'Economic Buyer',    id: 'eb',         q: 4 },
-      { label: 'Decision Criteria', id: 'dc',         q: 3 },
-      { label: 'Decision Process',  id: 'dp',         q: 4 },
-      { label: 'Paper Process',     id: 'pp',         q: 3, blocker: true },
-      { label: 'Identify Pain',     id: 'pain',       q: 4 },
-      { label: 'Champion',          id: 'champion',   q: 4 },
-      { label: 'Competition',       id: 'competition',q: 2 },
-    ];
-    sections.forEach((s, i) => {
-      const col = i % 4;
-      const row = Math.floor(i / 4);
-      const x = 0.35 + col * 2.45;
-      const y = 0.9 + row * 2.1;
+    const s = pptx.addSlide();
+    s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
+    slideHeader(s, 4, 'QUALIFICATION');
+    s.addText('Qualification Scorecard', { x: 0.4, y: 0.62, w: 7.5, h: 0.32, fontSize: 22, bold: true, color: C.text, fontFace: FONT });
+
+    // Health circle top-right
+    s.addShape('ellipse', { x: 8.8, y: 0.35, w: 0.9, h: 0.9, fill: { color: C.offwhite }, line: { color: hCol, width: 3 } });
+    s.addText(String(healthScore), { x: 8.8, y: 0.52, w: 0.9, h: 0.4, align: 'center', fontSize: 20, bold: true, color: hCol, fontFace: FONT });
+    s.addText('HEALTH', { x: 8.75, y: 1.02, w: 1.0, h: 0.2, align: 'center', fontSize: 7, color: C.muted, charSpacing: 1, fontFace: FONT });
+
+    MEDD_SECTIONS.forEach((sec, i) => {
       let yes = 0;
-      for (let q = 0; q < s.q; q++) {
-        if (answers[s.id + '_' + q] === 'yes') yes++;
-      }
-      const pct = Math.round((yes / s.q) * 100);
-      const color = pct >= 75 ? GREEN : pct >= 40 ? AMBER : RED;
+      for (let q = 0; q < sec.q; q++) if (ans[sec.id + '_' + q] === 'yes') yes++;
+      const p = pct(yes, sec.q);
+      const col = hColor(p);
+      const note = medd.meddNotes?.[sec.id] || '';
+      const isBlocker = sec.blocker;
 
-      slide.addShape(pptx.ShapeType.rect, { x, y, w: 2.2, h: 1.8, fill: { color: WHITE }, line: { color: OFFWHITE, width: 1 }, rounding: true });
-      slide.addText(s.label, { x, y: y + 0.1, w: 2.2, h: 0.4, align: 'center', fontSize: 10, bold: true, color: NAVY, fontFace: 'Calibri' });
-      slide.addText(pct + '%', { x, y: y + 0.55, w: 2.2, h: 0.7, align: 'center', fontSize: 32, bold: true, color, fontFace: 'Calibri' });
-      slide.addText(yes + '/' + s.q + ' answered', { x, y: y + 1.3, w: 2.2, h: 0.35, align: 'center', fontSize: 9, color: MUTED, fontFace: 'Calibri' });
-      if (s.blocker) slide.addText('⚠ Blocker', { x, y: y + 1.55, w: 2.2, h: 0.2, align: 'center', fontSize: 8, color: RED, fontFace: 'Calibri' });
+      const y = 1.1 + i * 0.56;
+      // Label
+      const dotCol = isBlocker && p < 75 ? C.red : p >= 75 ? C.green : p >= 40 ? C.amber : C.red;
+      s.addShape('ellipse', { x: 0.4, y: y + 0.08, w: 0.15, h: 0.15, fill: { color: dotCol } });
+      s.addText(sec.label.toUpperCase(), { x: 0.65, y: y + 0.03, w: 2.5, h: 0.25, fontSize: 10, bold: true, color: C.text, fontFace: FONT });
+      s.addText(yes + '/' + sec.q, { x: 3.2, y: y + 0.03, w: 0.6, h: 0.25, align: 'right', fontSize: 10, bold: true, color: col, fontFace: FONT });
+      progressBar(s, 3.9, y + 0.1, 2.8, p, col);
+      if (note) s.addText(note, { x: 6.85, y: y + 0.0, w: 2.8, h: 0.3, fontSize: 9, color: C.muted, fontFace: FONT, wrap: true });
     });
   }
 
-  // ── SLIDE 6: Account POV ──────────────────────────────────────────────────
+  // ── SLIDE 6: Mutual Action Plan ─────────────────────────────────────────────
   {
-    const slide = addSlide(pptx, 'Account POV');
-    const fields = [
-      { label: 'Business Problem',         val: accountpov.problemStatement },
-      { label: 'Why Change Now',           val: accountpov.whyChangeNow },
-      { label: 'Cost of Doing Nothing',    val: accountpov.costOfDoingNothing },
-      { label: 'Value Proposition',        val: accountpov.valueProposition },
+    const s = pptx.addSlide();
+    s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
+    slideHeader(s, 5, 'ACTION PLAN');
+    s.addText('Mutual Action Plan', { x: 0.4, y: 0.62, w: 9.2, h: 0.32, fontSize: 22, bold: true, color: C.text, fontFace: FONT });
+
+    // Top ask callout
+    const topAsk = (map.rows || []).find(r => r.status !== 'Done') || map.rows?.[0];
+    if (topAsk) {
+      s.addShape('rect', { x: 0.4, y: 1.05, w: 9.2, h: 0.55, fill: { color: 'FFF3CD' }, line: { color: C.amber, width: 0.5 }, rectRadius: 0.06 });
+      s.addText('🚩  TOP ASK', { x: 0.6, y: 1.08, w: 1.5, h: 0.22, fontSize: 8, bold: true, color: C.red, fontFace: FONT });
+      s.addText(topAsk.action || '—', { x: 2.1, y: 1.08, w: 7.3, h: 0.4, fontSize: 10, color: C.text, fontFace: FONT, wrap: true });
+    }
+
+    // Table headers
+    const cols = [
+      { label: 'DATE', x: 0.4,  w: 0.8  },
+      { label: 'OPP OWNER', x: 1.25, w: 1.3  },
+      { label: 'ACCOUNT OWNER', x: 2.6,  w: 1.7  },
+      { label: 'ACTION / MILESTONE', x: 4.35, w: 4.2  },
+      { label: 'STATUS', x: 8.6,  w: 1.0  },
     ];
-    fields.forEach((f, i) => {
-      const y = 0.9 + i * 1.2;
-      slide.addText((f.label + '').toUpperCase(), { x: 0.35, y, w: 9.3, h: 0.25, fontSize: 8, color: ACCENT, charSpacing: 2, bold: true, fontFace: 'Calibri' });
-      slide.addText(f.val || '—', { x: 0.35, y: y + 0.25, w: 9.3, h: 0.82, fontSize: 12, color: NAVY, fontFace: 'Calibri', wrap: true });
-      if (i < fields.length - 1) {
-        slide.addShape(pptx.ShapeType.rect, { x: 0.35, y: y + 1.12, w: 9.3, h: 0.01, fill: { color: OFFWHITE } });
-      }
-    });
-  }
+    const tY = 1.72;
+    s.addShape('rect', { x: 0.4, y: tY, w: 9.2, h: 0.35, fill: { color: C.navy } });
+    cols.forEach(c => s.addText(c.label, { x: c.x + 0.08, y: tY + 0.05, w: c.w - 0.1, h: 0.25, fontSize: 8, bold: true, color: C.white, charSpacing: 1, fontFace: FONT }));
 
-  // ── SLIDE 7: Mutual Action Plan ───────────────────────────────────────────
-  {
-    const slide = addSlide(pptx, 'Mutual Action Plan');
-    const headers = ['Action', 'Owner', 'Due'];
-    const colW = [5.8, 1.8, 1.5];
-    const colX = [0.35, 6.15, 7.95];
-
-    // Header row
-    headers.forEach((h, i) => {
-      slide.addShape(pptx.ShapeType.rect, { x: colX[i], y: 0.85, w: colW[i], h: 0.38, fill: { color: NAVY } });
-      slide.addText(h, { x: colX[i] + 0.1, y: 0.88, w: colW[i] - 0.1, h: 0.32, fontSize: 10, bold: true, color: WHITE, fontFace: 'Calibri' });
+    (map.rows || []).slice(0, 5).forEach((r, i) => {
+      const y = tY + 0.35 + i * 0.55;
+      const bg = i % 2 === 0 ? C.white : C.offwhite;
+      s.addShape('rect', { x: 0.4, y, w: 9.2, h: 0.52, fill: { color: bg } });
+      const statusCol = r.status === 'Done' ? C.green : r.status === 'At risk' ? C.red : C.text;
+      s.addText(r.due || '—',                            { x: cols[0].x + 0.08, y: y + 0.12, w: cols[0].w - 0.1, h: 0.3, fontSize: 9, color: C.text, fontFace: FONT });
+      s.addText(r.ownerOpportunity || r.ownerEleven || '—', { x: cols[1].x + 0.08, y: y + 0.12, w: cols[1].w - 0.1, h: 0.3, fontSize: 9, color: C.text, fontFace: FONT });
+      s.addText(r.ownerAccount || '—',                   { x: cols[2].x + 0.08, y: y + 0.12, w: cols[2].w - 0.1, h: 0.3, fontSize: 9, color: C.text, fontFace: FONT });
+      s.addText(r.action || '—',                         { x: cols[3].x + 0.08, y: y + 0.08, w: cols[3].w - 0.1, h: 0.38, fontSize: 9, color: C.text, fontFace: FONT, wrap: true });
+      s.addText(r.status || 'Open',                      { x: cols[4].x + 0.05, y: y + 0.12, w: cols[4].w - 0.05, h: 0.3, fontSize: 9, bold: true, color: statusCol, fontFace: FONT });
     });
 
-    mapRows.forEach((r, i) => {
-      const y = 1.28 + i * 0.65;
-      const bg = i % 2 === 0 ? WHITE : OFFWHITE;
-      slide.addShape(pptx.ShapeType.rect, { x: 0.35, y, w: 9.3, h: 0.6, fill: { color: bg } });
-      const statusColor = r.status === 'Done' ? GREEN : r.status === 'At risk' ? RED : NAVY;
-      slide.addText(r.action || '—', { x: colX[0] + 0.1, y: y + 0.1, w: colW[0] - 0.15, h: 0.45, fontSize: 11, color: statusColor, fontFace: 'Calibri', wrap: true });
-      slide.addText(r.ownerAccount || r.ownerEleven || '—', { x: colX[1] + 0.05, y: y + 0.1, w: colW[1] - 0.05, h: 0.45, fontSize: 11, color: NAVY, fontFace: 'Calibri' });
-      slide.addText(r.due || '—', { x: colX[2] + 0.05, y: y + 0.1, w: colW[2] - 0.05, h: 0.45, fontSize: 11, color: MUTED, fontFace: 'Calibri' });
-    });
-    if (mapRows.length === 0) {
-      slide.addText('No MAP actions recorded yet.', { x: 0.35, y: 2.5, w: 9.3, h: 0.5, align: 'center', fontSize: 13, color: MUTED, fontFace: 'Calibri' });
+    // Next touch note
+    const nextRow = (map.rows || []).find(r => r.status === 'Open' && r.due);
+    if (nextRow) {
+      s.addText(`Next touch: ${nextRow.due} — ${nextRow.ownerOpportunity || nextRow.ownerEleven || ''} to ${(nextRow.action || '').toLowerCase().slice(0, 60)}.`, {
+        x: 0.4, y: 5.22, w: 9.2, h: 0.3, fontSize: 9, color: C.muted, italic: true, fontFace: FONT
+      });
     }
   }
 
-  // ── SLIDE 8: Next Steps ───────────────────────────────────────────────────
+  // ── SLIDE 7: Business Asks ──────────────────────────────────────────────────
   {
-    const slide = pptx.addSlide();
-    slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: '100%', h: '100%', fill: { color: NAVY } });
-    slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 0.5, h: '100%', fill: { color: BLUE } });
-    slide.addText('NEXT STEPS', { x: 0.8, y: 0.7, w: 9, h: 0.5, fontSize: 12, color: ACCENT, bold: true, charSpacing: 4, fontFace: 'Calibri' });
+    const s = pptx.addSlide();
+    s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
+    slideHeader(s, 6, 'INTERNAL ASKS');
+    s.addText('Business Asks', { x: 0.4, y: 0.62, w: 9.2, h: 0.32, fontSize: 22, bold: true, color: C.text, fontFace: FONT });
+    s.addText('What the account team needs from the business to close this deal.', {
+      x: 0.4, y: 1.0, w: 9.2, h: 0.28, fontSize: 11, color: C.muted, fontFace: FONT
+    });
 
-    const openActions = (map.rows || []).filter(r => r.status !== 'Done').slice(0, 4);
-    if (openActions.length > 0) {
-      openActions.forEach((r, i) => {
-        const y = 1.4 + i * 1.1;
-        slide.addShape(pptx.ShapeType.rect, { x: 0.8, y, w: 8.8, h: 0.9, fill: { color: BLUE }, rounding: true });
-        slide.addShape(pptx.ShapeType.ellipse, { x: 0.9, y: y + 0.22, w: 0.45, h: 0.45, fill: { color: ACCENT } });
-        slide.addText(String(i + 1), { x: 0.9, y: y + 0.22, w: 0.45, h: 0.45, align: 'center', fontSize: 13, bold: true, color: WHITE, fontFace: 'Calibri' });
-        slide.addText(r.action || '—', { x: 1.5, y: y + 0.08, w: 5.8, h: 0.42, fontSize: 13, bold: true, color: WHITE, fontFace: 'Calibri' });
-        slide.addText((r.ownerAccount || r.ownerEleven || '') + (r.due ? '  ·  Due: ' + r.due : ''), {
-          x: 1.5, y: y + 0.5, w: 7.5, h: 0.3, fontSize: 10, color: MUTED, fontFace: 'Calibri'
-        });
+    (biz.rows || []).slice(0, 4).forEach((r, i) => {
+      const y = 1.42 + i * 1.05;
+      const pc = priorityColor(r.priority);
+      s.addShape('rect', { x: 0.4, y, w: 9.2, h: 0.9, fill: { color: C.offwhite }, line: { color: C.border, width: 0.5 }, rectRadius: 0.06 });
+      // Team badge
+      s.addShape('rect', { x: 0.55, y: y + 0.12, w: 0.9, h: 0.25, fill: { color: C.accent, transparency: 80 }, rectRadius: 0.04 });
+      s.addText(r.team || '—', { x: 0.55, y: y + 0.12, w: 0.9, h: 0.25, align: 'center', fontSize: 8, bold: true, color: C.accent, fontFace: FONT });
+      s.addText(r.ask || '—', { x: 1.55, y: y + 0.1, w: 6.5, h: 0.45, fontSize: 11, color: C.text, fontFace: FONT, wrap: true });
+      // Priority + date
+      s.addText(r.priority || 'Medium', { x: 1.55, y: y + 0.6, w: 1.2, h: 0.22, fontSize: 9, bold: true, color: pc, fontFace: FONT });
+      s.addText(r.by ? '· By ' + r.by : '', { x: 2.8, y: y + 0.6, w: 6.8, h: 0.22, fontSize: 9, color: C.muted, fontFace: FONT });
+    });
+  }
+
+  // ── SLIDE 8: Next Best Actions ──────────────────────────────────────────────
+  {
+    const s = pptx.addSlide();
+    s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.navy } });
+
+    s.addText('07 · NEXT BEST ACTIONS', { x: 0.5, y: 0.3, w: 9.2, h: 0.3, fontSize: 11, color: C.accent, charSpacing: 2, bold: true, fontFace: FONT });
+    s.addText('Next Best Actions', { x: 0.5, y: 0.65, w: 7, h: 0.5, fontSize: 26, bold: true, color: C.white, fontFace: FONT });
+    if (stage) s.addText(stage.charAt(0).toUpperCase() + stage.slice(1) + ' stage', {
+      x: 0.5, y: 1.18, w: 7, h: 0.3, fontSize: 12, color: C.muted, fontFace: FONT
+    });
+
+    if (nba.length === 0) {
+      s.addText('Run coaching from the app to generate next best actions for this slide.', {
+        x: 0.5, y: 2.8, w: 9.2, h: 0.5, align: 'center', fontSize: 13, color: C.muted, fontFace: FONT
       });
     } else {
-      slide.addText('Add actions in the Mutual Action Plan to populate this slide.', {
-        x: 0.8, y: 2.5, w: 9, h: 0.5, align: 'center', fontSize: 14, color: MUTED, fontFace: 'Calibri'
+      nba.slice(0, 3).forEach((a, i) => {
+        const y = 1.6 + i * 1.3;
+        s.addShape('rect', { x: 0.5, y, w: 9.2, h: 1.1, fill: { color: C.blue }, rectRadius: 0.08 });
+        // Number circle
+        s.addShape('ellipse', { x: 0.65, y: y + 0.27, w: 0.48, h: 0.48, fill: { color: C.accent } });
+        s.addText(String(i + 1), { x: 0.65, y: y + 0.3, w: 0.48, h: 0.42, align: 'center', fontSize: 14, bold: true, color: C.white, fontFace: FONT });
+        s.addText(a.title || a.action || '—', { x: 1.3, y: y + 0.1, w: 6.5, h: 0.38, fontSize: 13, bold: true, color: C.white, fontFace: FONT, wrap: true });
+        s.addText(a.reason || a.rationale || '', { x: 1.3, y: y + 0.5, w: 6.5, h: 0.38, fontSize: 10, color: C.muted, fontFace: FONT, wrap: true });
+        // Section tag
+        const sectionMap = { snapshot:'Snapshot', stakeholders:'Stakeholders', accountpov:'Account', opppov:'Opportunity', meddpicc:'Qualification', map:'MAP', bizasks:'Biz Asks', calls:'Calls' };
+        if (a.section) {
+          const tag = sectionMap[a.section] || a.section;
+          s.addShape('rect', { x: 8.1, y: y + 0.68, w: 1.4, h: 0.25, fill: { color: C.green, transparency: 70 }, rectRadius: 0.04 });
+          s.addText(tag.toUpperCase(), { x: 8.1, y: y + 0.7, w: 1.4, h: 0.22, align: 'center', fontSize: 8, bold: true, color: C.green, fontFace: FONT });
+        }
       });
     }
-    slide.addText('Generated by Playbk Labs  ·  playbklabs.ai', {
-      x: 0.8, y: 5.2, w: 9, h: 0.3, fontSize: 9, color: MUTED, fontFace: 'Calibri'
+
+    s.addText('Generated by Playbk Labs · playbklabs.ai', {
+      x: 0.5, y: 5.3, w: 9.2, h: 0.25, fontSize: 9, color: C.muted, fontFace: FONT
     });
   }
 
-  // ── Output ────────────────────────────────────────────────────────────────
-  const buffer = await pptx.write({ outputType: 'nodebuffer' });
-  const filename = (opp.name || 'deal_review').replace(/\s+/g, '_') + '_Deal_Review.pptx';
-
+  // Output
+  const buf = await pptx.write({ outputType: 'nodebuffer' });
+  const filename = (opp.name || 'Deal_Review').replace(/\s+/g, '_') + '_Deal_Review.pptx';
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.presentationml.presentation');
   res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-  res.setHeader('Content-Length', buffer.length);
-  res.status(200).send(buffer);
+  res.status(200).send(buf);
 }
