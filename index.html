@@ -1071,30 +1071,29 @@ async function publishDeck() {
   if (btn) { btn.textContent = '⏳ Building deck…'; btn.disabled = true; }
 
   try {
-    // Send opp data to our Node generator via a fetch to a local endpoint
-    // For prototype: call the Anthropic API to get a base64 pptx back
-    // Actual approach: POST opp JSON to a Vercel serverless function
-    // For now: open a new tab with instructions + export the JSON for manual generation
-    const oppData = JSON.stringify(opp(), null, 2);
-    const blob = new Blob([oppData], { type: 'application/json' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
-    a.download = (opp().name || 'opportunity').replace(/\s+/g,'_') + '_plan.json';
+    const response = await fetch('/api/deck', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ opp: opp() })
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ error: { message: response.statusText } }));
+      throw new Error(err.error?.message || 'Deck generation failed');
+    }
+
+    const buffer = await response.arrayBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = (opp().name || 'Deal_Review').replace(/\s+/g, '_') + '_Deal_Review.pptx';
     a.click();
     URL.revokeObjectURL(url);
-
-    // Also show modal with next step
-    showModal({
-      title: 'Deal review ready to generate',
-      desc: 'Your plan data has been exported. To generate the PowerPoint: run node generate_deal_review.js with the downloaded JSON, or deploy the Vercel function for one-click deck generation.',
-      confirmLabel: 'Got it',
-      onConfirm: () => {}
-    });
   } catch(e) {
-    showModal({ title: 'Export failed', desc: e.message, confirmLabel: 'OK', onConfirm: () => {} });
+    showModal({ title: 'Deck generation failed', desc: e.message, confirmLabel: 'OK', onConfirm: () => {} });
   } finally {
-    if (btn) { btn.textContent = '▶ Publish deal review'; btn.disabled = false; }
+    if (btn) { btn.textContent = '▶ Publish Deal Review'; btn.disabled = false; }
   }
 }
 
