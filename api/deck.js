@@ -171,7 +171,7 @@ export default async function handler(req, res) {
 
     // Situation brief
     s.addText('SITUATION', { x: 0.5, y: 3.78, w: 9, h: 0.22, fontSize: 8, color: C.accent, charSpacing: 2, bold: true, fontFace: F });
-    s.addText(snap.notes || apov.problemStatement || '—', { x: 0.5, y: 4.02, w: 9, h: 0.6, fontSize: 11, color: 'AABBCC', fontFace: F, wrap: true });
+    s.addText(apov.whyChange || snap.notes || '—', { x: 0.5, y: 4.02, w: 9, h: 0.6, fontSize: 11, color: 'AABBCC', fontFace: F, wrap: true });
 
     // Next action
     if (nextAction) {
@@ -185,7 +185,7 @@ export default async function handler(req, res) {
   {
     const s = pptx.addSlide();
     s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
-    slideHeader(s, 1, 'SITUATION', snap.firmName || opp.name || 'Account');
+    slideHeader(s, 1, 'SITUATION', 'Situation Brief');
 
     // Brief top left
     s.addText(snap.notes || apov.problemStatement || '—', { x: 0.4, y: 1.15, w: 5.7, h: 1.3, fontSize: 12, color: C.text, fontFace: F, wrap: true, valign: 'top' });
@@ -208,10 +208,10 @@ export default async function handler(req, res) {
 
     // 4 why boxes filling the bottom
     const whys = [
-      { label: 'WHY CHANGE?',     val: apov.whyChangeNow || apov.problemStatement || '—' },
-      { label: 'WHY NOW?',        val: apov.whyNow || snap.notes || '—' },
-      { label: 'WHY US?',         val: opov.winTheme || apov.valueProposition || '—' },
-      { label: 'WHAT SOLUTION?',  val: opov.solution || apov.valueProposition || '—' },
+      { label: 'WHY CHANGE?',     val: apov.whyChange || '—' },
+      { label: 'WHY NOW?',        val: apov.whyNow || '—' },
+      { label: 'WHY US?',         val: apov.whyUs || '—' },
+      { label: 'WHAT SOLUTION?',  val: apov.whatSolution || '—' },
     ];
     whys.forEach((w, i) => {
       const col = i % 2, row = Math.floor(i / 2);
@@ -271,7 +271,7 @@ export default async function handler(req, res) {
     s.addShape('rect', { x: 0.4, y: 1.1, w: 5.5, h: 4.6, fill: { color: C.offwhite }, line: { color: C.border, width: 0.5 }, rectRadius: 0.07 });
 
     s.addText('1. BUSINESS PROBLEM', { x: 0.6, y: 1.22, w: 5.1, h: 0.25, fontSize: 9, bold: true, color: C.accent, charSpacing: 1.5, fontFace: F });
-    s.addText(opov.businessProblem || apov.problemStatement || '—', { x: 0.6, y: 1.5, w: 5.1, h: 1.5, fontSize: 12, color: C.text, fontFace: F, wrap: true, valign: 'top' });
+    s.addText(opov.businessProblem || '—', { x: 0.6, y: 1.5, w: 5.1, h: 1.5, fontSize: 12, color: C.text, fontFace: F, wrap: true, valign: 'top' });
 
     s.addShape('rect', { x: 0.6, y: 3.1, w: 5.1, h: 0.015, fill: { color: C.border } });
 
@@ -281,7 +281,7 @@ export default async function handler(req, res) {
     s.addShape('rect', { x: 0.6, y: 4.75, w: 5.1, h: 0.015, fill: { color: C.border } });
 
     s.addText('WIN THEME', { x: 0.6, y: 4.82, w: 5.1, h: 0.22, fontSize: 9, bold: true, color: C.green, charSpacing: 1.5, fontFace: F });
-    s.addText(opov.winTheme || apov.valueProposition || '—', { x: 0.6, y: 5.06, w: 5.1, h: 0.5, fontSize: 11, color: C.text, fontFace: F, wrap: true, valign: 'top', italic: true });
+    s.addText(apov.whyUs || apov.valueProposition || '—', { x: 0.6, y: 5.06, w: 5.1, h: 0.5, fontSize: 11, color: C.text, fontFace: F, wrap: true, valign: 'top', italic: true });
 
     // Right column: Alternative + Competition
     s.addShape('rect', { x: 6.1, y: 1.1, w: 3.5, h: 2.2, fill: { color: C.offwhite }, line: { color: C.border, width: 0.5 }, rectRadius: 0.07 });
@@ -290,7 +290,7 @@ export default async function handler(req, res) {
 
     s.addShape('rect', { x: 6.1, y: 3.5, w: 3.5, h: 2.2, fill: { color: C.navy }, rectRadius: 0.07 });
     s.addText('COMPETITION', { x: 6.28, y: 3.62, w: 3.15, h: 0.25, fontSize: 9, bold: true, color: C.accent, charSpacing: 1.5, fontFace: F });
-    s.addText(opov.competition || 'Not documented', { x: 6.28, y: 3.9, w: 3.15, h: 1.6, fontSize: 11, color: C.white, fontFace: F, wrap: true, valign: 'top' });
+    s.addText(opov.competitive || opov.incumbents || 'Not documented', { x: 6.28, y: 3.9, w: 3.15, h: 1.6, fontSize: 11, color: C.white, fontFace: F, wrap: true, valign: 'top' });
   }
 
   // ── SLIDE 6: Qualification ──────────────────────────────────────────────────
