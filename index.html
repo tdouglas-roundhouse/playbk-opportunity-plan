@@ -1354,34 +1354,73 @@ function buildPlaybkDeck(PptxGenJS, opp) {
     s.addTable([header, ...bodyRows], { x:0.5, y:1.7, w:12.33, colW:[5.5, 2.0, 1.5, 1.5, 1.83], rowH:0.4, fontFace:FONT, border:{ type:'solid', color:C.rule, pt:0.5 }, valign:'middle' });
   }
 
-  // ---- Slide 8: Next Best Actions ----
+  // ---- Slide 8: Coaching — Current Gaps + Next Best Steps ----
   { const s = pptx.addSlide();
     s.background = { color: C.navy };
     s.addText('PLAYBK LABS · DEAL REVIEW', { x:0.5, y:0.25, w:6, h:0.3, fontSize:8, fontFace:FONT, color:'B8C5D6', bold:true, charSpacing:2 });
     s.addText(oppName, { x:6.83, y:0.25, w:6, h:0.3, fontSize:8, fontFace:FONT, color:'B8C5D6', align:'right' });
-    s.addText('Next Best Actions', { x:0.5, y:0.85, w:12, h:0.6, fontSize:28, fontFace:FONT, color:C.warmWhite, bold:true });
-    const stage = (opp.coaching && opp.coaching.stage) || 'mid';
-    s.addText(stage.toUpperCase() + ' STAGE · COACHING', { x:0.5, y:1.45, w:12, h:0.3, fontSize:10, fontFace:FONT, color:'8DA8C8', charSpacing:2 });
+    s.addText('Coaching', { x:0.5, y:0.85, w:12, h:0.6, fontSize:28, fontFace:FONT, color:C.warmWhite, bold:true });
+
     const _c = opp.coaching && opp.coaching !== 'loading' ? opp.coaching : {};
-    const actions = Array.isArray(_c.steps)
-      ? _c.steps.map(x => ({ action: x.action, why: x.rationale, section: x.section }))
+    const stage = _c.stage || 'mid';
+    s.addText(stage.toUpperCase() + ' STAGE · WHERE THIS DEAL IS EXPOSED, AND WHAT TO DO NEXT', { x:0.5, y:1.42, w:12.33, h:0.3, fontSize:10, fontFace:FONT, color:'8DA8C8', charSpacing:2 });
+
+    const secTag = (sec) => ({ 'snapshot':'Snapshot','stakeholders':'Stakeholders','stakeholder':'Stakeholders','accountpov':'Account','opppov':'Opportunity','pov':'Opportunity','meddpicc':'Qualification','map':'Mutual Action Plan','bizasks':'Business Asks','bizask':'Business Asks','calls':'Call Analysis','coaching':'Coaching' })[sec] || (sec ? escD(sec) : '');
+
+    // Normalize gaps (high → low risk) and steps from the coaching payload
+    const riskRank = { high:0, medium:1, low:2 };
+    const gaps = (Array.isArray(_c.gaps) ? _c.gaps.slice() : [])
+      .sort((a, b) => (riskRank[a.risk] ?? 1) - (riskRank[b.risk] ?? 1));
+    const steps = Array.isArray(_c.steps)
+      ? _c.steps.map(x => ({ action:x.action, why:x.rationale, section:x.section }))
       : (_c.actions || []);
-    if (!actions.length) {
-      s.addText('No coaching actions cached yet — open this opp in Playbk and tap ↻ Refresh on the Coaching page to generate.', { x:0.5, y:3, w:12.33, h:1, fontSize:13, fontFace:FONT, color:'B8C5D6', italic:true, align:'center' });
+
+    const colGap = 0.4, colX0 = 0.5, colW = (12.33 - colGap) / 2, colX1 = colX0 + colW + colGap;
+    const colTopY = 2.05, colHdrH = 0.35, listY = colTopY + colHdrH + 0.15;
+
+    if (!gaps.length && !steps.length) {
+      s.addText('No coaching cached yet — open this opp in Playbk and tap ↻ Refresh on the Coaching page to generate.', { x:0.5, y:3, w:12.33, h:1, fontSize:13, fontFace:FONT, color:'B8C5D6', italic:true, align:'center' });
     } else {
-      const y0=2.1, h=1.5, gap=0.15;
-      actions.slice(0, 3).forEach((a, i) => {
-        const y = y0 + i*(h+gap);
-        s.addShape(pptx.ShapeType.rect, { x:0.5, y, w:12.33, h, fill:{ color:'244C75' }, line:{ color:'244C75' } });
-        s.addShape(pptx.ShapeType.rect, { x:0.5, y, w:0.08, h, fill:{ color:C.scarlet }, line:{ color:C.scarlet } });
-        s.addText(String(i+1).padStart(2,'0'), { x:0.75, y:y+0.2, w:0.7, h:0.5, fontSize:22, fontFace:FONT, color:'8DA8C8', bold:true });
-        s.addText(escD(a.action), { x:1.5, y:y+0.2, w:10.5, h:0.5, fontSize:15, fontFace:FONT, color:C.warmWhite, bold:true });
-        s.addText(escD(a.why), { x:1.5, y:y+0.75, w:10.5, h:0.5, fontSize:11, fontFace:FONT, color:'B8C5D6', italic:true });
-        if (a.section) {
-          const tag = ({ 'snapshot':'Snapshot','stakeholders':'Stakeholders','accountpov':'Account','opppov':'Opportunity','meddpicc':'Qualification','map':'Mutual Action Plan','bizasks':'Business Asks','calls':'Call Analysis','coaching':'Coaching','pov':'Opportunity','stakeholder':'Stakeholders','bizask':'Business Asks' })[a.section] || a.section;
-          s.addText(tag.toUpperCase(), { x:1.5, y:y+h-0.4, w:10.5, h:0.3, fontSize:8, fontFace:FONT, color:'5DCAA5', bold:true, charSpacing:2 });
-        }
-      });
+      // ── Left column: Current Gaps (highest → lowest risk) ──
+      s.addText('CURRENT GAPS', { x:colX0, y:colTopY, w:colW, h:colHdrH, fontSize:11, fontFace:FONT, color:C.warmWhite, bold:true, charSpacing:2 });
+      s.addText('highest → lowest risk', { x:colX0, y:colTopY, w:colW, h:colHdrH, fontSize:9, fontFace:FONT, color:'8DA8C8', align:'right', valign:'middle' });
+      const riskColor = { high:C.red, medium:C.amber, low:'5DCAA5' };
+      const riskLbl   = { high:'HIGH', medium:'MED', low:'LOW' };
+      if (gaps.length) {
+        const gh = 1.05, ggap = 0.12;
+        gaps.slice(0, 4).forEach((g, i) => {
+          const y = listY + i*(gh+ggap);
+          const risk = riskRank[g.risk] !== undefined ? g.risk : 'medium';
+          s.addShape(pptx.ShapeType.rect, { x:colX0, y, w:colW, h:gh, fill:{ color:'244C75' }, line:{ color:'244C75' } });
+          s.addShape(pptx.ShapeType.rect, { x:colX0, y, w:0.06, h:gh, fill:{ color:riskColor[risk] }, line:{ color:riskColor[risk] } });
+          s.addShape(pptx.ShapeType.roundRect, { x:colX0+0.18, y:y+0.16, w:0.7, h:0.26, fill:{ color:riskColor[risk] }, line:{ color:riskColor[risk] }, rectRadius:0.04 });
+          s.addText(riskLbl[risk], { x:colX0+0.18, y:y+0.16, w:0.7, h:0.26, fontSize:8, fontFace:FONT, color:C.navy, bold:true, align:'center', valign:'middle', charSpacing:1 });
+          const tag = secTag(g.section);
+          if (tag) s.addText(tag.toUpperCase(), { x:colX0+0.95, y:y+0.16, w:colW-1.1, h:0.26, fontSize:8, fontFace:FONT, color:'8DA8C8', bold:true, valign:'middle', charSpacing:1 });
+          s.addText(escD(g.gap || g.title || ''), { x:colX0+0.18, y:y+0.46, w:colW-0.36, h:0.3, fontSize:11, fontFace:FONT, color:C.warmWhite, bold:true });
+          if (g.impact) s.addText(escD(g.impact), { x:colX0+0.18, y:y+0.74, w:colW-0.36, h:0.28, fontSize:9, fontFace:FONT, color:'B8C5D6', italic:true });
+        });
+      } else {
+        s.addText('No material gaps identified.', { x:colX0+0.18, y:listY+0.1, w:colW-0.36, h:0.4, fontSize:11, fontFace:FONT, color:'B8C5D6', italic:true });
+      }
+
+      // ── Right column: Next Best Steps (3–5) ──
+      s.addText('NEXT BEST STEPS', { x:colX1, y:colTopY, w:colW, h:colHdrH, fontSize:11, fontFace:FONT, color:C.warmWhite, bold:true, charSpacing:2 });
+      if (steps.length) {
+        const sh = 0.83, sgap = 0.12;
+        steps.slice(0, 5).forEach((a, i) => {
+          const y = listY + i*(sh+sgap);
+          s.addShape(pptx.ShapeType.rect, { x:colX1, y, w:colW, h:sh, fill:{ color:'244C75' }, line:{ color:'244C75' } });
+          s.addShape(pptx.ShapeType.rect, { x:colX1, y, w:0.06, h:sh, fill:{ color:C.scarlet }, line:{ color:C.scarlet } });
+          s.addText(String(i+1).padStart(2,'0'), { x:colX1+0.16, y:y+0.14, w:0.55, h:0.55, fontSize:18, fontFace:FONT, color:'8DA8C8', bold:true, valign:'top' });
+          s.addText(escD(a.action), { x:colX1+0.78, y:y+0.12, w:colW-0.95, h:0.34, fontSize:11.5, fontFace:FONT, color:C.warmWhite, bold:true });
+          if (a.why) s.addText(escD(a.why), { x:colX1+0.78, y:y+0.44, w:colW-0.95, h:0.34, fontSize:9, fontFace:FONT, color:'B8C5D6', italic:true });
+          const tag = secTag(a.section);
+          if (tag) s.addText(tag.toUpperCase(), { x:colX1+colW-3.2, y:y+0.12, w:3.0, h:0.24, fontSize:7.5, fontFace:FONT, color:'5DCAA5', bold:true, align:'right', charSpacing:1 });
+        });
+      } else {
+        s.addText('No steps generated yet.', { x:colX1+0.18, y:listY+0.1, w:colW-0.36, h:0.4, fontSize:11, fontFace:FONT, color:'B8C5D6', italic:true });
+      }
     }
     s.addText('Generated by Playbk Labs · playbklabs.ai', { x:0.5, y:7.15, w:12.33, h:0.25, fontSize:8, fontFace:FONT, color:'8DA8C8', align:'center' });
   }
