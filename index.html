@@ -415,6 +415,52 @@ select.field-input{cursor:pointer}
 .coaching-action{font-size:12px;font-weight:500;color:var(--text-primary);line-height:1.45;margin-bottom:2px}
 .coaching-rationale{font-size:11px;color:var(--text-tertiary);line-height:1.4}
 .coaching-tag{font-size:10px;font-weight:500;color:var(--text-tertiary);background:var(--bg-secondary);border:0.5px solid var(--border-light);border-radius:4px;padding:1px 6px;margin-top:4px;display:inline-block;letter-spacing:0.03em}
+
+/* ── Section-relevant single next-best-step (top of non-Snapshot sections) ── */
+.section-step{display:flex;gap:12px;align-items:flex-start;background:linear-gradient(135deg,var(--bg-info),rgba(29,158,117,0.05));border:0.5px solid var(--border-info);border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:18px}
+.section-step-icon{flex-shrink:0;width:22px;height:22px;border-radius:50%;background:var(--text-info);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;margin-top:1px}
+.section-step-body{flex:1;min-width:0}
+.section-step-label{font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-info);margin-bottom:3px}
+.section-step-action{font-size:13px;font-weight:500;color:var(--text-primary);line-height:1.45}
+.section-step-why{font-size:11px;color:var(--text-secondary);line-height:1.4;margin-top:2px}
+.section-step-refresh{flex-shrink:0;background:none;border:none;color:var(--text-tertiary);cursor:pointer;font-family:var(--font);font-size:13px;padding:2px 4px;line-height:1}
+.section-step-refresh:hover{color:var(--text-info)}
+
+/* ── Coaching page buckets ── */
+.coaching-page-loading{display:flex;align-items:center;gap:8px;color:var(--text-tertiary);font-size:13px;padding:24px 0}
+.coaching-bucket{margin-bottom:22px}
+.coaching-bucket-header{display:flex;align-items:baseline;gap:8px;margin-bottom:10px}
+.coaching-bucket-title{font-size:13px;font-weight:600;letter-spacing:0.02em;color:var(--text-primary)}
+.coaching-bucket-sub{font-size:11px;color:var(--text-tertiary)}
+.coaching-empty{font-size:12px;color:var(--text-tertiary);padding:10px 0}
+
+/* Gap cards — ranked by risk */
+.gap-list{display:flex;flex-direction:column;gap:8px}
+.gap-card{display:flex;gap:12px;align-items:flex-start;background:var(--bg-secondary);border:0.5px solid var(--border-light);border-left-width:3px;border-radius:var(--radius-md);padding:11px 14px;transition:background 0.12s}
+.gap-card:hover{background:var(--bg-tertiary)}
+.gap-card.gap-high{border-left-color:var(--text-danger)}
+.gap-card.gap-medium{border-left-color:var(--text-warning)}
+.gap-card.gap-low{border-left-color:var(--text-tertiary)}
+.gap-risk{flex-shrink:0;font-size:9px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;padding:3px 8px;border-radius:20px;margin-top:1px;white-space:nowrap}
+.gap-risk-high{background:var(--bg-danger);color:var(--text-danger);border:0.5px solid var(--border-danger)}
+.gap-risk-medium{background:var(--bg-warning);color:var(--text-warning);border:0.5px solid var(--border-warning)}
+.gap-risk-low{background:var(--bg-tertiary);color:var(--text-secondary);border:0.5px solid var(--border-mid)}
+.gap-body{flex:1;min-width:0}
+.gap-title{font-size:13px;font-weight:500;color:var(--text-primary);line-height:1.45}
+.gap-impact{font-size:11px;color:var(--text-secondary);line-height:1.4;margin-top:3px}
+.gap-section-tag{font-size:10px;font-weight:500;color:var(--text-tertiary);background:var(--bg-primary);border:0.5px solid var(--border-light);border-radius:4px;padding:1px 6px;margin-top:6px;display:inline-block;letter-spacing:0.03em}
+.gap-arrow{flex-shrink:0;font-size:16px;color:var(--text-tertiary);align-self:center}
+
+/* Next-best-step cards */
+.nbs-list{display:flex;flex-direction:column;gap:8px}
+.nbs-card{display:flex;gap:12px;align-items:flex-start;background:var(--bg-secondary);border:0.5px solid var(--border-light);border-radius:var(--radius-md);padding:11px 14px;transition:background 0.12s}
+.nbs-card:hover{background:var(--bg-tertiary)}
+.nbs-num{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--green-pip);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.nbs-body{flex:1;min-width:0}
+.nbs-action{font-size:13px;font-weight:500;color:var(--text-primary);line-height:1.45}
+.nbs-why{font-size:11px;color:var(--text-secondary);line-height:1.4;margin-top:3px}
+.nbs-section-tag{font-size:10px;font-weight:500;color:var(--text-tertiary);background:var(--bg-primary);border:0.5px solid var(--border-light);border-radius:4px;padding:1px 6px;margin-top:6px;display:inline-block;letter-spacing:0.03em}
+.nbs-arrow{flex-shrink:0;font-size:16px;color:var(--text-tertiary);align-self:center}
 .red-flag-label{font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-danger);margin-bottom:4px}
 .red-flag-text{font-size:13px;color:var(--text-primary)}
 
@@ -706,7 +752,8 @@ const SLIDES = [
   { id: 'opppov',       title: 'Opportunity'         },
   { id: 'meddpicc',     title: 'Qualification'        },
   { id: 'map',          title: 'Mutual Action Plan'  },
-  { id: 'calls',        title: 'Call Analysis & Coaching' },
+  { id: 'calls',        title: 'Call Analysis'       },
+  { id: 'coaching',     title: 'Coaching'            },
   { id: 'bizasks',      title: 'Business Asks'       },
   { id: 'pipeline',     title: 'Pipeline'            }
 ];
@@ -1315,9 +1362,12 @@ function buildPlaybkDeck(PptxGenJS, opp) {
     s.addText('Next Best Actions', { x:0.5, y:0.85, w:12, h:0.6, fontSize:28, fontFace:FONT, color:C.warmWhite, bold:true });
     const stage = (opp.coaching && opp.coaching.stage) || 'mid';
     s.addText(stage.toUpperCase() + ' STAGE · COACHING', { x:0.5, y:1.45, w:12, h:0.3, fontSize:10, fontFace:FONT, color:'8DA8C8', charSpacing:2 });
-    const actions = (opp.coaching && opp.coaching.actions) || [];
+    const _c = opp.coaching && opp.coaching !== 'loading' ? opp.coaching : {};
+    const actions = Array.isArray(_c.steps)
+      ? _c.steps.map(x => ({ action: x.action, why: x.rationale, section: x.section }))
+      : (_c.actions || []);
     if (!actions.length) {
-      s.addText('No coaching actions cached yet — open this opp in Playbk and tap ↻ Refresh on the coaching banner to generate.', { x:0.5, y:3, w:12.33, h:1, fontSize:13, fontFace:FONT, color:'B8C5D6', italic:true, align:'center' });
+      s.addText('No coaching actions cached yet — open this opp in Playbk and tap ↻ Refresh on the Coaching page to generate.', { x:0.5, y:3, w:12.33, h:1, fontSize:13, fontFace:FONT, color:'B8C5D6', italic:true, align:'center' });
     } else {
       const y0=2.1, h=1.5, gap=0.15;
       actions.slice(0, 3).forEach((a, i) => {
@@ -1328,7 +1378,7 @@ function buildPlaybkDeck(PptxGenJS, opp) {
         s.addText(escD(a.action), { x:1.5, y:y+0.2, w:10.5, h:0.5, fontSize:15, fontFace:FONT, color:C.warmWhite, bold:true });
         s.addText(escD(a.why), { x:1.5, y:y+0.75, w:10.5, h:0.5, fontSize:11, fontFace:FONT, color:'B8C5D6', italic:true });
         if (a.section) {
-          const tag = ({ 'snapshot':'Snapshot','stakeholders':'Stakeholders','accountpov':'Account','opppov':'Opportunity','meddpicc':'Qualification','map':'Mutual Action Plan','bizasks':'Business Asks','calls':'Calls & Coaching' })[a.section] || a.section;
+          const tag = ({ 'snapshot':'Snapshot','stakeholders':'Stakeholders','accountpov':'Account','opppov':'Opportunity','meddpicc':'Qualification','map':'Mutual Action Plan','bizasks':'Business Asks','calls':'Call Analysis','coaching':'Coaching','pov':'Opportunity','stakeholder':'Stakeholders','bizask':'Business Asks' })[a.section] || a.section;
           s.addText(tag.toUpperCase(), { x:1.5, y:y+h-0.4, w:10.5, h:0.3, fontSize:8, fontFace:FONT, color:'5DCAA5', bold:true, charSpacing:2 });
         }
       });
@@ -1462,6 +1512,7 @@ function isSlideFilled(id) {
   if (id === 'meddpicc')     return calcScore().yes > 0;
   if (id === 'map')          return d().map.rows.length > 0 && !!d().map.topAsk;
   if (id === 'calls')        return (d().calls || []).length > 0;
+  if (id === 'coaching')     return coachingSteps().length > 0 || coachingGaps().length > 0;
   if (id === 'bizasks')      return (d().bizasks && d().bizasks.rows && d().bizasks.rows.length > 0);
   return false;
 }
@@ -1487,8 +1538,12 @@ function renderCurrentSlide() {
   const sid = SLIDES[idx] ? SLIDES[idx].id : SLIDES[1].id;
   const slide = document.createElement('div');
   slide.className = 'slide visible';
-  // Coaching banner prepended to every opportunity section
-  slide.innerHTML = buildCoachingBanner() + buildSlide(sid);
+  // Snapshot keeps the top-3 banner. Other sections get a single section-relevant
+  // step (if one exists). The Coaching page is the full coaching surface itself.
+  let topHTML = '';
+  if (sid === 'snapshot')      topHTML = buildCoachingBanner();
+  else if (sid !== 'coaching') topHTML = buildSectionStep(sid);
+  slide.innerHTML = topHTML + buildSlide(sid);
   c.appendChild(slide);
   attachListeners();
   attachFormatters();
@@ -1502,8 +1557,36 @@ function renderCurrentSlide() {
 
 const SLIDE_NAV_IDX = {
   snapshot: 1, stakeholders: 2, accountpov: 3, opppov: 4,
-  meddpicc: 5, map: 6, bizasks: 7, calls: 8
+  meddpicc: 5, map: 6, calls: 7, coaching: 8, bizasks: 9
 };
+
+// Shared section-label map (also handles transcript-finding aliases)
+const SECTION_LABELS = {
+  snapshot: 'Snapshot', stakeholders: 'Stakeholders', accountpov: 'Account',
+  opppov: 'Opportunity', meddpicc: 'Qualification', map: 'Mutual Action Plan',
+  bizasks: 'Business Asks', calls: 'Call Analysis', coaching: 'Coaching',
+  pov: 'Opportunity', stakeholder: 'Stakeholders', bizask: 'Business Asks'
+};
+function sectionLabel(s) { return (SECTION_LABELS[s] || s || '').replace('_', ' '); }
+// Canonicalise a finding/step section alias to a real navigable slide id
+function canonSection(s) {
+  const map = { pov: 'opppov', stakeholder: 'stakeholders', bizask: 'bizasks' };
+  return map[s] || s;
+}
+
+// Normalised accessors — tolerate the legacy { actions:[...] } shape
+function coachingSteps() {
+  const c = opp() && opp().coaching;
+  if (!c || c === 'loading') return [];
+  if (Array.isArray(c.steps)) return c.steps;
+  // legacy: actions had { action, why, section }
+  return (c.actions || []).map(a => ({ action: a.action, rationale: a.why, section: a.section }));
+}
+function coachingGaps() {
+  const c = opp() && opp().coaching;
+  if (!c || c === 'loading') return [];
+  return Array.isArray(c.gaps) ? c.gaps : [];
+}
 
 function buildCoachingBanner() {
   const coaching = opp() && opp().coaching;
@@ -1531,17 +1614,17 @@ function buildCoachingBanner() {
   </div>
 </div>`;
   }
-  const actions = coaching.actions || [];
+  const steps = coachingSteps().slice(0, 3);
   const stage   = coaching.stage || '';
   const stageLabel = { early: 'Early stage', mid: 'Mid stage', late: 'Late stage' }[stage] || '';
-  const actionsHTML = actions.map((a, i) => {
-    const navIdx = SLIDE_NAV_IDX[a.section] || 1;
+  const actionsHTML = steps.map((a, i) => {
+    const navIdx = SLIDE_NAV_IDX[canonSection(a.section)] || 1;
     return `<button class="coaching-action-item" onclick="navigateToSection(${navIdx})">
   <div class="coaching-action-num">${i + 1}</div>
   <div class="coaching-action-body">
     <div class="coaching-action-text">${esc(a.action)}</div>
-    <div class="coaching-action-why">${esc(a.why)}</div>
-    ${a.section ? `<span class="coaching-action-tag">${esc(({'snapshot':'Snapshot','stakeholders':'Stakeholders','accountpov':'Account','opppov':'Opportunity','meddpicc':'Qualification','map':'Mutual Action Plan','bizasks':'Business Asks','calls':'Calls & Coaching'}[a.section] || a.section).replace('_',' '))}</span>` : ''}
+    <div class="coaching-action-why">${esc(a.rationale || a.why || '')}</div>
+    ${a.section ? `<span class="coaching-action-tag">${esc(sectionLabel(a.section))}</span>` : ''}
   </div>
   <div class="coaching-action-arrow">›</div>
 </button>`;
@@ -1559,6 +1642,96 @@ function navigateToSection(idx) {
   opp().currentSlide = idx;
   render();
 }
+
+/* ── Section-relevant single step (shown atop non-Snapshot sections) ──
+   Renders ONLY if a coaching step is tagged to this section. */
+function buildSectionStep(sid) {
+  const steps = coachingSteps();
+  if (!steps.length) return '';
+  const step = steps.find(s => canonSection(s.section) === sid);
+  if (!step) return '';
+  return `<div class="section-step">
+  <div class="section-step-icon">→</div>
+  <div class="section-step-body">
+    <div class="section-step-label">Next best step · ${esc(sectionLabel(sid))}</div>
+    <div class="section-step-action">${esc(step.action)}</div>
+    ${step.rationale ? `<div class="section-step-why">${esc(step.rationale)}</div>` : ''}
+  </div>
+  <button class="section-step-refresh" onclick="refreshCoaching()" title="Regenerate coaching">↻</button>
+</div>`;
+}
+
+/* ── Full Coaching page: Current Gaps (ranked) + Next Best Steps (3–5) ── */
+function buildCoachingPage() {
+  const coaching = opp() && opp().coaching;
+  const head = `${oppNameBadge()}<div class="slide-title">Coaching</div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+  <div style="font-size:13px;color:var(--text-tertiary)">Where this deal is exposed, and what to do next.</div>
+  <button class="ai-draft-btn" onclick="refreshCoaching()" title="Regenerate from the full plan">↻ Refresh</button>
+</div>`;
+
+  if (!coaching || coaching === 'loading') {
+    return head + `<div class="coaching-page-loading">
+  <div class="coaching-dot"></div><div class="coaching-dot"></div><div class="coaching-dot"></div>
+  <span>Analysing the full plan…</span>
+</div>`;
+  }
+
+  const stage = coaching.stage || '';
+  const stageLabel = { early: 'Early stage', mid: 'Mid stage', late: 'Late stage' }[stage] || '';
+  const gaps  = coachingGaps();
+  const steps = coachingSteps().slice(0, 5);
+
+  // ── Current Gaps — highest to lowest risk ──
+  const riskRank = { high: 0, medium: 1, low: 2 };
+  const sortedGaps = gaps.slice().sort((a, b) =>
+    (riskRank[a.risk] ?? 1) - (riskRank[b.risk] ?? 1));
+  const riskLabel = { high: 'High risk', medium: 'Medium risk', low: 'Low risk' };
+
+  const gapsHTML = sortedGaps.length ? sortedGaps.map(g => {
+    const risk = riskRank[g.risk] !== undefined ? g.risk : 'medium';
+    const navIdx = SLIDE_NAV_IDX[canonSection(g.section)];
+    return `<div class="gap-card gap-${risk}"${navIdx ? ` onclick="navigateToSection(${navIdx})" style="cursor:pointer"` : ''}>
+  <div class="gap-risk gap-risk-${risk}">${riskLabel[risk]}</div>
+  <div class="gap-body">
+    <div class="gap-title">${esc(g.gap || g.title || '')}</div>
+    ${g.impact ? `<div class="gap-impact">${esc(g.impact)}</div>` : ''}
+    ${g.section ? `<span class="gap-section-tag">${esc(sectionLabel(g.section))}</span>` : ''}
+  </div>
+  ${navIdx ? '<div class="gap-arrow">›</div>' : ''}
+</div>`;
+  }).join('') : '<div class="coaching-empty">No material gaps identified. Tap Refresh after updating the plan.</div>';
+
+  // ── Next Best Steps — 3–5 ──
+  const stepsHTML = steps.length ? steps.map((s, i) => {
+    const navIdx = SLIDE_NAV_IDX[canonSection(s.section)];
+    return `<div class="nbs-card"${navIdx ? ` onclick="navigateToSection(${navIdx})" style="cursor:pointer"` : ''}>
+  <div class="nbs-num">${i + 1}</div>
+  <div class="nbs-body">
+    <div class="nbs-action">${esc(s.action)}</div>
+    ${s.rationale ? `<div class="nbs-why">${esc(s.rationale)}</div>` : ''}
+    ${s.section ? `<span class="nbs-section-tag">${esc(sectionLabel(s.section))}</span>` : ''}
+  </div>
+  ${navIdx ? '<div class="nbs-arrow">›</div>' : ''}
+</div>`;
+  }).join('') : '<div class="coaching-empty">No steps generated yet. Tap Refresh.</div>';
+
+  return head + `
+<div class="coaching-bucket">
+  <div class="coaching-bucket-header">
+    <span class="coaching-bucket-title">Current gaps</span>
+    <span class="coaching-bucket-sub">highest → lowest risk</span>
+  </div>
+  <div class="gap-list">${gapsHTML}</div>
+</div>
+<div class="coaching-bucket">
+  <div class="coaching-bucket-header">
+    <span class="coaching-bucket-title">Next best steps${stageLabel ? ' · ' + stageLabel : ''}</span>
+  </div>
+  <div class="nbs-list">${stepsHTML}</div>
+</div>`;
+}
+
 
 function maybeRefreshCoaching() {
   if (!opp()) return;
@@ -1591,6 +1764,11 @@ async function generateCoaching() {
       <div class="coaching-dot"></div><div class="coaching-dot"></div><div class="coaching-dot"></div>
       <span>Analysing deal…</span>
     </div>`;
+  } else {
+    // On the Coaching page (or a section without a banner), refresh the slide so
+    // the loading state is visible there too.
+    const sid = SLIDES[opp().currentSlide || 1] && SLIDES[opp().currentSlide || 1].id;
+    if (sid === 'coaching') renderCurrentSlide();
   }
 
   // Build plan summary for Claude
@@ -1617,7 +1795,7 @@ async function generateCoaching() {
     ? Math.floor((Date.now() - new Date(data.map.lastEngagement).getTime()) / 86400000)
     : null;
 
-  const prompt = `You are an expert B2B sales coach. Analyse this opportunity plan and return the top 3 most important next actions for the AE right now.
+  const prompt = `You are an expert B2B sales coach. Analyse this opportunity plan and return (1) the current gaps in this deal ranked by risk, and (2) the next best steps for the AE right now.
 
 OPPORTUNITY: ${opp().name}
 Firm: ${data.snapshot.firmName || 'unknown'} | Type: ${data.snapshot.firmType || 'unknown'} | ARR target: ${data.snapshot.targetArr || 'unknown'}
@@ -1651,23 +1829,30 @@ Determine the deal stage (early/mid/late) based on the data above:
 Return ONLY valid JSON:
 {
   "stage": "early|mid|late",
-  "actions": [
+  "gaps": [
+    {
+      "gap": "the specific gap or risk in this deal, max 14 words",
+      "impact": "why it threatens the deal, tied to actual plan data, max 20 words",
+      "risk": "high|medium|low",
+      "section": "one of: snapshot|stakeholders|accountpov|opppov|meddpicc|map|bizasks|calls"
+    }
+  ],
+  "steps": [
     {
       "action": "specific action max 12 words — what to DO, not what to think about",
-      "why": "one sentence tied to actual data in this plan, max 20 words",
-      "section": "one of: snapshot|stakeholders|accountpov|opppov|meddpicc|map|bizasks|calls"  // meddpicc displays as Qualification
+      "rationale": "one sentence tied to actual data in this plan, max 20 words",
+      "section": "one of: snapshot|stakeholders|accountpov|opppov|meddpicc|map|bizasks|calls"
     }
   ]
 }
 
 Rules:
-- Exactly 3 actions, ranked by urgency
-- Actions must be specific to THIS deal — not generic sales advice
-- Prioritise blocker sections that are weak
-- If EB is not directly engaged, that is almost always action #1 at mid/late stage
-- If last engagement is >14 days ago, flag staleness
-- If MAP has no next touch scheduled, flag it
-- Section must be one of the exact values listed above`;
+- "gaps": 2–6 items, ordered most to least risk. "risk" reflects deal jeopardy: high = could lose/stall the deal, medium = meaningful exposure, low = hygiene. Prioritise weak BLOCKER sections as high risk.
+- "steps": 3–5 items, ranked by urgency. Each must be specific to THIS deal — not generic sales advice.
+- Tag each step to the section where the AE would act on it. Only attach a step to a section it genuinely belongs to (e.g. an EB-access step → stakeholders; a metric step → opppov).
+- If EB is not directly engaged, that is almost always the #1 step and a high-risk gap at mid/late stage.
+- If last engagement is >14 days ago, flag staleness. If MAP has no next touch, flag it.
+- meddpicc displays as Qualification. Section must be one of the exact values listed above.`;
 
   try {
     const resp = await fetch('/api/claude', {
@@ -1675,7 +1860,7 @@ Rules:
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
-        max_tokens: 600,
+        max_tokens: 1100,
         messages: [{ role: 'user', content: prompt }]
       })
     });
@@ -1686,17 +1871,13 @@ Rules:
     opp().coaching = parsed;
     opp().coachingGeneratedAt = Date.now();
   } catch(e) {
-    opp().coaching = { stage: 'mid', actions: [
-      { action: 'Coaching unavailable — check connection', why: e.message, section: 'snapshot' }
+    opp().coaching = { stage: 'mid', gaps: [], steps: [
+      { action: 'Coaching unavailable — check connection', rationale: e.message, section: 'snapshot' }
     ]};
   }
-  // Re-render just the banner
-  const bannerEl = document.querySelector('.coaching-banner');
-  if (bannerEl) {
-    bannerEl.outerHTML = buildCoachingBanner();
-  } else {
-    renderCurrentSlide();
-  }
+  // Re-render the current slide so the banner, section-step, AND Coaching page
+  // all pick up the new payload.
+  renderCurrentSlide();
 }
 
 
@@ -1970,6 +2151,7 @@ function buildSlide(id) {
   if (id === 'meddpicc')     return buildMeddpiccSlide();
   if (id === 'map')          return buildMap();
   if (id === 'calls')        return buildCalls();
+  if (id === 'coaching')     return buildCoachingPage();
   if (id === 'bizasks')      return buildBizAsks();
   return '';
 }
@@ -3015,7 +3197,7 @@ function buildCalls() {
     <div class="coaching-body">
       <div class="coaching-action">${esc(cs.action)}</div>
       ${cs.rationale ? `<div class="coaching-rationale">${esc(cs.rationale)}</div>` : ''}
-      ${cs.section ? '<span class="coaching-tag">' + esc(({'snapshot':'Snapshot','stakeholders':'Stakeholders','accountpov':'Account','opppov':'Opportunity','meddpicc':'Qualification','map':'Mutual Action Plan','bizasks':'Business Asks','calls':'Calls & Coaching','pov':'POV','stakeholder':'Stakeholders','bizask':'Business Asks'}[cs.section] || cs.section)) + '</span>' : ''}
+      ${cs.section ? '<span class="coaching-tag">' + esc(sectionLabel(cs.section)) + '</span>' : ''}
     </div>
   </div>`).join('')}
 </div>`;
@@ -3861,21 +4043,58 @@ function buildExampleOpp() {
 function buildExampleCoaching() {
   return {
     stage: 'mid',
-    actions: [
+    gaps: [
       {
-        action: 'Arrange direct meeting with Robert Hargrove — economic buyer not yet engaged',
-        why: 'Marcus controls access but cannot sign. Every week without EB contact increases veto risk at proposal stage.',
+        gap: 'Economic buyer Robert Hargrove not yet engaged',
+        impact: 'Marcus controls access but cannot sign — unaddressed veto risk at proposal stage.',
+        risk: 'high',
+        section: 'stakeholders'
+      },
+      {
+        gap: 'Paper Process is the weakest blocker at 1/4',
+        impact: 'CCO David Okafor has not engaged on cloud data policy — compliance could kill a scoped pilot.',
+        risk: 'high',
+        section: 'meddpicc'
+      },
+      {
+        gap: 'Two of three custodian integrations unvalidated',
+        impact: 'Only Schwab confirmed; pilot scope cannot be locked without Fidelity and Northern Trust.',
+        risk: 'medium',
+        section: 'map'
+      },
+      {
+        gap: 'No success metric agreed with champion',
+        impact: 'Value of solving is not quantified, weakening the EB business case.',
+        risk: 'medium',
+        section: 'opppov'
+      },
+      {
+        gap: 'No next touch scheduled',
+        impact: 'Momentum risk — last engagement is aging with nothing on the calendar.',
+        risk: 'low',
+        section: 'map'
+      }
+    ],
+    steps: [
+      {
+        action: 'Arrange direct meeting with Robert Hargrove (economic buyer)',
+        rationale: 'Marcus controls access but cannot sign; every week without EB contact increases veto risk.',
         section: 'stakeholders'
       },
       {
         action: 'Surface cloud data policy with David Okafor before pilot proposal',
-        why: 'CCO has not engaged. Paper Process is your weakest blocker at 1/4 — compliance could kill this after you invest in scoping.',
+        rationale: 'CCO has not engaged and Paper Process is your weakest blocker at 1/4.',
         section: 'meddpicc'
       },
       {
         action: 'Confirm Fidelity and Northern Trust API access with Sarah Chen',
-        why: 'Schwab is confirmed but two of three custodians are unvalidated. Pilot scope cannot be locked without this.',
+        rationale: 'Two of three custodians are unvalidated; pilot scope cannot be locked without this.',
         section: 'map'
+      },
+      {
+        action: 'Agree a quantified success metric with the champion',
+        rationale: 'No metric defined yet — needed to build the EB business case.',
+        section: 'opppov'
       }
     ],
     generatedAt: Date.now()
