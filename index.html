@@ -2432,6 +2432,9 @@ ${buildConvictionCard()}
 </div>`;
 }
 
+// Roles = position in the decision (sentiment is the separate Advocate/Neutral/Risk axis)
+const STK_ROLES = ['Economic buyer', 'Executive Sponsor', 'Champion', 'Coach', 'Blocker'];
+
 function buildStakeholders() {
   const stk = d().stakeholders;
 
@@ -2450,15 +2453,25 @@ function buildStakeholders() {
     // Cycle order: Advocate → Neutral → Risk → Advocate
     const nextSent = { Advocate: 'Neutral', Neutral: 'Risk', Risk: 'Advocate' }[sent];
 
+    // Role options — include the card's current role even if off-list (graceful fallback for legacy 'Neutral' etc.)
+    const roleOpts = (STK_ROLES.includes(s.role) ? STK_ROLES : [s.role, ...STK_ROLES])
+      .map(r => `<option value="${esc(r)}"${r === s.role ? ' selected' : ''}>${esc(r)}</option>`).join('');
+
     return `<div class="stk-card">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-    <button onclick="setStkField(${i},'sentiment','${nextSent}');render()"
-      style="display:inline-flex;align-items:center;gap:5px;padding:3px 8px 3px 5px;border-radius:5px;border:0.5px solid ${bc};background:${bg};cursor:pointer;font-family:var(--font);transition:all 0.12s"
-      title="Tap to change sentiment">
-      <span style="width:7px;height:7px;border-radius:50%;background:${dot};flex-shrink:0;display:inline-block"></span>
-      <span style="font-size:11px;font-weight:600;color:${fc}">${esc(s.role)}</span>
-      <span style="font-size:10px;color:${fc};opacity:0.65">· ${sent}</span>
-    </button>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px">
+    <div style="display:flex;align-items:center;gap:5px;min-width:0">
+      <button onclick="setStkField(${i},'sentiment','${nextSent}');render()"
+        style="display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:5px;border:0.5px solid ${bc};background:${bg};cursor:pointer;font-family:var(--font);transition:all 0.12s;flex-shrink:0"
+        title="Tap to change sentiment">
+        <span style="width:7px;height:7px;border-radius:50%;background:${dot};flex-shrink:0;display:inline-block"></span>
+        <span style="font-size:10px;font-weight:600;color:${fc}">${sent}</span>
+      </button>
+      <select onchange="setStkField(${i},'role',this.value);render()"
+        title="Change role in the decision"
+        style="font-size:11px;font-weight:600;padding:3px 4px;border-radius:5px;border:0.5px solid var(--border-mid);background:var(--bg-secondary);color:var(--text-primary);cursor:pointer;font-family:var(--font);max-width:130px">
+        ${roleOpts}
+      </select>
+    </div>
     ${(() => {
       const direct = (s.linkedinUrl || '').trim();
       const firm = (d().snapshot.firmName || '').trim();
@@ -2489,7 +2502,7 @@ function buildStakeholders() {
 
   return `${oppNameBadge()}<div class="slide-title">Stakeholders</div>
 <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-  ${['Economic buyer', 'Executive Sponsor', 'Champion', 'Coach', 'Blocker', 'Neutral'].map(r => `<button class="action-btn" style="font-size:12px;padding:5px 12px" onclick="addStakeholder('${r}')">+ ${r}</button>`).join('')}
+  ${STK_ROLES.map(r => `<button class="action-btn" style="font-size:12px;padding:5px 12px" onclick="addStakeholder('${r}')">+ ${r}</button>`).join('')}
 </div>
 <div class="stk-grid">${cards || '<div style="font-size:13px;color:var(--text-tertiary);padding:10px 0">No stakeholders yet — add one above.</div>'}</div>
 <div class="sec-div">Access & coverage gaps</div>
@@ -3448,7 +3461,7 @@ function acceptFinding(ci, fi) {
     } else if (field === 'map.nextTouch') {
       d().map.nextTouch = value;
     } else if (field === 'stakeholder.new') {
-      d().stakeholders.push({ role: 'Neutral', name: value, title: '', sentiment: 'Neutral', win: '', linkedinUrl: '' });
+      d().stakeholders.push({ role: 'Coach', name: value, title: '', sentiment: 'Neutral', win: '', linkedinUrl: '' });
     } else if (field.startsWith('gap.')) {
       const sid = field.split('.')[1];
       if (!d().meddpicc.gapOverrides) d().meddpicc.gapOverrides = { __manual: [] };
@@ -3935,7 +3948,7 @@ function buildExampleOpp() {
     { name: 'Marcus Webb', title: 'CIO', role: 'Champion', sentiment: 'Advocate', win: 'Eliminate the monthly reporting reconciliation that consumes 2 days of his team. Wants to look good in front of the principal after the data error.' },
     { name: 'Sarah Chen', title: 'Director of Operations', role: 'Coach', sentiment: 'Advocate', win: 'Reduce manual data entry burden on her team. Has been coordinating all meetings — strong internal ally.' },
     { name: 'Robert Hargrove', title: 'Managing Principal', role: 'Economic buyer', sentiment: 'Neutral', win: 'Single view of family wealth without calling three advisors. Values privacy and control above cost.' },
-    { name: 'David Okafor', title: 'Chief Compliance Officer', role: 'Neutral', sentiment: 'Risk', win: 'Unknown — has not engaged yet. Could become a blocker on cloud data policy.' }
+    { name: 'David Okafor', title: 'Chief Compliance Officer', role: 'Blocker', sentiment: 'Risk', win: 'Unknown — has not engaged yet. Could become a blocker on cloud data policy.' }
   ];
 
   // Account POV
