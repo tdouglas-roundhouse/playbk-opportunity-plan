@@ -42,7 +42,7 @@ body{font-family:var(--font);background:var(--bg-secondary);color:var(--text-pri
   width:210px;flex-shrink:0;
   background:#1a2332;
   display:flex;flex-direction:column;
-  position:sticky;top:0;height:100vh;overflow-y:auto;
+  position:sticky;top:0;height:100vh;overflow:hidden;
 }
 .sidebar-brand{padding:20px 18px 14px;border-bottom:0.5px solid rgba(255,255,255,0.08);overflow:visible}
 .sidebar-brand p{font-size:11px;color:rgba(255,255,255,0.4);margin-top:3px}
@@ -51,7 +51,7 @@ body{font-family:var(--font);background:var(--bg-secondary);color:var(--text-pri
 .save-indicator{font-size:11px;color:#5DCAA5;opacity:0;transition:opacity 0.4s;white-space:nowrap;margin-left:auto}
 .save-indicator.show{opacity:1}
 
-.sidebar-opp{padding:12px 14px 0}
+.sidebar-opp{padding:12px 14px 0;flex:1 1 auto;min-height:0;overflow-y:auto}
 .opp-bar{display:flex;flex-direction:column;gap:4px}
 .opp-btn{font-size:12px;font-family:var(--font);padding:5px 10px;border-radius:6px;border:0.5px solid rgba(255,255,255,0.12);background:transparent;color:rgba(255,255,255,0.55);cursor:pointer;transition:all 0.15s;text-align:left;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .opp-btn:hover{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.85)}
@@ -73,7 +73,7 @@ body{font-family:var(--font);background:var(--bg-secondary);color:var(--text-pri
 .opp-btn.dragging{opacity:0.4}
 .branch-header.drag-over{background:rgba(93,202,165,0.12);color:#5DCAA5}
 
-.sidebar-nav{padding:14px 14px 0;flex:1;display:flex;flex-direction:column}
+.sidebar-nav{padding:14px 14px 14px;flex-shrink:0;display:flex;flex-direction:column;border-top:0.5px solid rgba(255,255,255,0.08)}
 .sidebar-nav-label{font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:rgba(255,255,255,0.3);padding:8px 8px 4px}
 .nav-pill{font-size:13px;font-family:var(--font);padding:8px 10px;border-radius:8px;border:none;background:transparent;color:rgba(255,255,255,0.55);cursor:pointer;text-align:left;width:100%;transition:all 0.12s;display:flex;align-items:center;justify-content:space-between;gap:6px;white-space:nowrap}
 .nav-pill:hover{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.9)}
