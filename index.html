@@ -60,6 +60,10 @@ body{font-family:var(--font);background:var(--bg-secondary);color:var(--text-pri
 .add-opp-btn:hover{color:rgba(255,255,255,0.65);border-color:rgba(255,255,255,0.35)}
 .skyview-label{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;letter-spacing:0.04em;color:rgba(255,255,255,0.85);padding:4px 8px 8px}
 .skyview-label .sky-dot{width:6px;height:6px;border-radius:50%;background:#5DCAA5;flex-shrink:0}
+.backup-row{display:flex;align-items:center;gap:6px;margin-top:8px}
+.backup-link{font-size:11px;font-family:var(--font);background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;padding:0;transition:color 0.12s}
+.backup-link:hover{color:rgba(255,255,255,0.8)}
+.backup-sep{font-size:11px;color:rgba(255,255,255,0.2)}
 .branch-header{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:rgba(255,255,255,0.4);padding:6px 8px 4px;cursor:pointer;user-select:none;border-radius:6px;transition:color 0.12s}
 .branch-header:hover{color:rgba(255,255,255,0.7)}
 .branch-chevron{font-size:9px;transition:transform 0.15s;display:inline-block;width:8px}
@@ -609,6 +613,12 @@ select.field-input{cursor:pointer}
       <p style="margin-top:6px;font-size:13px;font-weight:500;color:#ffffff;letter-spacing:0.01em">Eleven Systems</p>
       <div class="sidebar-score" id="headerScore">
         <span class="save-indicator" id="saveIndicator">&#10003; Saved</span>
+      </div>
+      <div class="backup-row">
+        <button class="backup-link" onclick="backupToFile()" title="Download a JSON backup of all deals and pipeline">Backup</button>
+        <span class="backup-sep">·</span>
+        <button class="backup-link" onclick="document.getElementById('restoreFileInput').click()" title="Restore from a JSON backup file">Restore</button>
+        <input type="file" id="restoreFileInput" accept=".json,application/json" style="display:none" onchange="restoreFromFile(event)">
       </div>
     </div>
     <div class="sidebar-opp">
@@ -3671,6 +3681,79 @@ function loadState() {
   } catch(e) { /* corrupted state — start fresh */ }
   render();
   updateLogCount();
+}
+
+// ── Backup / Restore ──────────────────────────────────────────
+// Manual JSON export/import of full app state. Offline safety net
+// and portability path; survives into the Supabase migration.
+function backupToFile() {
+  try {
+    const payload = {
+      _format: 'playbk-backup',
+      _version: 1,
+      exportedAt: new Date().toISOString(),
+      state: JSON.parse(localStorage.getItem(STATE_KEY) || 'null'),
+      log:   JSON.parse(localStorage.getItem('eleven_opp_log') || '[]'),
+      collapsedBranches: JSON.parse(localStorage.getItem('playbk_collapsed_branches') || '[]')
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const d = new Date();
+    const stamp = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    a.href = url;
+    a.download = 'playbk_backup_' + stamp + '.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch(e) {
+    showModal({ title: 'Backup failed', desc: e.message, confirmLabel: 'OK', onConfirm: () => {} });
+  }
+}
+
+function restoreFromFile(event) {
+  const file = event.target.files && event.target.files[0];
+  event.target.value = ''; // reset so the same file can be re-selected later
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    let parsed;
+    try { parsed = JSON.parse(reader.result); }
+    catch { showModal({ title: 'Restore failed', desc: 'That file is not valid JSON.', confirmLabel: 'OK', onConfirm: () => {} }); return; }
+
+    // Accept either our wrapped backup format, or a bare state object as a fallback
+    const isWrapped = parsed && parsed._format === 'playbk-backup';
+    const hasBareState = parsed && parsed.opps && Array.isArray(parsed.opps);
+    if (!isWrapped && !hasBareState) {
+      showModal({ title: 'Restore failed', desc: 'This does not look like a Playbk backup file.', confirmLabel: 'OK', onConfirm: () => {} });
+      return;
+    }
+
+    const oppCount = isWrapped ? (parsed.state?.opps?.length || 0) : (parsed.opps?.length || 0);
+    showModal({
+      title: 'Restore from backup?',
+      desc: `This will replace all current deals and pipeline with the backup (${oppCount} deal${oppCount === 1 ? '' : 's'}). This cannot be undone.`,
+      confirmLabel: 'Replace & restore',
+      onConfirm: () => {
+        try {
+          if (isWrapped) {
+            if (parsed.state) localStorage.setItem(STATE_KEY, JSON.stringify(parsed.state));
+            localStorage.setItem('eleven_opp_log', JSON.stringify(parsed.log || []));
+            localStorage.setItem('playbk_collapsed_branches', JSON.stringify(parsed.collapsedBranches || []));
+          } else {
+            localStorage.setItem(STATE_KEY, JSON.stringify(parsed));
+          }
+          // Rehydrate in-memory state from the freshly written keys
+          _collapsedBranches = (() => { try { return new Set(JSON.parse(localStorage.getItem('playbk_collapsed_branches') || '[]')); } catch { return new Set(); } })();
+          loadState();
+          updateLogCount();
+        } catch(e) {
+          showModal({ title: 'Restore failed', desc: e.message, confirmLabel: 'OK', onConfirm: () => {} });
+        }
+      }
+    });
+  };
+  reader.onerror = () => showModal({ title: 'Restore failed', desc: 'Could not read the file.', confirmLabel: 'OK', onConfirm: () => {} });
+  reader.readAsText(file);
 }
 
 // Hook saveState into render so every interaction persists
