@@ -135,6 +135,30 @@ select.field-input{cursor:pointer}
 .medd-score-card{background:var(--bg-secondary);border:0.5px solid var(--border-light);border-radius:var(--radius-md);padding:10px 12px;text-align:center}
 .medd-score-card .lbl{font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px}
 .medd-score-card .val{font-size:20px;font-weight:600;color:var(--text-primary);line-height:1}
+
+/* ── Themes view ── */
+.theme-section-label{font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:11px}
+.theme-card{background:var(--bg-primary);border:0.5px solid var(--border-light);border-radius:var(--radius-lg);padding:17px 19px;margin-bottom:11px}
+.theme-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.theme-card-meta{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.theme-card-element{font-size:10px;color:var(--text-tertiary);font-weight:500}
+.theme-card-count{font-size:10px;color:var(--text-tertiary)}
+.theme-card-title{font-size:15px;font-weight:600;color:var(--text-primary);letter-spacing:-0.01em;line-height:1.35}
+.theme-card-evidence{font-size:12.5px;color:var(--text-secondary);line-height:1.6;margin:11px 0 13px}
+.theme-card-action{background:var(--bg-secondary);border-radius:var(--radius-md);border-left:2px solid var(--border-info);padding:11px 14px;margin-bottom:14px}
+.theme-card-action-label{font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:5px}
+.theme-card-action-text{font-size:12.5px;color:var(--text-primary);line-height:1.55}
+.theme-card-deals{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.theme-card-deals-label{font-size:10px;color:var(--text-tertiary);margin-right:2px}
+.theme-chip{display:inline-flex;align-items:center;gap:6px;border:0.5px solid var(--border-light);background:var(--bg-primary);border-radius:20px;padding:3px 10px 3px 9px;cursor:pointer;font-family:var(--font);font-size:11px;font-weight:500;color:var(--text-primary);transition:background 0.1s}
+.theme-chip:hover{background:var(--bg-tertiary)}
+.theme-chip-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;padding:0}
+.theme-chip-dot.fc-commit{background:var(--text-success)}
+.theme-chip-dot.fc-upside{background:var(--text-info)}
+.theme-chip-dot.fc-pipeline{background:var(--text-warning)}
+.theme-chip-dot.fc-omit{background:var(--text-danger)}
+.theme-chip-arrow{font-size:11px;color:var(--text-tertiary)}
+.theme-footnote{font-size:11px;color:var(--text-tertiary);line-height:1.6;margin-top:16px}
 .medd-section{background:var(--bg-secondary);border:0.5px solid var(--border-light);border-radius:var(--radius-md);margin-bottom:6px;overflow:hidden}
 .medd-section-header{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;cursor:pointer;user-select:none;transition:background 0.12s}
 .medd-section-header:hover{background:var(--bg-tertiary)}
@@ -782,6 +806,7 @@ const SLIDES = [
 // View state
 let showDashboard = true;
 let showPipeline = false;
+let showThemes = false;
 
 const MEDD = [
   { id: 'economic_buyer', title: 'Economic buyer', desc: 'Is the principal or CIO reachable?', blocker: true,
@@ -945,7 +970,7 @@ function timeSince(ts) {
 }
 
 function render() {
-  if (opp() && !showDashboard && !showPipeline) opp().updatedAt = Date.now();
+  if (opp() && !showDashboard && !showPipeline && !showThemes) opp().updatedAt = Date.now();
   renderOppBar();
   renderSidebar();
   renderCurrentSlide();
@@ -977,7 +1002,7 @@ function renderMobile() {
   if (drawerBar) {
     renderOppTree(
       drawerBar,
-      (i) => { showDashboard = false; showPipeline = false; currentOpp = i; opp().currentSlide = 1; closeDrawer(); render(); },
+      (i) => { showDashboard = false; showPipeline = false; showThemes = false; currentOpp = i; opp().currentSlide = 1; closeDrawer(); render(); },
       () => { closeDrawer(); addOpp(); }
     );
   }
@@ -989,13 +1014,13 @@ function renderMobile() {
     const topStyle = 'font-size:11px;letter-spacing:0.06em;text-transform:uppercase;font-weight:600;border-radius:8px';
 
     const dashBtn = document.createElement('button');
-    dashBtn.className = 'nav-pill' + (showDashboard && !showPipeline ? ' active' : '');
+    dashBtn.className = 'nav-pill' + (showDashboard && !showPipeline && !showThemes ? ' active' : '');
     dashBtn.style.cssText = topStyle;
     dashBtn.textContent = 'DASHBOARD';
-    dashBtn.onclick = () => { showDashboard = true; showPipeline = false; closeDrawer(); render(); };
+    dashBtn.onclick = () => { showDashboard = true; showPipeline = false; showThemes = false; closeDrawer(); render(); };
     drawerNav.appendChild(dashBtn);
 
-    if (!showDashboard && !showPipeline && opp()) {
+    if (!showDashboard && !showPipeline && !showThemes && opp()) {
       const divLabel = document.createElement('div');
       divLabel.style.cssText = 'font-size:10px;letter-spacing:0.07em;text-transform:uppercase;color:rgba(255,255,255,0.25);padding:10px 10px 4px;font-weight:500';
       divLabel.textContent = opp().name.length > 22 ? opp().name.slice(0, 20) + '…' : opp().name;
@@ -1024,24 +1049,32 @@ function renderMobile() {
 
     const pipeBtn = document.createElement('button');
     pipeBtn.className = 'nav-pill' + (showPipeline ? ' active' : '');
-    pipeBtn.style.cssText = topStyle + ';margin-bottom:22px';
+    pipeBtn.style.cssText = topStyle + ';margin-bottom:8px';
     const lc = getLog().length;
     pipeBtn.innerHTML = `PIPELINE${lc > 0 ? ` <span style="font-size:10px;font-weight:600;background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);border-radius:10px;padding:1px 7px;margin-left:4px;letter-spacing:0">${lc}</span>` : ''}`;
-    pipeBtn.onclick = () => { showPipeline = true; showDashboard = false; closeDrawer(); render(); };
+    pipeBtn.onclick = () => { showPipeline = true; showDashboard = false; showThemes = false; closeDrawer(); render(); };
     drawerNav.appendChild(pipeBtn);
+
+    const themesBtn = document.createElement('button');
+    themesBtn.className = 'nav-pill' + (showThemes ? ' active' : '');
+    themesBtn.style.cssText = topStyle + ';margin-bottom:22px';
+    themesBtn.textContent = 'THEMES';
+    themesBtn.onclick = () => { showThemes = true; showPipeline = false; showDashboard = false; closeDrawer(); render(); };
+    drawerNav.appendChild(themesBtn);
   }
 
   // Sync mobile subtitle to current section
   const sub = document.getElementById('mobileSubtitle');
   if (sub) {
-    if (showPipeline) sub.textContent = 'Pipeline';
+    if (showThemes) sub.textContent = 'Themes';
+    else if (showPipeline) sub.textContent = 'Pipeline';
     else if (showDashboard) sub.textContent = 'Dashboard';
     else if (opp()) sub.textContent = opp().name.length > 20 ? opp().name.slice(0, 18) + '…' : opp().name;
   }
 
   // Sync drawer score
   const ds = document.getElementById('drawerScore');
-  if (ds && !showDashboard && !showPipeline) {
+  if (ds && !showDashboard && !showPipeline && !showThemes) {
     const { yes, total } = calcScore();
     const fc = calcForecast();
     ds.innerHTML = `<span class="sc">${yes}/${total}</span><span class="forecast-badge ${FC_CLASS[fc]}">${fc}</span>`;
@@ -1054,7 +1087,7 @@ function renderHeaderScore() {
   const el = document.getElementById('headerScore');
   const saveEl = document.getElementById('saveIndicator');
   // Only show score + forecast when inside an opportunity
-  if (showDashboard || showPipeline) {
+  if (showDashboard || showPipeline || showThemes) {
     el.innerHTML = '';
     if (saveEl) el.appendChild(saveEl);
     return;
@@ -1074,7 +1107,7 @@ function renderBottomBar() {
       <button class="backup-link" onclick="document.getElementById('restoreFileInput').click()" title="Restore from a JSON backup file">Restore</button>
       <input type="file" id="restoreFileInput" accept=".json,application/json" style="display:none" onchange="restoreFromFile(event)">
     </span>`;
-  if (showDashboard || showPipeline) {
+  if (showDashboard || showPipeline || showThemes) {
     bar.innerHTML = `<button class="action-btn primary" onclick="exportPlan()">Export Summary</button>${backupGroup}`;
   } else {
     bar.innerHTML = `
@@ -1463,14 +1496,14 @@ function renderSidebar() {
 
   // OVERVIEW pill
   const dashBtn = document.createElement('button');
-  dashBtn.className = 'nav-pill' + (showDashboard && !showPipeline ? ' active' : '');
+  dashBtn.className = 'nav-pill' + (showDashboard && !showPipeline && !showThemes ? ' active' : '');
   dashBtn.style.cssText = topPillStyle;
   dashBtn.textContent = 'DASHBOARD';
-  dashBtn.onclick = () => { showDashboard = true; showPipeline = false; render(); };
+  dashBtn.onclick = () => { showDashboard = true; showPipeline = false; showThemes = false; render(); };
   nav.appendChild(dashBtn);
 
   // Opportunity section pills — only visible when inside an opp
-  if (!showDashboard && !showPipeline) {
+  if (!showDashboard && !showPipeline && !showThemes) {
     const divLabel = document.createElement('div');
     divLabel.style.cssText = 'font-size:10px;letter-spacing:0.07em;text-transform:uppercase;color:rgba(255,255,255,0.25);padding:10px 10px 4px;font-weight:500';
     divLabel.textContent = opp().name.length > 18 ? opp().name.slice(0, 16) + '…' : opp().name;
@@ -1492,7 +1525,7 @@ function renderSidebar() {
   // Render inline in nav (above the pipeline divider)
   const healthDiv = document.createElement('div');
   healthDiv.id = 'sidebarHealthInline';
-  if (!showDashboard && !showPipeline) {
+  if (!showDashboard && !showPipeline && !showThemes) {
     const hs = calcHealthScore();
     if (hs > 0) {
       const hsColor = hs >= 70 ? '#5DCAA5' : hs >= 40 ? '#EF9F27' : '#f09595';
@@ -1518,11 +1551,18 @@ function renderSidebar() {
 
   const pipelineBtn = document.createElement('button');
   pipelineBtn.className = 'nav-pill' + (showPipeline ? ' active' : '');
-  pipelineBtn.style.cssText = topPillStyle + ';margin-bottom:22px';
+  pipelineBtn.style.cssText = topPillStyle + ';margin-bottom:8px';
   const logCount = getLog().length;
   pipelineBtn.innerHTML = `PIPELINE${logCount > 0 ? ` <span style="font-size:10px;font-weight:600;background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);border-radius:10px;padding:1px 7px;margin-left:4px;letter-spacing:0">${logCount}</span>` : ''}`;
-  pipelineBtn.onclick = () => { showPipeline = true; showDashboard = false; render(); };
+  pipelineBtn.onclick = () => { showPipeline = true; showDashboard = false; showThemes = false; render(); };
   nav.appendChild(pipelineBtn);
+
+  const themesBtn = document.createElement('button');
+  themesBtn.className = 'nav-pill' + (showThemes ? ' active' : '');
+  themesBtn.style.cssText = topPillStyle + ';margin-bottom:22px';
+  themesBtn.textContent = 'THEMES';
+  themesBtn.onclick = () => { showThemes = true; showPipeline = false; showDashboard = false; render(); };
+  nav.appendChild(themesBtn);
 
   // Remove any old standalone pipeline button appended to sidebar
   const old = document.getElementById('pipelineNavBtn');
@@ -1542,6 +1582,13 @@ function isSlideFilled(id) {
 function renderCurrentSlide() {
   const c = document.getElementById('slidesContainer');
   c.innerHTML = '';
+  if (showThemes) {
+    const slide = document.createElement('div');
+    slide.className = 'slide visible';
+    slide.innerHTML = buildThemesPage();
+    c.appendChild(slide);
+    return;
+  }
   if (showPipeline) {
     const slide = document.createElement('div');
     slide.className = 'slide visible';
@@ -2848,6 +2895,218 @@ function updateLogCount() {
 /* ================================================================
    PIPELINE PAGE — full inline page replacing the modal overlay
    ================================================================ */
+
+/* ════════════════════════════════════════════════════════════════
+   THEMES VIEW — cross-opportunity synthesis over live `opps` memory
+   Reads the same in-session data as every other view. No external
+   source. Deterministic first-pass synthesis; structured so the rule
+   layer can later be swapped for an LLM pass returning the same shape.
+   ════════════════════════════════════════════════════════════════ */
+
+// Build a normalized signal record per opp from live memory
+function themesBuildRecords() {
+  return opps.filter(o => !o.archived).map((o, idx) => {
+    const data = o.data || {};
+    const calls = data.calls || [];
+    let findings = [];
+    calls.forEach(c => { if (Array.isArray(c.findings)) findings = findings.concat(c.findings); });
+    const fText = (findings.map(f => `${f.title || ''} ${f.evidence || ''}`).join(' ')
+      + ' ' + calls.map(c => c.transcript || '').join(' ')
+      + ' ' + calls.map(c => c.summary || '').join(' ')).toLowerCase();
+    const snapNotes = (data.snapshot && data.snapshot.notes || '').toLowerCase();
+    const medd = (data.meddpicc && data.meddpicc.meddAnswers) || {};
+    const meddYes = Object.values(medd).filter(v => v === 'yes').length;
+    const stk = data.stakeholders || [];
+    const redFlags = findings.filter(f => f.type === 'red_flag');
+    const gaps = findings.filter(f => f.type === 'gap');
+    const has = (...kw) => kw.some(k => fText.includes(k) || snapNotes.includes(k));
+    const ebGapNamed = gaps.some(g => /economic buyer|eb |no economic|path to eb/i.test((g.title || '') + (g.evidence || '')));
+    return {
+      idx, id: o.id, name: o.name, data,
+      firmType: (data.snapshot && data.snapshot.firmType) || '',
+      arr: parseARR((data.snapshot && data.snapshot.targetArr) || ''),
+      forecast: calcForecastForData(data),
+      meddYes, stkCount: stk.length, callCount: calls.length,
+      findings, redFlags, gaps, fText,
+      sig: {
+        infosec: has('infosec', 'cyber', 'security team', 'security review', 'security call'),
+        whitelabel: has('white label', 'white-label', 'white labeled', 'white-labeled', 'offer to their clients', 'solution that they offer', 'family office solution that they', 'roll out the platform', 'rolling out the platform', 'offer to their customers', 'rolling it out to their'),
+        buildVsBuy: has('in-house', 'in house', 'internal ai', 'building internal', 'build vs', 'developing internal', 'building in-house'),
+        noUrgency: has('no urgency', 'no compelling', 'discuss internally', 'non-committal', 'no clear need'),
+        ebGap: ebGapNamed,
+        ebEngaged: stk.some(s => /economic/i.test(s.role || '') && /advocate|positive|support/i.test(s.sentiment || s.disposition || ''))
+          || findings.some(f => /eb has been named and attended|attended (a )?full demo|decision maker.*attended/i.test((f.title || '') + ' ' + (f.evidence || ''))),
+        ebIdentified: stk.some(s => /economic/i.test(s.role || '')) || has('economic buyer', 'decision maker'),
+        scaleConcern: has('how we would scale', 'scale if they', 'scale concern'),
+        forcingEvent: has('discrepancy', 'embarrass', 'in front of the principal', 'in front of the whole', 'flagged'),
+      }
+    };
+  });
+}
+
+// Synthesize themes across records. Each theme: id, title, severity,
+// meddElement, evidence, dealIdxs[], and a per-lens action map.
+function themesSynthesize(recs) {
+  const byIdx = i => recs.find(r => r.idx === i);
+  const names = idxs => idxs.map(i => byIdx(i) ? byIdx(i).name : '').filter(Boolean);
+  const themes = [];
+
+  // 1. White-label channel motion
+  const wl = recs.filter(r => r.sig.whitelabel);
+  if (wl.length >= 2) {
+    themes.push({
+      id: 'channel_play', severity: 'high', meddElement: 'Strategy / Motion',
+      title: 'White-label channel motion emerging — Eleven as the platform institutions offer their own clients',
+      evidence: `The same vision recurs independently across ${names(wl.map(r=>r.idx)).join(', ')}: Eleven as a white-labeled family-office solution the institution resells to its clients, bundling services they don't natively provide. Where an EB has engaged (JP Morgan), the white-label vision landed directly.`,
+      dealIdxs: wl.map(r => r.idx),
+      lenses: {
+        revenue: 'A different sale than direct-to-family-office — partner-led and longer, but each is a channel of many clients, not one logo. Track on a separate channel pipeline with its own stage model so it doesn\'t dilute direct forecasting. JP Morgan is the lead horse: EB engaged, only scale concern outstanding.',
+        product: 'The single biggest signal in the book: tier-1 institutions want to resell Eleven, including services Eleven doesn\'t offer natively. That implies a partner/white-label surface, multi-tenant isolation, and service-bundling on the roadmap. The market may be pulling toward B2B2C, not just direct.',
+        funnel: 'These are partner channels, not single accounts — qualify the partner\'s willingness to introduce their client base, not just their own buying intent. Different playbook from direct family-office outreach.',
+        board: 'A white-label motion through institutions like JPM, Goldman and Jefferies is a materially larger TAM story than direct family-office sales, and JPM already has an engaged economic buyer. Worth framing as a second, higher-leverage GTM thesis.'
+      }
+    });
+  }
+
+  // 2. InfoSec / security gate
+  const sec = recs.filter(r => r.sig.infosec);
+  if (sec.length >= 2) {
+    const stalled = sec.filter(r => r.redFlags.some(f => /infosec|audit|security/i.test(f.title || '')));
+    themes.push({
+      id: 'infosec_gate', severity: 'high', meddElement: 'Paper Process',
+      title: 'Security / InfoSec review is the recurring gate on every institutional deal',
+      evidence: `Security review is the named next step or active blocker at ${names(sec.map(r=>r.idx)).join(', ')}.${stalled.length ? ` On ${names(stalled.map(r=>r.idx)).join(', ')} an unfinished audit is actively stalling progress and gating the champion's next move.` : ''}`,
+      dealIdxs: sec.map(r => r.idx),
+      lenses: {
+        revenue: 'InfoSec is a predictable, repeatable gate — get ahead of it. A standing security packet (SOC2 / data-handling brief) plus a named timeline turns a multi-week stall into a checkbox. Finishing the Jefferies audit unblocks the champion\'s advisor intros.',
+        product: 'Security / data-sovereignty review is the universal precondition to institutional adoption. The private-data-store story is the right wedge — but it must be demonstrably real and packaged for a security team, not just positioned in a pitch. This is the trust question made operational.',
+        funnel: 'Security review is a stage gate to bake into the channel/institutional playbook. Surface it early so it doesn\'t surprise the deal late.',
+        board: 'Every institutional deal routes through security review. A repeatable security-clearance motion is a leading indicator of institutional readiness — the core PMF question for this market.'
+      }
+    });
+  }
+
+  // 3. Economic buyer access
+  const ebWeak = recs.filter(r => (r.stkCount > 0 || r.callCount > 0) && !r.sig.ebEngaged && (r.sig.ebGap || r.sig.ebIdentified));  if (ebWeak.length >= 2) {
+    themes.push({
+      id: 'eb_access', severity: 'high', meddElement: 'Economic Buyer',
+      title: 'Economic Buyer is structurally shielded — except where a warm intro cracked it',
+      evidence: `EB is missing, unreachable, or identified-but-cold across ${names(ebWeak.map(r=>r.idx)).join(', ')}. The instructive exception: at JP Morgan a referral routed Eleven straight to the EB, who then attended a full demo. Warm institutional intros beat the ops-layer shield.`,
+      dealIdxs: ebWeak.map(r => r.idx),
+      lenses: {
+        revenue: 'The JPM pattern is the play: a credible referral source routes straight to the EB. Lean on referral channels for buyer access rather than grinding up through ops intermediaries. On Meridian, convert the identified-but-cold principal via the principal-facing demo the champion already said would accelerate.',
+        product: 'Where Eleven reaches the buyer directly, it engages — the barrier is access, not the pitch. Reinforces the case for a principal-facing surface a champion can carry upward without us in the room.',
+        funnel: 'A deal without a named, reachable economic buyer is not yet real pipeline regardless of demo enthusiasm. Weight EB access heavily at qualification before it consumes demo time.',
+        board: 'Buyer access is the recurring constraint, and the data shows warm institutional referrals are what crack it — a repeatable, ownable motion, and the operational form of the trust barrier this market is defined by.'
+      }
+    });
+  }
+
+  // 4. No compelling event / build-vs-buy inertia (direct FO)
+  const inertia = recs.filter(r => r.sig.noUrgency || r.sig.buildVsBuy);
+  const forcing = recs.filter(r => r.sig.forcingEvent);
+  if (inertia.length >= 1 && forcing.length >= 1) {
+    themes.push({
+      id: 'no_compelling_event', severity: 'medium', meddElement: 'Competition / Why Now',
+      title: 'Direct family-office deals stall without a compelling event — and face build-vs-buy inertia',
+      evidence: `${names(forcing.map(r=>r.idx))[0] || 'The advancing deal'} moved on a real forcing event. The counter-case (${names(inertia.map(r=>r.idx)).join(', ')}): polite interest, no urgency, and at least one prospect actively building internal AI tools — a live build-vs-buy alternative.`,
+      dealIdxs: Array.from(new Set([...forcing.map(r=>r.idx), ...inertia.map(r=>r.idx)])),
+      lenses: {
+        revenue: 'Qualify hard for a compelling event before investing demo time in direct FO deals. No forcing function plus an internal-build alternative = de-prioritize. Replicate the Meridian pattern: surface the operational incident that makes status quo untenable.',
+        product: 'Build-vs-buy is a live competitor — sophisticated offices are building internal AI. The defensible edge has to be UHNW-specific operational depth they can\'t cheaply replicate, not generic AI features.',
+        funnel: 'Screen for a compelling event at qualification. Without one, a direct FO opportunity is a long-shot regardless of how the demo lands.',
+        board: 'The direct FO motion converts on a forcing event; absent that, inertia and internal-build win. Part of why the channel/white-label motion may be the higher-leverage thesis.'
+      }
+    });
+  }
+
+  // 5. Coverage / count-vs-signal
+  const worked = recs.filter(r => r.callCount > 0 || r.meddYes > 0);
+  const untouched = recs.filter(r => r.callCount === 0 && r.meddYes === 0);
+  if (untouched.length >= 2) {
+    themes.push({
+      id: 'thin_book', severity: 'medium', meddElement: 'Coverage',
+      title: 'Headline pipeline overstates worked deals — count vs. signal',
+      evidence: `Of ${recs.length} active logos, ${worked.length} have logged calls or qualification data; ${untouched.length} are untouched (${names(untouched.map(r=>r.idx)).slice(0,6).join(', ')}). Referral sources are mixed into the deal count.`,
+      dealIdxs: untouched.map(r => r.idx),
+      lenses: {
+        revenue: 'Reclassify the book: direct vs. channel vs. referral source. Referral engines aren\'t pipeline. Force a first qualification call on the untouched logos before they earn demo time.',
+        product: 'Low roadmap signal from the untouched tier — the priority is protecting demo time: nothing here earns a demo until qualified.',
+        funnel: 'This is the funnel-health view: untouched logos are a follow-up/sequencing gap, not dead pipeline. Next-best-action is first-call scheduling.',
+        board: `Active, worked pipeline is ~${worked.length} deals, not ${recs.length}. Forecast on the qualified subset; treat the rest as top-of-funnel coverage.`
+      }
+    });
+  }
+
+  return themes;
+}
+
+// Single AE-framed Themes view. The synthesis still produces all
+// framings per theme (see t.lenses), kept for a future "export for
+// product/leadership" path — but the UI shows only the AE cut.
+const THEME_AE_ORDER = ['channel_play','eb_access','infosec_gate','no_compelling_event','thin_book'];
+
+function buildThemesPage() {
+  const recs = themesBuildRecords();
+  let themes = themesSynthesize(recs);
+  themes = themes.slice().sort((a, b) => {
+    const ai = THEME_AE_ORDER.indexOf(a.id), bi = THEME_AE_ORDER.indexOf(b.id);
+    return (ai < 0 ? 99 : ai) - (bi < 0 ? 99 : bi);
+  });
+
+  const totalCalls = recs.reduce((s, r) => s + r.callCount, 0);
+  const worked = recs.filter(r => r.callCount > 0 || r.meddYes > 0).length;
+  const highCount = themes.filter(t => t.severity === 'high').length;
+
+  const summaryHTML = `
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px">
+  <div class="medd-score-card"><div class="lbl">Active deals</div><div class="val">${recs.length}</div></div>
+  <div class="medd-score-card"><div class="lbl">Worked</div><div class="val">${worked}</div></div>
+  <div class="medd-score-card"><div class="lbl">Themes</div><div class="val">${themes.length}</div></div>
+  <div class="medd-score-card"><div class="lbl">High severity</div><div class="val" style="color:var(--text-danger)">${highCount}</div></div>
+</div>`;
+
+  const sevClass = s => s === 'high' ? 'fc-omit' : s === 'medium' ? 'fc-pipeline' : 'fc-commit';
+
+  const cards = themes.map(t => {
+    const chips = t.dealIdxs.map(i => {
+      const r = recs.find(x => x.idx === i);
+      if (!r) return '';
+      const fc = { Commit: 'fc-commit', Upside: 'fc-upside', Pipeline: 'fc-pipeline', Omit: 'fc-omit' }[r.forecast] || 'fc-omit';
+      return `<button class="theme-chip" onclick="jumpToOpp('${r.id}')" title="Open ${esc(r.name)} in the app">
+        <span class="theme-chip-dot ${fc}"></span>${esc(r.name)}<span class="theme-chip-arrow">↗</span></button>`;
+    }).join('');
+    return `
+<div class="theme-card">
+  <div class="theme-card-head">
+    <div>
+      <div class="theme-card-meta">
+        <span class="forecast-badge ${sevClass(t.severity)}" style="font-size:10px;padding:2px 8px;text-transform:uppercase;letter-spacing:0.04em">${t.severity}</span>
+        <span class="theme-card-element">${t.meddElement}</span>
+        <span class="theme-card-count">· ${t.dealIdxs.length} deals</span>
+      </div>
+      <div class="theme-card-title">${esc(t.title)}</div>
+    </div>
+  </div>
+  <div class="theme-card-evidence">${esc(t.evidence)}</div>
+  <div class="theme-card-action">
+    <div class="theme-card-action-label">Suggested play</div>
+    <div class="theme-card-action-text">${esc(t.lenses.revenue)}</div>
+  </div>
+  <div class="theme-card-deals"><span class="theme-card-deals-label">Affects:</span>${chips}</div>
+</div>`;
+  }).join('');
+
+  const empty = themes.length === 0
+    ? `<div style="text-align:center;padding:32px 0;color:var(--text-tertiary);font-size:13px">Not enough cross-deal signal yet. Log calls and qualification on a few opportunities and themes will surface here automatically.</div>`
+    : '';
+
+  return `<div class="slide-title">Themes <span style="font-size:13px;color:var(--text-tertiary);font-weight:400">· recurring patterns across your book</span></div>
+${summaryHTML}
+<div class="theme-section-label">Cross-deal themes</div>
+${cards}${empty}
+<div class="theme-footnote">Synthesized live from ${totalCalls} logged call${totalCalls === 1 ? '' : 's'} and current qualification data across the book. Click any deal to drill in.</div>`;
+}
 
 function buildPipelinePage() {
   const log = getLog();
