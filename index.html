@@ -759,12 +759,10 @@ const SLIDES = [
   { id: 'dashboard',    title: 'Dashboard'          },
   { id: 'snapshot',     title: 'Snapshot'           },
   { id: 'stakeholders', title: 'Stakeholders'         },
-  { id: 'accountpov',   title: 'Account'             },
   { id: 'opppov',       title: 'Opportunity'         },
   { id: 'meddpicc',     title: 'Qualification'        },
   { id: 'map',          title: 'Mutual Action Plan'  },
   { id: 'calls',        title: 'Comms Analysis'      },
-  { id: 'bizasks',      title: 'Business Asks'       },
   { id: 'pipeline',     title: 'Pipeline'            }
 ];
 
@@ -850,7 +848,6 @@ function freshData() {
     meddpicc:     { meddAnswers: {}, meddNotes: {}, gapOverrides: { __manual: [] } },
     map:          { rows: [], topAsk: '', lastEngagement: '', nextTouch: '' },
     accountpovteam: { execSponsor: '', ae: '', se: '', csm: '' },
-    bizasks:      { rows: [] },
     calls:        []
   };
 }
@@ -1283,12 +1280,10 @@ function renderSidebar() {
 function isSlideFilled(id) {
   if (id === 'snapshot')     return !!(d().snapshot.firmName && d().snapshot.firmType && d().snapshot.healthStatus);
   if (id === 'stakeholders') return d().stakeholders.length > 0;
-  if (id === 'accountpov')   return !!(d().accountpov && d().accountpov.whyChange && d().accountpov.whyNow);
-  if (id === 'opppov')       return !!(d().opppov && d().opppov.whitespace);
+  if (id === 'opppov')       return !!(d().opppov && (d().opppov.businessProblem || d().opppov.whitespace) || (d().accountpov && d().accountpov.whyChange));
   if (id === 'meddpicc')     return calcScore().yes > 0;
   if (id === 'map')          return d().map.rows.length > 0 && !!d().map.topAsk;
   if (id === 'calls')        return (d().calls || []).length > 0;
-  if (id === 'bizasks')      return (d().bizasks && d().bizasks.rows && d().bizasks.rows.length > 0);
   return false;
 }
 
@@ -1327,8 +1322,8 @@ function renderCurrentSlide() {
    ================================================================ */
 
 const SLIDE_NAV_IDX = {
-  snapshot: 1, stakeholders: 2, accountpov: 3, opppov: 4,
-  meddpicc: 5, map: 6, bizasks: 7, calls: 8
+  snapshot: 1, stakeholders: 2, accountpov: 3, opppov: 3,
+  meddpicc: 4, map: 5, calls: 6
 };
 
 function buildCoachingBanner() {
@@ -1367,7 +1362,7 @@ function buildCoachingBanner() {
   <div class="coaching-action-body">
     <div class="coaching-action-text">${esc(a.action)}</div>
     <div class="coaching-action-why">${esc(a.why)}</div>
-    ${a.section ? `<span class="coaching-action-tag">${esc(({'snapshot':'Snapshot','stakeholders':'Stakeholders','accountpov':'Account','opppov':'Opportunity','meddpicc':'Qualification','map':'Mutual Action Plan','bizasks':'Business Asks','calls':'Calls & Coaching'}[a.section] || a.section).replace('_',' '))}</span>` : ''}
+    ${a.section ? `<span class="coaching-action-tag">${esc(({'snapshot':'Snapshot','stakeholders':'Stakeholders','accountpov':'Opportunity','opppov':'Opportunity','meddpicc':'Qualification','map':'Mutual Action Plan','calls':'Calls & Coaching'}[a.section] || a.section).replace('_',' '))}</span>` : ''}
   </div>
   <div class="coaching-action-arrow">›</div>
 </button>`;
@@ -1438,7 +1433,6 @@ async function generateCoaching() {
   const champion     = data.stakeholders.find(s => s.role === 'Champion');
   const eb           = data.stakeholders.find(s => s.role === 'Economic buyer');
   const openMapRows  = (data.map.rows || []).filter(r => r.status === 'Open').length;
-  const overdueAsks  = (data.bizasks && data.bizasks.rows || []).filter(r => r.status === 'Open').length;
   const daysSinceTouch = data.map.lastEngagement
     ? Math.floor((Date.now() - new Date(data.map.lastEngagement).getTime()) / 86400000)
     : null;
@@ -1465,7 +1459,6 @@ Success metric: ${data.opppov.successMetric ? 'filled' : 'EMPTY'}
 Alternative/competition: ${data.opppov.alternative ? 'filled' : 'EMPTY'}
 Top ask: ${data.map.topAsk || 'EMPTY'}
 Open MAP actions: ${openMapRows}
-Open business asks: ${overdueAsks}
 Last engagement: ${data.map.lastEngagement || 'not recorded'}
 Next touch: ${data.map.nextTouch || 'not scheduled'}
 
@@ -1481,7 +1474,7 @@ Return ONLY valid JSON:
     {
       "action": "specific action max 12 words — what to DO, not what to think about",
       "why": "one sentence tied to actual data in this plan, max 20 words",
-      "section": "one of: snapshot|stakeholders|accountpov|opppov|meddpicc|map|bizasks|calls"  // meddpicc displays as Qualification
+      "section": "one of: snapshot|stakeholders|opppov|meddpicc|map|calls"  // meddpicc displays as Qualification, opppov displays as Opportunity
     }
   ]
 }
@@ -1791,27 +1784,24 @@ function buildSlide(id) {
   // oppNameBadge() is now a global function callable from any builder
   if (id === 'snapshot')     return buildSnapshot();
   if (id === 'stakeholders') return buildStakeholders();
-  if (id === 'accountpov')   return buildAccountPov();
   if (id === 'opppov')       return buildOppPov();
   if (id === 'meddpicc')     return buildMeddpiccSlide();
   if (id === 'map')          return buildMap();
   if (id === 'calls')        return buildCalls();
-  if (id === 'bizasks')      return buildBizAsks();
   return '';
 }
 
-function buildAccountPov() {
+function buildOppPov() {
+  const o = d().opppov || {};
   const p = d().accountpov || {};
-  const t = d().accountpovteam || {};
-  // Progressive: show all if any are filled, otherwise highlight Why Change first
-  const hasAny = p.whyChange || p.whyNow || p.whyUs || p.whatSolution;
-  return `${oppNameBadge()}<div class="slide-title">Account</div>
+  const hasAnyWhy = p.whyChange || p.whyNow || p.whyUs || p.whatSolution;
+  return `${oppNameBadge()}<div class="slide-title">Opportunity</div>
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
   <div style="font-size:13px;color:var(--text-tertiary)">Start with why they'd change. The rest follows.</div>
   <button class="ai-draft-btn" onclick="draftAccountPov()" title="Draft all four from what you know">✦ Draft all</button>
 </div>
 <div class="pov-grid">
-  <div class="pov-card${!hasAny ? ' pov-card-active' : ''}">
+  <div class="pov-card${!hasAnyWhy ? ' pov-card-active' : ''}">
     <div class="pov-q">Why change? <span class="pov-required">start here</span></div>
     <div class="talk-wrap"><textarea class="field-input" rows="2" data-f="accountpov.whyChange" placeholder="What's the cost of doing nothing?">${esc(p.whyChange)}</textarea><button class="talk-btn" onclick="startTalk(event,'accountpov.whyChange')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_accountpov_whyChange"></div>
   </div>
@@ -1828,42 +1818,7 @@ function buildAccountPov() {
     <div class="talk-wrap"><textarea class="field-input" rows="2" data-f="accountpov.whatSolution" placeholder="Which modules? Quantified ROI?">${esc(p.whatSolution)}</textarea><button class="talk-btn" onclick="startTalk(event,'accountpov.whatSolution')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_accountpov_whatSolution"></div>
   </div>
 </div>
-<div class="sec-div">Team coverage</div>
-<table class="obj-table">
-  <thead><tr>
-    <th style="width:160px">Role</th>
-    <th>12-month objective</th>
-    <th style="width:100px">Target <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;opacity:0.7">Q# YYYY</span></th>
-  </tr></thead>
-  <tbody>
-    <tr>
-      <td style="font-weight:600;color:var(--text-secondary)">Executive Sponsor</td>
-      <td><input class="field-input" style="padding:4px 6px;font-size:12px" data-f="accountpov.objective_exec" value="${esc(p.objective_exec || '')}" placeholder="e.g. Executive alignment secured, pilot approved"></td>
-      <td><input class="field-input" style="padding:4px 6px;font-size:12px" data-f="accountpov.objdate_exec" value="${esc(p.objdate_exec || '')}" placeholder="Q3 2025"></td>
-    </tr>
-    <tr>
-      <td style="font-weight:600;color:var(--text-secondary)">AE</td>
-      <td><input class="field-input" style="padding:4px 6px;font-size:12px" data-f="accountpov.objective_ae" value="${esc(p.objective_ae || p.objective1 || '')}" placeholder="e.g. Signed onboarding agreement"></td>
-      <td><input class="field-input" style="padding:4px 6px;font-size:12px" data-f="accountpov.objdate_ae" value="${esc(p.objdate_ae || p.obj1date || '')}" placeholder="Q2 2025"></td>
-    </tr>
-    <tr>
-      <td style="font-weight:600;color:var(--text-secondary)">SE</td>
-      <td><input class="field-input" style="padding:4px 6px;font-size:12px" data-f="accountpov.objective_se" value="${esc(p.objective_se || '')}" placeholder="e.g. Technical discovery complete, integration scoped"></td>
-      <td><input class="field-input" style="padding:4px 6px;font-size:12px" data-f="accountpov.objdate_se" value="${esc(p.objdate_se || '')}" placeholder="Q2 2025"></td>
-    </tr>
-    <tr>
-      <td style="font-weight:600;color:var(--text-secondary)">CSM</td>
-      <td><input class="field-input" style="padding:4px 6px;font-size:12px" data-f="accountpov.objective_csm" value="${esc(p.objective_csm || p.objective3 || '')}" placeholder="e.g. First data integration live, onboarding complete"></td>
-      <td><input class="field-input" style="padding:4px 6px;font-size:12px" data-f="accountpov.objdate_csm" value="${esc(p.objdate_csm || p.obj3date || '')}" placeholder="Q4 2025"></td>
-    </tr>
-  </tbody>
-</table>`;
-}
-
-function buildOppPov() {
-  const o = d().opppov || {};
-  return `${oppNameBadge()}<div class="slide-title">Opportunity</div>
-<div class="sec-div first">The five questions</div>
+<div class="sec-div">The five questions</div>
 <div class="field-full">
   <div class="field-label">1. What business problem does this solve? <span class="fmt-hint">Operational / financial pain — not technical features</span></div>
   <div class="talk-wrap"><textarea class="field-input" rows="2" data-f="opppov.businessProblem" placeholder="e.g. The principal's team spends 3 days per month reconciling data across 6 systems with no single view of net worth or exposure. This is a control and reputational risk problem, not a reporting problem.">${esc(o.businessProblem)}</textarea><button class="talk-btn" onclick="startTalk(event,'opppov.businessProblem')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_opppov_businessProblem"></div>
@@ -2168,68 +2123,6 @@ function buildMap() {
 }
 
 /* ================================================================
-   BUSINESS ASKS
-   ================================================================ */
-
-function buildBizAsks() {
-  const b = d().bizasks || { rows: [] };
-  const rows = (b.rows || []).map((r, i) => `<tr>
-  <td><input data-biz="${i}.ask" value="${esc(r.ask || '')}" placeholder="What do you need from the business?"></td>
-  <td>
-    <select data-biz="${i}.team" style="width:100%;font-size:12px;font-family:var(--font);color:var(--text-primary);background:transparent;border:none;outline:none;cursor:pointer">
-      ${['Product', 'Legal', 'Executive', 'Marketing', 'Finance', 'Engineering', 'Other'].map(v => `<option ${r.team === v ? 'selected' : ''}>${v}</option>`).join('')}
-    </select>
-  </td>
-  <td>
-    <select data-biz="${i}.priority" style="width:100%;font-size:12px;font-family:var(--font);color:var(--text-primary);background:transparent;border:none;outline:none;cursor:pointer">
-      ${['High', 'Medium', 'Low'].map(v => `<option ${r.priority === v ? 'selected' : ''}>${v}</option>`).join('')}
-    </select>
-  </td>
-  <td><input data-biz="${i}.by" value="${esc(r.by || '')}" placeholder="Date needed"></td>
-  <td>
-    <select data-biz="${i}.status" style="width:100%;font-size:12px;font-family:var(--font);color:var(--text-primary);background:transparent;border:none;outline:none;cursor:pointer">
-      ${['Open', 'In progress', 'Done', 'Blocked'].map(v => `<option ${r.status === v ? 'selected' : ''}>${v}</option>`).join('')}
-    </select>
-  </td>
-  <td><button class="gap-rm" onclick="removeBizAsk(${i})">×</button></td>
-</tr>`).join('');
-
-  const emptyState = b.rows.length === 0
-    ? `<div style="font-size:13px;color:var(--text-tertiary);padding:16px 0;text-align:center">No asks yet. Add what the business needs to deliver to move this deal.</div>`
-    : '';
-
-  return `${oppNameBadge()}<div class="slide-title">Business Asks</div>
-<div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;line-height:1.6">What does the account team need from <strong>Eleven internally</strong> to move this deal forward? Product roadmap commitments, legal escalation, executive calls, EBC scheduling, custom demo environments, pricing approvals.</div>
-<table class="map-table" style="width:100%">
-  <thead><tr>
-    <th>Ask</th>
-    <th style="width:100px">Team</th>
-    <th style="width:80px">Priority</th>
-    <th style="width:90px">Needed by</th>
-    <th style="width:96px">Status</th>
-    <th style="width:24px"></th>
-  </tr></thead>
-  <tbody>${rows}</tbody>
-</table>
-${emptyState}
-<div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap">
-  <button class="add-row-btn" onclick="addBizAsk()">+ Add ask</button>
-  <button class="ai-draft-btn" onclick="generateBizAsks()" title="Generate asks from MEDDPICC gaps">✦ Generate from gaps</button>
-</div>`;
-}
-
-function addBizAsk() {
-  if (!d().bizasks) d().bizasks = { rows: [] };
-  d().bizasks.rows.push({ ask: '', team: 'Product', priority: 'High', by: '', status: 'Open' });
-  render();
-}
-
-function removeBizAsk(i) {
-  d().bizasks.rows.splice(i, 1);
-  render();
-}
-
-/* ================================================================
    EVENT LISTENERS
    ================================================================ */
 
@@ -2251,14 +2144,6 @@ function attachListeners() {
       const [i, field] = el.getAttribute('data-map').split('.');
       if (!d().map.rows[+i]) d().map.rows[+i] = {};
       d().map.rows[+i][field] = el.value;
-    });
-  });
-  document.querySelectorAll('[data-biz]').forEach(el => {
-    el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => {
-      const [i, field] = el.getAttribute('data-biz').split('.');
-      if (!d().bizasks) d().bizasks = { rows: [] };
-      if (!d().bizasks.rows[+i]) d().bizasks.rows[+i] = {};
-      d().bizasks.rows[+i][field] = el.value;
     });
   });
   document.querySelectorAll('[data-gap]').forEach(el => {
@@ -2841,7 +2726,7 @@ function buildCalls() {
     <div class="coaching-body">
       <div class="coaching-action">${esc(cs.action)}</div>
       ${cs.rationale ? `<div class="coaching-rationale">${esc(cs.rationale)}</div>` : ''}
-      ${cs.section ? '<span class="coaching-tag">' + esc(({'snapshot':'Snapshot','stakeholders':'Stakeholders','accountpov':'Account','opppov':'Opportunity','meddpicc':'Qualification','map':'Mutual Action Plan','bizasks':'Business Asks','calls':'Calls & Coaching','pov':'POV','stakeholder':'Stakeholders','bizask':'Business Asks'}[cs.section] || cs.section)) + '</span>' : ''}
+      ${cs.section ? '<span class="coaching-tag">' + esc(({'snapshot':'Snapshot','stakeholders':'Stakeholders','accountpov':'Opportunity','opppov':'Opportunity','meddpicc':'Qualification','map':'Mutual Action Plan','calls':'Calls & Coaching','pov':'POV','stakeholder':'Stakeholders'}[cs.section] || cs.section)) + '</span>' : ''}
     </div>
   </div>`).join('')}
 </div>`;
@@ -3000,7 +2885,7 @@ Return this exact structure — all three keys required:
       "priority": "high" | "medium",
       "action": "specific action (max 15 words)",
       "rationale": "why this matters for the deal (max 20 words)",
-      "section": "meddpicc | stakeholder | pov | map | bizask"
+      "section": "meddpicc | stakeholder | pov | map"
     }
   ]
 }`;
@@ -3180,26 +3065,6 @@ Return ONLY JSON: { "actions": [
     render();
   }
   if (btn) { btn.disabled = false; btn.textContent = '✦ Suggest from gaps'; }
-}
-
-async function generateBizAsks() {
-  const weakBlockers = MEDD.filter(s => s.blocker && meddYes(s.id, s.questions.length) < Math.ceil(s.questions.length / 2));
-  if (weakBlockers.length === 0) { alert('No weak blocker sections to generate asks from.'); return; }
-  const btn = document.querySelector('[onclick="generateBizAsks()"]');
-  if (btn) { btn.disabled = true; btn.textContent = '…'; }
-  const gaps = weakBlockers.map(s => s.title).join(', ');
-  const prompt = `You are a B2B sales manager. Based on these MEDDPICC weak sections, generate 2-3 internal business asks the AE needs to advance the deal.
-Weak sections: ${gaps} | Opportunity: ${opp().name} | Firm: ${d().snapshot.firmName || 'unknown'}
-Return ONLY JSON: { "asks": [
-  { "ask": "specific internal ask", "team": "Product|Legal|Executive|Marketing|Finance|Engineering", "priority": "High|Medium|Low", "by": "suggested timeframe", "status": "Open" }
-]}`;
-  const result = await callClaude(prompt, null, '…');
-  if (result && result.asks) {
-    if (!d().bizasks) d().bizasks = { rows: [] };
-    result.asks.forEach(a => d().bizasks.rows.push(a));
-    render();
-  }
-  if (btn) { btn.disabled = false; btn.textContent = '✦ Generate from gaps'; }
 }
 
 /* ================================================================
@@ -3609,15 +3474,6 @@ function buildExampleOpp() {
     productOwner: 'Austin'
   };
 
-  // Business Asks
-  data.bizasks = {
-    rows: [
-      { ask: 'Confirm Schwab and Fidelity custodian integration on current roadmap — Marcus needs this for pilot proposal', team: 'Product', priority: 'High', by: 'May 26', status: 'Open' },
-      { ask: 'DPA template for UHNW family office — Okafor will ask for this before compliance sign-off', team: 'Legal', priority: 'High', by: 'Jun 10', status: 'Open' },
-      { ask: 'Austin availability for technical discovery call with Sarah Chen week of Jun 9', team: 'Executive', priority: 'Medium', by: 'Jun 4', status: 'Open' }
-    ]
-  };
-
   data.conviction = {
     deal: 'yes',
     win: 'uncertain',
@@ -3669,7 +3525,6 @@ function loadState() {
           accountpovteam: { execSponsor:"", ae:"", se:"", csm:"", ...(o.data.accountpovteam||{}) },
           opppov: { ...freshData().opppov, ...(o.data.opppov || {}) },
           map: { rows:[], topAsk:'', lastEngagement:'', nextTouch:'', ...(o.data.map||{}) },
-          bizasks: { rows:[], ...(o.data.bizasks||{}) },
           calls: o.data.calls || []
         }
       }));
