@@ -1084,15 +1084,26 @@ function renderBottomBar() {
   }
 }
 
-// Lazy-load PptxGenJS from CDN on first use (keeps the app self-contained otherwise)
+// Lazy-load PptxGenJS, trying multiple CDNs so a single host failure doesn't kill generation.
 function loadPptxGen() {
   return new Promise((resolve, reject) => {
     if (window.PptxGenJS) return resolve(window.PptxGenJS);
-    const s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js';
-    s.onload = () => window.PptxGenJS ? resolve(window.PptxGenJS) : reject(new Error('PptxGenJS failed to initialise'));
-    s.onerror = () => reject(new Error('Could not load PptxGenJS from CDN — check your connection'));
-    document.head.appendChild(s);
+    const urls = [
+      'https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js',
+      'https://unpkg.com/pptxgenjs@3.12.0/dist/pptxgen.bundle.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js'
+    ];
+    let i = 0;
+    const tryNext = () => {
+      if (i >= urls.length) return reject(new Error('Could not load the deck library from any CDN — check your connection, then try again.'));
+      const s = document.createElement('script');
+      s.src = urls[i++];
+      s.async = true;
+      s.onload = () => window.PptxGenJS ? resolve(window.PptxGenJS) : tryNext();
+      s.onerror = () => { s.remove(); tryNext(); };
+      document.head.appendChild(s);
+    };
+    tryNext();
   });
 }
 
@@ -1105,6 +1116,8 @@ async function publishDeck() {
     const o = opp();
     const data = o.data || {};
     const s = data.snapshot || {};
+    const pov = data.accountpov || {};
+    const opv = data.opppov || {};
     const stakeholders = data.stakeholders || [];
     const mapRows = (data.map && data.map.rows) || [];
     const conviction = data.conviction || {};
@@ -1112,205 +1125,224 @@ async function publishDeck() {
     const hs = calcHealthScore();
     const fc = calcForecast();
 
-    // ── Theme ──
-    const NAVY = '0B1F3A', TEAL = '1D9E75', SLATE = '5A6B7B', LIGHT = 'F2F5F8', RED = 'C0392B', AMBER = 'B7791F', INK = '1A2330';
+    // ── App palette (light, editorial) ──
+    const INK = '1A1A18', SUB = '5F5E5A', MUTE = '888780';
+    const PAPER = 'FFFFFF', PANEL = 'F5F4F1', PANEL2 = 'EEEDE9';
+    const LINE = 'E2E0DB', LINE2 = 'D4D2CC';
+    const GREEN = '1D9E75', GREEN_BG = 'EAF3DE', GREEN_TX = '3B6D11';
+    const BLUE_BG = 'E6F1FB', BLUE_TX = '185FA5';
+    const AMBER_BG = 'FAEEDA', AMBER_TX = '854F0B';
+    const RED_BG = 'FCEBEB', RED_TX = 'A32D2D';
     const FONT = 'Arial';
+
     const pptx = new PptxGenJS();
     pptx.defineLayout({ name: 'WIDE', width: 13.333, height: 7.5 });
     pptx.layout = 'WIDE';
     pptx.author = 'Playbk Labs';
-    pptx.company = 'Eleven Systems';
+    pptx.company = 'Playbk Labs';
 
-    const sentColor = (sent) => sent === 'Advocate' ? TEAL : sent === 'Risk' ? RED : sent === 'Detractor' ? RED : SLATE;
-    const statusColor = (st) => st === 'Done' ? TEAL : st === 'Open' ? AMBER : SLATE;
-    const fcColor = { Commit: TEAL, 'Best case': AMBER, Pipeline: SLATE, Omitted: RED }[fc] || SLATE;
+    const sentTint = (v) => v === 'Advocate' ? [GREEN_BG, GREEN_TX] : (v === 'Risk' || v === 'Detractor') ? [RED_BG, RED_TX] : [PANEL2, SUB];
+    const statusTint = (v) => v === 'Done' ? [GREEN_BG, GREEN_TX] : v === 'Open' ? [AMBER_BG, AMBER_TX] : [PANEL2, SUB];
+    const healthTint = (n) => n >= 70 ? [GREEN_BG, GREEN_TX] : n >= 40 ? [AMBER_BG, AMBER_TX] : [RED_BG, RED_TX];
+    const fcTint = { Commit: [GREEN_BG, GREEN_TX], Upside: [BLUE_BG, BLUE_TX], Pipeline: [AMBER_BG, AMBER_TX], Omitted: [RED_BG, RED_TX] }[fc] || [PANEL2, SUB];
 
-    // Helper: standard slide header band
-    const addHeader = (slide, kicker, title) => {
-      slide.background = { color: 'FFFFFF' };
-      slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 13.333, h: 0.12, fill: { color: TEAL } });
-      slide.addText(kicker.toUpperCase(), { x: 0.6, y: 0.42, w: 12, h: 0.3, fontFace: FONT, fontSize: 11, color: TEAL, bold: true, charSpacing: 2 });
-      slide.addText(title, { x: 0.6, y: 0.72, w: 12.1, h: 0.7, fontFace: FONT, fontSize: 28, color: NAVY, bold: true });
+    // tiny label + value helpers
+    const kicker = (slide, num, label) => {
+      slide.addText([
+        { text: num + '   ', options: { color: GREEN, bold: true } },
+        { text: label.toUpperCase(), options: { color: MUTE, bold: true } }
+      ], { x: 0.6, y: 0.45, w: 12, h: 0.3, fontFace: FONT, fontSize: 11, charSpacing: 2 });
     };
+    const title = (slide, t) => slide.addText(t, { x: 0.6, y: 0.74, w: 12.1, h: 0.7, fontFace: FONT, fontSize: 30, color: INK, bold: true });
+    const hairline = (slide, y) => slide.addShape(pptx.ShapeType.line, { x: 0.6, y, w: 12.13, h: 0, line: { color: LINE2, width: 0.75 } });
+    const microLabel = (slide, x, y, w, txt, col) => slide.addText(txt.toUpperCase(), { x, y, w, h: 0.26, fontFace: FONT, fontSize: 9.5, color: col || MUTE, bold: true, charSpacing: 1.5 });
+    const newSlide = () => { const sl = pptx.addSlide(); sl.background = { color: PAPER }; return sl; };
 
     // ── Slide 1: Title ──
-    let sl = pptx.addSlide();
-    sl.background = { color: NAVY };
-    sl.addShape(pptx.ShapeType.rect, { x: 0, y: 5.6, w: 13.333, h: 0.08, fill: { color: TEAL } });
-    sl.addText('DEAL REVIEW', { x: 0.7, y: 2.1, w: 12, h: 0.5, fontFace: FONT, fontSize: 16, color: TEAL, bold: true, charSpacing: 3 });
-    sl.addText(o.name || 'Opportunity', { x: 0.7, y: 2.6, w: 12, h: 1.2, fontFace: FONT, fontSize: 44, color: 'FFFFFF', bold: true });
-    sl.addText([
-      { text: (s.firmType || 'Wealth Management') + '   ', options: { color: 'AEBED0' } },
-      { text: (s.aum ? 'AUM ' + s.aum + '   ' : ''), options: { color: 'AEBED0' } },
-      { text: (s.targetArr ? 'Target ARR ' + s.targetArr : ''), options: { color: TEAL, bold: true } }
-    ], { x: 0.7, y: 3.9, w: 12, h: 0.5, fontFace: FONT, fontSize: 16 });
-    sl.addText('Eleven Systems  ·  Generated ' + new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }), { x: 0.7, y: 6.0, w: 12, h: 0.4, fontFace: FONT, fontSize: 12, color: '8499AE' });
-
-    // ── Slide 2: Deal Health ──
-    sl = pptx.addSlide();
-    addHeader(sl, 'At a glance', 'Deal Health');
-    const cardY = 1.9, cardH = 1.6, cardW = 2.85, gap = 0.25;
-    const cards = [
-      { lbl: 'HEALTH SCORE', val: hs + '/100', col: hs >= 70 ? TEAL : hs >= 40 ? AMBER : RED },
-      { lbl: 'FORECAST', val: fc, col: fcColor },
-      { lbl: 'TARGET ARR', val: s.targetArr || '—', col: NAVY },
-      { lbl: 'RENEWAL / CLOSE', val: s.renewalQ || '—', col: NAVY }
+    let sl = newSlide();
+    sl.background = { color: INK };
+    sl.addText('PLAYBK', { x: 0.7, y: 0.6, w: 6, h: 0.4, fontFace: FONT, fontSize: 15, color: 'FFFFFF', bold: true, charSpacing: 3 });
+    sl.addShape(pptx.ShapeType.rect, { x: 0.72, y: 1.02, w: 0.55, h: 0.035, fill: { color: GREEN } });
+    sl.addText('DEAL REVIEW', { x: 0.7, y: 2.5, w: 12, h: 0.4, fontFace: FONT, fontSize: 13, color: GREEN, bold: true, charSpacing: 3 });
+    sl.addText(o.name || 'Opportunity', { x: 0.7, y: 2.95, w: 12, h: 1.1, fontFace: FONT, fontSize: 42, color: 'FFFFFF', bold: true });
+    // metadata strip
+    const meta = [
+      ['FIRM TYPE', s.firmType || '—'], ['AUM', s.aum || '—'], ['TARGET ARR', s.targetArr || '—'],
+      ['JOURNEY', s.journey || 'Land'], ['CLOSE', s.renewalQ || '—']
     ];
-    cards.forEach((c, i) => {
-      const x = 0.6 + i * (cardW + gap);
-      sl.addShape(pptx.ShapeType.roundRect, { x, y: cardY, w: cardW, h: cardH, fill: { color: LIGHT }, line: { color: 'E2E8EF', width: 1 }, rectRadius: 0.08 });
-      sl.addText(c.lbl, { x: x + 0.2, y: cardY + 0.22, w: cardW - 0.4, h: 0.3, fontFace: FONT, fontSize: 10, color: SLATE, bold: true, charSpacing: 1 });
-      sl.addText(c.val, { x: x + 0.2, y: cardY + 0.6, w: cardW - 0.4, h: 0.7, fontFace: FONT, fontSize: 26, color: c.col, bold: true });
+    meta.forEach((m, i) => {
+      const x = 0.7 + i * 2.45;
+      sl.addText(m[0], { x, y: 4.55, w: 2.3, h: 0.25, fontFace: FONT, fontSize: 9, color: '8B8A82', bold: true, charSpacing: 1.5 });
+      sl.addText(m[1], { x, y: 4.8, w: 2.3, h: 0.4, fontFace: FONT, fontSize: 15, color: 'FFFFFF', bold: true });
     });
-    // Brief
-    sl.addText('SITUATION', { x: 0.6, y: 3.9, w: 12, h: 0.3, fontFace: FONT, fontSize: 11, color: TEAL, bold: true, charSpacing: 1 });
-    sl.addText(s.notes || 'No situation brief recorded.', { x: 0.6, y: 4.2, w: 12.1, h: 2.6, fontFace: FONT, fontSize: 15, color: INK, valign: 'top', lineSpacingMultiple: 1.2 });
+    // health + forecast pills
+    const t1 = healthTint(hs), t2 = fcTint;
+    sl.addText('HEALTH', { x: 0.7, y: 5.7, w: 2, h: 0.25, fontFace: FONT, fontSize: 9, color: '8B8A82', bold: true, charSpacing: 1.5 });
+    sl.addText(hs + '/100', { x: 0.7, y: 5.95, w: 2, h: 0.45, fontFace: FONT, fontSize: 22, color: GREEN, bold: true });
+    sl.addText('FORECAST', { x: 3.15, y: 5.7, w: 3, h: 0.25, fontFace: FONT, fontSize: 9, color: '8B8A82', bold: true, charSpacing: 1.5 });
+    sl.addText(fc, { x: 3.15, y: 5.95, w: 3, h: 0.45, fontFace: FONT, fontSize: 22, color: 'FFFFFF', bold: true });
+    sl.addText('Confidential · Prepared with Playbk Labs · ' + new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }), { x: 0.7, y: 6.95, w: 12, h: 0.35, fontFace: FONT, fontSize: 10.5, color: '7A786F' });
 
-    // ── Slide 3: The Why (Opportunity POV) ──
-    sl = pptx.addSlide();
-    addHeader(sl, 'Opportunity', 'Why They Buy');
-    const pov = data.accountpov || {};
-    const whyCards = [
-      { q: 'Why change?', a: pov.whyChange },
-      { q: 'Why now?', a: pov.whyNow },
-      { q: 'Why us?', a: pov.whyUs },
-      { q: 'What solution?', a: pov.whatSolution }
+    // ── Slide 2: Deal Summary (executive one-pager) ──
+    sl = newSlide();
+    kicker(sl, '', 'Executive Summary'); title(sl, 'Deal Summary'); hairline(sl, 1.55);
+    // 3 metric pills
+    const champ = stakeholders.find(p => p.role === 'Champion');
+    const eb = stakeholders.find(p => p.role === 'Economic buyer');
+    const summCards = [
+      ['DEAL HEALTH', hs + '/100', healthTint(hs)],
+      ['FORECAST', fc, fcTint],
+      ['CONVICTION', conviction.deal === 'yes' && conviction.win === 'yes' ? 'Strong' : conviction.deal === 'no' || conviction.win === 'no' ? 'At risk' : 'Building', conviction.deal === 'yes' && conviction.win === 'yes' ? [GREEN_BG, GREEN_TX] : [AMBER_BG, AMBER_TX]]
     ];
-    whyCards.forEach((c, i) => {
+    summCards.forEach((c, i) => {
+      const x = 0.6 + i * 4.05;
+      sl.addShape(pptx.ShapeType.roundRect, { x, y: 1.8, w: 3.8, h: 1.15, fill: { color: c[2][0] }, line: { color: LINE, width: 0.75 }, rectRadius: 0.06 });
+      sl.addText(c[0], { x: x + 0.22, y: 1.98, w: 3.4, h: 0.25, fontFace: FONT, fontSize: 9.5, color: c[2][1], bold: true, charSpacing: 1.2 });
+      sl.addText(String(c[1]), { x: x + 0.22, y: 2.28, w: 3.4, h: 0.55, fontFace: FONT, fontSize: 24, color: c[2][1], bold: true });
+    });
+    // key people + risk row
+    const kp = [
+      ['CHAMPION', champ ? (champ.name || '—') : 'Not identified', champ ? (champ.title || '') : ''],
+      ['ECONOMIC BUYER', eb ? (eb.name || '—') : 'Not identified', eb ? (eb.title || '') : ''],
+      ['TOP RISK', (MEDD.filter(m => m.blocker && meddYes(m.id, m.questions.length) < Math.ceil(m.questions.length / 2))[0] || {}).title || 'None flagged', '']
+    ];
+    kp.forEach((c, i) => {
+      const x = 0.6 + i * 4.05;
+      microLabel(sl, x, 3.3, 3.8, c[0]);
+      sl.addText(c[1], { x, y: 3.56, w: 3.8, h: 0.35, fontFace: FONT, fontSize: 14, color: INK, bold: true });
+      if (c[2]) sl.addText(c[2], { x, y: 3.9, w: 3.8, h: 0.3, fontFace: FONT, fontSize: 11, color: MUTE });
+    });
+    hairline(sl, 4.45);
+    microLabel(sl, 0.6, 4.6, 12, 'Situation');
+    sl.addText(s.notes || '—', { x: 0.6, y: 4.88, w: 12.1, h: 1.3, fontFace: FONT, fontSize: 13, color: SUB, valign: 'top', lineSpacingMultiple: 1.25 });
+    microLabel(sl, 0.6, 6.25, 12, 'Next Action', GREEN);
+    sl.addText(data.map && data.map.topAsk ? data.map.topAsk : (mapRows.find(r => r.status === 'Open') || {}).action || '—', { x: 0.6, y: 6.52, w: 12.1, h: 0.7, fontFace: FONT, fontSize: 13, color: INK, valign: 'top', lineSpacingMultiple: 1.2 });
+
+    // ── Slide 3: Situation Brief + Why ──
+    sl = newSlide();
+    kicker(sl, '01', 'Situation'); title(sl, 'Situation Brief'); hairline(sl, 1.55);
+    sl.addShape(pptx.ShapeType.roundRect, { x: 0.6, y: 1.75, w: 12.1, h: 1.5, fill: { color: PANEL }, line: { color: LINE, width: 0.75 }, rectRadius: 0.06 });
+    sl.addText(s.notes || '—', { x: 0.85, y: 1.9, w: 11.6, h: 1.2, fontFace: FONT, fontSize: 12.5, color: INK, valign: 'top', lineSpacingMultiple: 1.25 });
+    const why = [['WHY CHANGE?', pov.whyChange], ['WHY NOW?', pov.whyNow], ['WHY US?', pov.whyUs], ['WHAT SOLUTION?', pov.whatSolution]];
+    why.forEach((c, i) => {
       const col = i % 2, row = Math.floor(i / 2);
-      const x = 0.6 + col * 6.15, y = 1.9 + row * 2.45;
-      sl.addShape(pptx.ShapeType.roundRect, { x, y, w: 5.95, h: 2.25, fill: { color: LIGHT }, line: { color: 'E2E8EF', width: 1 }, rectRadius: 0.08 });
-      sl.addText(c.q, { x: x + 0.25, y: y + 0.2, w: 5.5, h: 0.4, fontFace: FONT, fontSize: 15, color: TEAL, bold: true });
-      sl.addText(c.a || '—', { x: x + 0.25, y: y + 0.65, w: 5.5, h: 1.45, fontFace: FONT, fontSize: 13, color: INK, valign: 'top', lineSpacingMultiple: 1.15 });
+      const x = 0.6 + col * 6.15, y = 3.5 + row * 1.85;
+      microLabel(sl, x, y, 5.9, c[0], GREEN);
+      sl.addText(c[1] || '—', { x, y: y + 0.28, w: 5.9, h: 1.45, fontFace: FONT, fontSize: 12, color: SUB, valign: 'top', lineSpacingMultiple: 1.18 });
     });
 
-    // ── Slide 4: Qualification (MEDDPPICC) ──
-    sl = pptx.addSlide();
-    addHeader(sl, 'Qualification', 'MEDDPPICC Scorecard');
-    const meddTableRows = [[
-      { text: 'Section', options: { fill: { color: NAVY }, color: 'FFFFFF', bold: true, fontSize: 12, align: 'left' } },
-      { text: 'Status', options: { fill: { color: NAVY }, color: 'FFFFFF', bold: true, fontSize: 12, align: 'center' } },
-      { text: 'Confirmed', options: { fill: { color: NAVY }, color: 'FFFFFF', bold: true, fontSize: 12, align: 'center' } }
-    ]];
-    MEDD.forEach(m => {
-      const st = meddStatus(m.id, m.questions.length);
-      const yes = meddYes(m.id, m.questions.length);
-      const stLabel = st === 'full' ? 'Strong' : st === 'mid' ? 'Partial' : 'Weak';
-      const stCol = st === 'full' ? TEAL : st === 'mid' ? AMBER : RED;
-      meddTableRows.push([
-        { text: m.title + (m.blocker ? '  ●' : ''), options: { color: INK, fontSize: 12, align: 'left', bold: m.blocker } },
-        { text: stLabel, options: { color: stCol, bold: true, fontSize: 12, align: 'center' } },
-        { text: yes + '/' + m.questions.length, options: { color: SLATE, fontSize: 12, align: 'center' } }
-      ]);
-    });
-    sl.addTable(meddTableRows, { x: 0.6, y: 1.9, w: 8.0, colW: [4.5, 1.9, 1.6], border: { type: 'solid', color: 'E2E8EF', pt: 1 }, rowH: 0.42, valign: 'middle', margin: [4, 8, 4, 8] });
-    sl.addText('● = blocker section', { x: 0.6, y: 6.7, w: 5, h: 0.3, fontFace: FONT, fontSize: 10, color: SLATE, italic: true });
-    // Side panel: forecast
-    sl.addShape(pptx.ShapeType.roundRect, { x: 9.0, y: 1.9, w: 3.7, h: 2.2, fill: { color: NAVY }, rectRadius: 0.08 });
-    sl.addText('FORECAST', { x: 9.25, y: 2.15, w: 3.2, h: 0.3, fontFace: FONT, fontSize: 11, color: TEAL, bold: true, charSpacing: 1 });
-    sl.addText(fc, { x: 9.25, y: 2.5, w: 3.2, h: 0.7, fontFace: FONT, fontSize: 30, color: 'FFFFFF', bold: true });
-    sl.addText('Health ' + hs + '/100', { x: 9.25, y: 3.35, w: 3.2, h: 0.4, fontFace: FONT, fontSize: 14, color: 'AEBED0' });
-
-    // ── Slide 5: Stakeholders ──
-    sl = pptx.addSlide();
-    addHeader(sl, 'Relationships', 'Stakeholder Map');
+    // ── Slide 4: Stakeholder Map ──
+    sl = newSlide();
+    kicker(sl, '02', 'Relationships'); title(sl, 'Stakeholder Map'); hairline(sl, 1.55);
     if (stakeholders.length === 0) {
-      sl.addText('No stakeholders mapped yet.', { x: 0.6, y: 2.2, w: 12, h: 0.5, fontFace: FONT, fontSize: 15, color: SLATE, italic: true });
+      sl.addText('No stakeholders mapped yet.', { x: 0.6, y: 2.0, w: 12, h: 0.5, fontFace: FONT, fontSize: 14, color: MUTE, italic: true });
     } else {
-      const stRows = [[
-        { text: 'Name', options: { fill: { color: NAVY }, color: 'FFFFFF', bold: true, fontSize: 11 } },
-        { text: 'Role', options: { fill: { color: NAVY }, color: 'FFFFFF', bold: true, fontSize: 11 } },
-        { text: 'Sentiment', options: { fill: { color: NAVY }, color: 'FFFFFF', bold: true, fontSize: 11, align: 'center' } },
-        { text: 'Their win', options: { fill: { color: NAVY }, color: 'FFFFFF', bold: true, fontSize: 11 } }
+      const rows = [[
+        cell('Name', true), cell('Role', true), cell('Sentiment', true, 'center'), cell('Their win', true)
       ]];
-      stakeholders.slice(0, 8).forEach(p => {
-        stRows.push([
-          { text: (p.name || '—') + (p.title ? '\n' + p.title : ''), options: { color: INK, fontSize: 11, bold: true } },
-          { text: p.role || '—', options: { color: SLATE, fontSize: 11 } },
-          { text: p.sentiment || 'Neutral', options: { color: sentColor(p.sentiment), bold: true, fontSize: 11, align: 'center' } },
-          { text: p.win || '—', options: { color: INK, fontSize: 10 } }
+      stakeholders.slice(0, 7).forEach(p => {
+        const t = sentTint(p.sentiment);
+        rows.push([
+          { text: (p.name || '—') + (p.title ? '\n' + p.title : ''), options: { fontSize: 12, color: INK, bold: true, valign: 'middle' } },
+          { text: p.role || '—', options: { fontSize: 12, color: SUB, valign: 'middle' } },
+          { text: p.sentiment || 'Neutral', options: { fontSize: 11, color: t[1], bold: true, align: 'center', valign: 'middle', fill: { color: t[0] } } },
+          { text: p.win || '—', options: { fontSize: 10.5, color: SUB, valign: 'middle' } }
         ]);
       });
-      sl.addTable(stRows, { x: 0.6, y: 1.9, w: 12.1, colW: [2.6, 2.2, 1.6, 5.7], border: { type: 'solid', color: 'E2E8EF', pt: 1 }, rowH: 0.5, valign: 'middle', margin: [4, 8, 4, 8] });
+      sl.addTable(rows, { x: 0.6, y: 1.85, w: 12.13, colW: [2.7, 2.3, 1.7, 5.43], border: { type: 'solid', color: LINE, pt: 0.75 }, rowH: 0.55, valign: 'middle', margin: [5, 8, 5, 8], autoPage: false });
     }
+    function cell(t, head, align) { return { text: t, options: head ? { fill: { color: INK }, color: 'FFFFFF', bold: true, fontSize: 11, align: align || 'left', valign: 'middle' } : { fontSize: 11, color: INK } }; }
 
-    // ── Slide 6: Mutual Action Plan ──
-    sl = pptx.addSlide();
-    addHeader(sl, 'Path to close', 'Mutual Action Plan');
-    if (data.map && data.map.topAsk) {
-      sl.addShape(pptx.ShapeType.roundRect, { x: 0.6, y: 1.85, w: 12.1, h: 0.75, fill: { color: LIGHT }, line: { color: TEAL, width: 1.5 }, rectRadius: 0.06 });
-      sl.addText([{ text: 'TOP ASK   ', options: { color: TEAL, bold: true, fontSize: 11 } }, { text: data.map.topAsk, options: { color: INK, fontSize: 13 } }], { x: 0.85, y: 1.85, w: 11.6, h: 0.75, fontFace: FONT, valign: 'middle' });
-    }
-    const mapY = (data.map && data.map.topAsk) ? 2.8 : 1.9;
-    if (mapRows.length === 0) {
-      sl.addText('No action items recorded yet.', { x: 0.6, y: mapY, w: 12, h: 0.5, fontFace: FONT, fontSize: 15, color: SLATE, italic: true });
-    } else {
-      const mRows = [[
-        { text: 'Action', options: { fill: { color: NAVY }, color: 'FFFFFF', bold: true, fontSize: 11 } },
-        { text: 'Eleven', options: { fill: { color: NAVY }, color: 'FFFFFF', bold: true, fontSize: 11 } },
-        { text: 'Account', options: { fill: { color: NAVY }, color: 'FFFFFF', bold: true, fontSize: 11 } },
-        { text: 'Date', options: { fill: { color: NAVY }, color: 'FFFFFF', bold: true, fontSize: 11, align: 'center' } },
-        { text: 'Status', options: { fill: { color: NAVY }, color: 'FFFFFF', bold: true, fontSize: 11, align: 'center' } }
-      ]];
-      mapRows.slice(0, 9).forEach(r => {
-        mRows.push([
-          { text: r.action || '—', options: { color: INK, fontSize: 11 } },
-          { text: r.ownerEleven || '—', options: { color: SLATE, fontSize: 11 } },
-          { text: r.ownerAccount || '—', options: { color: SLATE, fontSize: 11 } },
-          { text: r.date || '—', options: { color: SLATE, fontSize: 11, align: 'center' } },
-          { text: r.status || 'Open', options: { color: statusColor(r.status), bold: true, fontSize: 11, align: 'center' } }
-        ]);
-      });
-      sl.addTable(mRows, { x: 0.6, y: mapY, w: 12.1, colW: [5.5, 1.8, 1.8, 1.5, 1.5], border: { type: 'solid', color: 'E2E8EF', pt: 1 }, rowH: 0.42, valign: 'middle', margin: [4, 8, 4, 8] });
-    }
-
-    // ── Slide 7: Coaching — gaps & next actions ──
-    sl = pptx.addSlide();
-    addHeader(sl, 'Coaching', 'Gaps & Next Actions');
-    // Next actions (left)
-    sl.addText('TOP NEXT ACTIONS', { x: 0.6, y: 1.85, w: 6, h: 0.3, fontFace: FONT, fontSize: 11, color: TEAL, bold: true, charSpacing: 1 });
-    if (coaching && coaching.actions && coaching.actions.length) {
-      const items = coaching.actions.slice(0, 4).map((a, i) => ({ text: (i + 1) + '.  ' + a.action, options: { fontSize: 13, color: INK, bold: true, breakLine: true, paraSpaceAfter: a.why ? 2 : 10 } }))
-        .flatMap((it, i) => {
-          const why = coaching.actions[i].why;
-          return why ? [it, { text: '     ' + why, options: { fontSize: 11, color: SLATE, breakLine: true, paraSpaceAfter: 10 } }] : [it];
-        });
-      sl.addText(items, { x: 0.6, y: 2.2, w: 6.0, h: 4.8, fontFace: FONT, valign: 'top', lineSpacingMultiple: 1.1 });
-    } else {
-      sl.addText('Run coaching in-app to populate next actions.', { x: 0.6, y: 2.2, w: 6, h: 0.5, fontFace: FONT, fontSize: 12, color: SLATE, italic: true });
-    }
-    // Gaps (right) — weak blocker sections
-    sl.addText('GAPS TO ADDRESS', { x: 7.0, y: 1.85, w: 6, h: 0.3, fontFace: FONT, fontSize: 11, color: RED, bold: true, charSpacing: 1 });
-    const weakBlockers = MEDD.filter(m => m.blocker && meddYes(m.id, m.questions.length) < Math.ceil(m.questions.length / 2));
-    if (weakBlockers.length === 0) {
-      sl.addText('No weak blocker sections — all critical areas confirmed.', { x: 7.0, y: 2.2, w: 5.7, h: 0.6, fontFace: FONT, fontSize: 12, color: TEAL });
-    } else {
-      const gapItems = weakBlockers.map(m => ({ text: m.title, options: { fontSize: 13, color: INK, bold: true, bullet: { code: '2022', indent: 14 }, paraSpaceAfter: 8, color: RED } }));
-      sl.addText(gapItems, { x: 7.0, y: 2.2, w: 5.7, h: 4.8, fontFace: FONT, valign: 'top', lineSpacingMultiple: 1.2 });
-    }
-
-    // ── Slide 8: Conviction / Summary ──
-    sl = pptx.addSlide();
-    sl.background = { color: NAVY };
-    sl.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 13.333, h: 0.12, fill: { color: TEAL } });
-    sl.addText('DEAL CONVICTION', { x: 0.7, y: 0.7, w: 12, h: 0.4, fontFace: FONT, fontSize: 13, color: TEAL, bold: true, charSpacing: 2 });
-    // Three-signal conviction: deal / win / play
-    const convSig = [
-      { lbl: 'IS IT REAL?', key: 'deal' },
-      { lbl: 'CAN WE WIN?', key: 'win' },
-      { lbl: 'SHOULD WE PLAY?', key: 'play' }
+    // ── Slide 5: Opportunity POV ──
+    sl = newSlide();
+    kicker(sl, '03', 'The Deal'); title(sl, 'Opportunity POV'); hairline(sl, 1.55);
+    const povBlocks = [
+      ['1.  BUSINESS PROBLEM', opv.businessProblem],
+      ['2.  SUCCESS METRIC', opv.successMetric],
+      ['WIN THEME', opv.whitespace],
+      ['3.  THE ALTERNATIVE', opv.alternative],
+      ['COMPETITION', opv.competitive]
     ];
-    const sigColor = (v) => v === 'yes' ? TEAL : v === 'no' ? RED : v === 'uncertain' ? AMBER : '5A6B7B';
-    const sigLabel = (v) => v ? v.charAt(0).toUpperCase() + v.slice(1) : '—';
-    convSig.forEach((c, i) => {
-      const x = 0.7 + i * 4.1;
-      sl.addShape(pptx.ShapeType.roundRect, { x, y: 1.4, w: 3.8, h: 1.7, fill: { color: '13294B' }, line: { color: '24416B', width: 1 }, rectRadius: 0.08 });
-      sl.addText(c.lbl, { x: x + 0.25, y: 1.6, w: 3.3, h: 0.3, fontFace: FONT, fontSize: 11, color: '8EA3BC', bold: true, charSpacing: 1 });
-      sl.addText(sigLabel(conviction[c.key]), { x: x + 0.25, y: 1.95, w: 3.3, h: 0.8, fontFace: FONT, fontSize: 30, color: sigColor(conviction[c.key]), bold: true });
+    let py = 1.8;
+    povBlocks.forEach((b) => {
+      const isAccent = b[0] === 'WIN THEME' || b[0] === 'COMPETITION';
+      microLabel(sl, 0.6, py, 12, b[0], isAccent ? GREEN : MUTE);
+      const txt = b[1] || '—';
+      const lines = Math.ceil((txt.length || 1) / 130);
+      const h = Math.max(0.5, lines * 0.24 + 0.1);
+      sl.addText(txt, { x: 0.6, y: py + 0.26, w: 12.1, h, fontFace: FONT, fontSize: 11.5, color: SUB, valign: 'top', lineSpacingMultiple: 1.15 });
+      py += 0.26 + h + 0.12;
     });
-    sl.addText('CONVICTION NOTE', { x: 0.7, y: 3.5, w: 12, h: 0.3, fontFace: FONT, fontSize: 11, color: TEAL, bold: true, charSpacing: 1 });
-    sl.addText(conviction.note || 'No conviction note recorded.', { x: 0.7, y: 3.85, w: 12, h: 2.5, fontFace: FONT, fontSize: 16, color: 'D6E0EA', valign: 'top', lineSpacingMultiple: 1.3 });
-    sl.addText('Generated by Playbk Labs  ·  ' + (o.name || ''), { x: 0.7, y: 6.7, w: 12, h: 0.4, fontFace: FONT, fontSize: 11, color: '8499AE' });
+
+    // ── Slide 6: Qualification Scorecard ──
+    sl = newSlide();
+    kicker(sl, '04', 'Qualification'); title(sl, 'Qualification Scorecard'); hairline(sl, 1.55);
+    // health chip top-right
+    const ht = healthTint(hs);
+    sl.addShape(pptx.ShapeType.roundRect, { x: 10.9, y: 0.72, w: 1.8, h: 0.62, fill: { color: ht[0] }, rectRadius: 0.05 });
+    sl.addText([{ text: hs + '  ', options: { fontSize: 18, bold: true, color: ht[1] } }, { text: 'HEALTH', options: { fontSize: 9, bold: true, color: ht[1], charSpacing: 1 } }], { x: 10.9, y: 0.72, w: 1.8, h: 0.62, fontFace: FONT, align: 'center', valign: 'middle' });
+    // MEDD grid 2 cols
+    MEDD.forEach((m, i) => {
+      const col = i % 2, row = Math.floor(i / 2);
+      const x = 0.6 + col * 6.15, y = 1.85 + row * 1.18;
+      const yes = meddYes(m.id, m.questions.length), tot = m.questions.length;
+      const st = meddStatus(m.id, tot);
+      const tint = st === 'full' ? [GREEN_BG, GREEN_TX] : st === 'mid' ? [AMBER_BG, AMBER_TX] : [RED_BG, RED_TX];
+      sl.addShape(pptx.ShapeType.roundRect, { x, y, w: 5.9, h: 1.02, fill: { color: PAPER }, line: { color: LINE, width: 0.75 }, rectRadius: 0.05 });
+      sl.addShape(pptx.ShapeType.rect, { x, y, w: 0.07, h: 1.02, fill: { color: tint[1] } });
+      sl.addText(m.title + (m.blocker ? '  ●' : ''), { x: x + 0.25, y: y + 0.16, w: 4.2, h: 0.35, fontFace: FONT, fontSize: 13, color: INK, bold: true });
+      sl.addText(m.desc || '', { x: x + 0.25, y: y + 0.52, w: 4.4, h: 0.4, fontFace: FONT, fontSize: 9.5, color: MUTE, valign: 'top' });
+      sl.addShape(pptx.ShapeType.roundRect, { x: x + 4.85, y: y + 0.3, w: 0.85, h: 0.42, fill: { color: tint[0] }, rectRadius: 0.04 });
+      sl.addText(yes + '/' + tot, { x: x + 4.85, y: y + 0.3, w: 0.85, h: 0.42, fontFace: FONT, fontSize: 13, color: tint[1], bold: true, align: 'center', valign: 'middle' });
+    });
+    sl.addText('●  blocker section', { x: 0.6, y: 6.95, w: 5, h: 0.3, fontFace: FONT, fontSize: 9.5, color: MUTE, italic: true });
+
+    // ── Slide 7: Mutual Action Plan ──
+    sl = newSlide();
+    kicker(sl, '05', 'Action Plan'); title(sl, 'Mutual Action Plan'); hairline(sl, 1.55);
+    let ay = 1.8;
+    if (data.map && data.map.topAsk) {
+      sl.addShape(pptx.ShapeType.roundRect, { x: 0.6, y: ay, w: 12.1, h: 0.7, fill: { color: GREEN_BG }, line: { color: GREEN, width: 1 }, rectRadius: 0.05 });
+      sl.addText([{ text: 'TOP ASK    ', options: { color: GREEN_TX, bold: true, fontSize: 10, charSpacing: 1 } }, { text: data.map.topAsk, options: { color: INK, fontSize: 12.5 } }], { x: 0.85, y: ay, w: 11.6, h: 0.7, fontFace: FONT, valign: 'middle' });
+      ay += 0.95;
+    }
+    if (mapRows.length === 0) {
+      sl.addText('No action items recorded yet.', { x: 0.6, y: ay, w: 12, h: 0.5, fontFace: FONT, fontSize: 14, color: MUTE, italic: true });
+    } else {
+      const head = (t, a) => ({ text: t, options: { fill: { color: INK }, color: 'FFFFFF', bold: true, fontSize: 10.5, align: a || 'left', valign: 'middle' } });
+      const rows = [[head('Action / Milestone'), head('Opp owner'), head('Account'), head('Date', 'center'), head('Status', 'center')]];
+      mapRows.slice(0, 8).forEach(r => {
+        const t = statusTint(r.status);
+        rows.push([
+          { text: r.action || '—', options: { fontSize: 11, color: INK, valign: 'middle' } },
+          { text: r.ownerEleven || '—', options: { fontSize: 11, color: SUB, valign: 'middle' } },
+          { text: r.ownerAccount || '—', options: { fontSize: 11, color: SUB, valign: 'middle' } },
+          { text: r.date || '—', options: { fontSize: 11, color: SUB, align: 'center', valign: 'middle' } },
+          { text: r.status || 'Open', options: { fontSize: 10.5, color: t[1], bold: true, align: 'center', valign: 'middle', fill: { color: t[0] } } }
+        ]);
+      });
+      sl.addTable(rows, { x: 0.6, y: ay, w: 12.13, colW: [6.0, 1.7, 1.7, 1.33, 1.4], border: { type: 'solid', color: LINE, pt: 0.75 }, rowH: 0.46, valign: 'middle', margin: [4, 8, 4, 8], autoPage: false });
+      ay += 0.46 * rows.length + 0.2;
+    }
+    if (data.map && data.map.nextTouch) sl.addText('Next touch:  ' + data.map.nextTouch, { x: 0.6, y: Math.min(ay, 6.9), w: 12, h: 0.3, fontFace: FONT, fontSize: 11, color: MUTE, italic: true });
+
+    // ── Slide 8: Next Best Actions (Coaching) ──
+    sl = newSlide();
+    kicker(sl, '06', 'Coaching'); title(sl, 'Next Best Actions'); hairline(sl, 1.55);
+    if (coaching && coaching.actions && coaching.actions.length) {
+      let cy = 1.85;
+      coaching.actions.slice(0, 4).forEach((a, i) => {
+        sl.addShape(pptx.ShapeType.roundRect, { x: 0.6, y: cy, w: 12.1, h: 1.1, fill: { color: PANEL }, line: { color: LINE, width: 0.75 }, rectRadius: 0.05 });
+        sl.addShape(pptx.ShapeType.ellipse, { x: 0.85, y: cy + 0.32, w: 0.45, h: 0.45, fill: { color: GREEN_BG } });
+        sl.addText(String(i + 1), { x: 0.85, y: cy + 0.32, w: 0.45, h: 0.45, fontFace: FONT, fontSize: 15, color: GREEN_TX, bold: true, align: 'center', valign: 'middle' });
+        sl.addText(a.action || '', { x: 1.5, y: cy + 0.16, w: 11.0, h: 0.4, fontFace: FONT, fontSize: 13.5, color: INK, bold: true, valign: 'top' });
+        sl.addText(a.why || '', { x: 1.5, y: cy + 0.56, w: 11.0, h: 0.45, fontFace: FONT, fontSize: 11, color: SUB, valign: 'top', lineSpacingMultiple: 1.1 });
+        cy += 1.25;
+      });
+    } else {
+      sl.addText('Run coaching from the app to populate next best actions.', { x: 0.6, y: 2.0, w: 12, h: 0.5, fontFace: FONT, fontSize: 13, color: MUTE, italic: true });
+    }
+    sl.addText('Generated by Playbk Labs · playbklabs.ai', { x: 0.6, y: 6.95, w: 12, h: 0.3, fontFace: FONT, fontSize: 10, color: MUTE });
 
     // ── Save ──
     const fname = (o.name || 'Deal').replace(/[^a-z0-9]+/gi, '_').replace(/^_|_$/g, '') + '_Deal_Review.pptx';
