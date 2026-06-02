@@ -171,7 +171,9 @@ select.field-input{cursor:pointer}
 .gaps-table tr:last-child td{border-bottom:none}
 .gap-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;display:inline-block;white-space:nowrap}
 .gap-blocker{background:var(--bg-danger);color:var(--text-danger);border:0.5px solid var(--border-danger)}
-.gap-custom{background:var(--bg-warning);color:var(--text-warning);border:0.5px solid var(--border-warning)}
+.gap-weak{background:var(--bg-warning);color:var(--text-warning);border:0.5px solid var(--border-warning)}
+.gap-custom{background:var(--bg-info);color:var(--text-info);border:0.5px solid var(--border-info)}
+.gaps-table input.gap-ai::placeholder{color:var(--text-secondary);font-style:italic;opacity:0.9}
 .gaps-table td input,.gaps-table td select{width:100%;font-size:12px;font-family:var(--font);color:var(--text-primary);background:transparent;border:none;outline:none;padding:2px 0;line-height:1.4}
 .gaps-table td input::placeholder{color:var(--text-tertiary)}
 .gaps-empty{font-size:12px;color:var(--text-success);padding:8px 0;display:flex;align-items:center;gap:6px}
@@ -1618,7 +1620,7 @@ function buildCoachingSlide() {
 <div style="font-size:11px;color:var(--text-tertiary);margin-bottom:10px">Ranked by leverage on this deal. Tap to jump to the section.</div>
 <div class="coach-actions-list">${actionsHTML}</div>
 <div class="sec-div">Gaps to address</div>
-<div style="font-size:11px;color:var(--text-tertiary);margin-bottom:8px">Blocker sections below 50% surface automatically.</div>
+<div style="font-size:11px;color:var(--text-tertiary);margin-bottom:8px">Weak sections surface automatically. Refresh fills the diagnosis — edit any cell to make it yours.</div>
 ${buildGapsTable()}
 <button class="gaps-add-btn" onclick="addGapRow()">+ Add gap manually</button>`;
 }
@@ -1726,6 +1728,16 @@ async function generateCoaching() {
     return `${s.title}: ${y}/${t} (${meddStatus(s.id, t)})${mn[s.id] ? ' — ' + mn[s.id] : ''}`;
   }).join('\n');
 
+  // All weak sections (below 50%) — for gap diagnosis
+  const weakSections = MEDD.filter(s => meddYes(s.id, s.questions.length) < Math.ceil(s.questions.length / 2));
+  const weakSummary = weakSections.map(s => {
+    const y = meddYes(s.id, s.questions.length);
+    const t = s.questions.length;
+    // which specific questions are unconfirmed
+    const unconfirmed = s.questions.map((q, i) => ma[s.id + '_' + i] === 'yes' ? null : q.tag).filter(Boolean);
+    return `${s.id} (${s.title}${s.blocker ? ', BLOCKER' : ''}): ${y}/${t} confirmed. Unconfirmed: ${unconfirmed.join(', ') || 'none'}.${mn[s.id] ? ' Note: ' + mn[s.id] : ''}`;
+  }).join('\n');
+
   const stakeCount   = data.stakeholders.length;
   const champion     = data.stakeholders.find(s => s.role === 'Champion');
   const eb           = data.stakeholders.find(s => s.role === 'Economic buyer');
@@ -1743,6 +1755,9 @@ MEDDPICC: ${yes}/${total}
 
 BLOCKER SECTIONS (most important):
 ${blockerSummary}
+
+WEAK SECTIONS — below 50% confirmed (diagnose each as a gap):
+${weakSummary || 'None — all sections at 50%+'}
 
 STAKEHOLDERS: ${stakeCount} mapped
 Champion: ${champion ? champion.name + ' (' + (champion.sentiment || 'unknown') + ')' : 'NOT IDENTIFIED'}
@@ -1773,6 +1788,13 @@ Return ONLY valid JSON:
       "why": "one sentence tied to actual data in this plan, max 20 words",
       "section": "one of: snapshot|stakeholders|opppov|meddpicc|map|calls"  // meddpicc displays as Qualification, opppov displays as Opportunity
     }
+  ],
+  "gaps": [
+    {
+      "id": "the exact section id from WEAK SECTIONS above (e.g. economic_buyer, decision_process)",
+      "gap": "what's specifically missing or unconfirmed in THIS deal, max 16 words — concrete, not generic",
+      "action": "the single next step to close it, max 14 words — what to DO"
+    }
   ]
 }
 
@@ -1783,7 +1805,8 @@ Rules:
 - If EB is not directly engaged, that is almost always action #1 at mid/late stage
 - If last engagement is >14 days ago, flag staleness
 - If MAP has no next touch scheduled, flag it
-- Section must be one of the exact values listed above`;
+- Section must be one of the exact values listed above
+- gaps: one entry for EACH section listed under WEAK SECTIONS, using its exact id. Diagnose the specific missing piece from the unconfirmed items and notes — reference real names/facts from this deal, never boilerplate. If no weak sections, return an empty gaps array.`;
 
   try {
     const resp = await fetch('/api/claude', {
@@ -1791,7 +1814,7 @@ Rules:
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
-        max_tokens: 600,
+        max_tokens: 1100,
         messages: [{ role: 'user', content: prompt }]
       })
     });
@@ -1801,14 +1824,31 @@ Rules:
     const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
     opp().coaching = parsed;
     opp().coachingGeneratedAt = Date.now();
+
+    // Write AI-diagnosed gaps into a parallel map. Human-entered overrides always win,
+    // so we only store the AI text; the table prefers human edits at render time.
+    if (Array.isArray(parsed.gaps)) {
+      if (!d().meddpicc) d().meddpicc = { meddAnswers: {}, meddNotes: {}, gapOverrides: { __manual: [] } };
+      const aiGaps = {};
+      parsed.gaps.forEach(g => {
+        if (!g || !g.id) return;
+        aiGaps[g.id] = { gap: g.gap || '', action: g.action || '' };
+      });
+      d().meddpicc.aiGaps = aiGaps;
+      d().meddpicc.aiGapsGeneratedAt = Date.now();
+    }
   } catch(e) {
     opp().coaching = { stage: 'mid', actions: [
       { action: 'Coaching unavailable — check connection', why: e.message, section: 'snapshot' }
     ]};
   }
-  // Re-render just the banner
+  // Re-render: if we're on the Coaching slide, redraw the whole slide so the
+  // gaps table picks up fresh AI text; otherwise just swap the banner.
+  const onCoachingSlide = opp() && SLIDES[opp().currentSlide] && SLIDES[opp().currentSlide].id === 'coaching';
   const bannerEl = document.querySelector('.coaching-banner');
-  if (bannerEl) {
+  if (onCoachingSlide) {
+    renderCurrentSlide();
+  } else if (bannerEl) {
     bannerEl.outerHTML = buildCoachingBanner();
   } else {
     renderCurrentSlide();
@@ -2168,7 +2208,7 @@ function buildMeddpiccSlide() {
 </div>
 ${MEDD.map(s => buildMeddSection(s)).join('')}
 <div class="sec-div">Opportunity gaps & actions to close</div>
-<div style="font-size:11px;color:var(--text-tertiary);margin-bottom:8px">Blocker sections below 50% surface automatically.</div>
+<div style="font-size:11px;color:var(--text-tertiary);margin-bottom:8px">Weak sections surface automatically. Refresh fills the diagnosis — edit any cell to make it yours.</div>
 ${buildGapsTable()}
 <button class="gaps-add-btn" onclick="addGapRow()">+ Add gap manually</button>`;
 }
@@ -2223,22 +2263,28 @@ function buildMeddSection(s) {
 function buildGapsTable() {
   const ma = (d().meddpicc && d().meddpicc.meddAnswers) || {};
   const ov = (d().meddpicc && d().meddpicc.gapOverrides) || {};
+  const ai = (d().meddpicc && d().meddpicc.aiGaps) || {};
   const manual = (ov.__manual || []);
-  const autoRows = MEDD.filter(s => s.blocker && meddYes(s.id, s.questions.length) < Math.ceil(s.questions.length / 2));
+  // All weak sections (below 50%), blockers first
+  const autoRows = MEDD
+    .filter(s => meddYes(s.id, s.questions.length) < Math.ceil(s.questions.length / 2))
+    .sort((a, b) => (b.blocker ? 1 : 0) - (a.blocker ? 1 : 0));
   if (autoRows.length === 0 && manual.length === 0) {
-    return `<div class="gaps-empty"><span class="gaps-empty-dot"></span>No weak blocker sections — all critical areas at 50%+ confirmed.</div>`;
+    return `<div class="gaps-empty"><span class="gaps-empty-dot"></span>No weak sections — all areas at 50%+ confirmed.</div>`;
   }
   let html = `<table class="gaps-table"><thead><tr>
-    <th style="width:110px">Section</th><th>Gap</th><th>Action to close</th>
+    <th style="width:120px">Section</th><th>Gap</th><th>Action to close</th>
     <th style="width:66px">Owner</th><th style="width:60px">By</th><th style="width:20px"></th>
   </tr></thead><tbody>`;
   autoRows.forEach(s => {
+    const g = ai[s.id] || {};
+    const badgeCls = s.blocker ? 'gap-blocker' : 'gap-weak';
     html += `<tr>
-  <td><span class="gap-badge gap-blocker">${s.title}</span></td>
-  <td><input data-gap="${s.id}_gap" value="${esc(ov[s.id + '_gap'] || '')}" placeholder="What's missing?"></td>
-  <td><input data-gap="${s.id}_action" value="${esc(ov[s.id + '_action'] || '')}" placeholder="Next step to resolve"></td>
-  <td><input data-gap="${s.id}_owner" value="${esc(ov[s.id + '_owner'] || '')}" placeholder="Tim/Beth"></td>
-  <td><input data-gap="${s.id}_by" value="${esc(ov[s.id + '_by'] || '')}" placeholder="Jun 1"></td>
+  <td><span class="gap-badge ${badgeCls}">${s.title}</span></td>
+  <td><input data-gap="${s.id}_gap" value="${esc(ov[s.id + '_gap'] || '')}" placeholder="${esc(g.gap || "What's missing?")}" class="${ov[s.id + '_gap'] ? '' : (g.gap ? 'gap-ai' : '')}"></td>
+  <td><input data-gap="${s.id}_action" value="${esc(ov[s.id + '_action'] || '')}" placeholder="${esc(g.action || 'Next step to resolve')}" class="${ov[s.id + '_action'] ? '' : (g.action ? 'gap-ai' : '')}"></td>
+  <td><input data-gap="${s.id}_owner" value="${esc(ov[s.id + '_owner'] || '')}" placeholder="Owner"></td>
+  <td><input data-gap="${s.id}_by" value="${esc(ov[s.id + '_by'] || '')}" placeholder="Date"></td>
   <td></td>
 </tr>`;
   });
@@ -2247,8 +2293,8 @@ function buildGapsTable() {
   <td><span class="gap-badge gap-custom">${esc(r.section || 'Custom')}</span></td>
   <td><input data-mgap="${i}_gap" value="${esc(r.gap || '')}" placeholder="What's missing?"></td>
   <td><input data-mgap="${i}_action" value="${esc(r.action || '')}" placeholder="Next step to resolve"></td>
-  <td><input data-mgap="${i}_owner" value="${esc(r.owner || '')}" placeholder="Tim/Beth"></td>
-  <td><input data-mgap="${i}_by" value="${esc(r.by || '')}" placeholder="Jun 1"></td>
+  <td><input data-mgap="${i}_owner" value="${esc(r.owner || '')}" placeholder="Owner"></td>
+  <td><input data-mgap="${i}_by" value="${esc(r.by || '')}" placeholder="Date"></td>
   <td><button class="gap-rm" onclick="removeGapRow(${i})">×</button></td>
 </tr>`;
   });
