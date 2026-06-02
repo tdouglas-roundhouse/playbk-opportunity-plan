@@ -411,6 +411,17 @@ select.field-input{cursor:pointer}
 .coaching-dot{width:5px;height:5px;border-radius:50%;background:#1D9E75;animation:blink 1.2s infinite}
 .coaching-dot:nth-child(2){animation-delay:0.2s}
 .coaching-dot:nth-child(3){animation-delay:0.4s}
+/* ── Scoped per-page action/gap callout (lighter than the dark Snapshot banner) ── */
+.scoped-cue{display:flex;gap:10px;align-items:flex-start;background:var(--bg-info);border:0.5px solid var(--border-info);border-left:2px solid var(--text-info);border-radius:var(--radius-md);padding:10px 13px;margin-bottom:16px}
+.scoped-cue.is-gap{background:var(--bg-warning);border-color:var(--border-warning);border-left-color:var(--text-warning)}
+.scoped-cue-icon{font-size:13px;flex-shrink:0;margin-top:1px;line-height:1.3}
+.scoped-cue-body{flex:1;min-width:0}
+.scoped-cue-label{font-size:9px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-info);margin-bottom:4px}
+.scoped-cue.is-gap .scoped-cue-label{color:var(--text-warning)}
+.scoped-cue-item{font-size:12.5px;color:var(--text-primary);line-height:1.5;margin-bottom:2px}
+.scoped-cue-item:last-child{margin-bottom:0}
+.scoped-cue-why{font-size:11px;color:var(--text-secondary);line-height:1.45}
+.scoped-cue-sep{height:0.5px;background:var(--border-light);margin:7px 0}
 @keyframes blink{0%,100%{opacity:0.3}50%{opacity:1}}
 .call-entry{background:var(--bg-secondary);border:0.5px solid var(--border-light);border-radius:var(--radius-md);overflow:hidden}
 .call-entry-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;user-select:none}
@@ -1607,8 +1618,13 @@ function renderCurrentSlide() {
   const sid = SLIDES[idx] ? SLIDES[idx].id : SLIDES[1].id;
   const slide = document.createElement('div');
   slide.className = 'slide visible';
-  // Coaching banner prepended to every opportunity section — except the dedicated Coaching slide, which renders its own
-  slide.innerHTML = (sid === 'coaching' ? '' : buildCoachingBanner()) + buildSlide(sid);
+  // Snapshot gets the full Next-best-actions banner. Other pages get a
+  // lighter scoped cue showing only their relevant action(s)/gap(s), if any.
+  // The dedicated Coaching slide renders its own.
+  let topCue = '';
+  if (sid === 'snapshot') topCue = buildCoachingBanner();
+  else if (sid !== 'coaching') topCue = buildScopedCue(sid);
+  slide.innerHTML = topCue + buildSlide(sid);
   c.appendChild(slide);
   attachListeners();
   attachFormatters();
@@ -1670,6 +1686,55 @@ function buildCoachingSlide() {
 <div style="font-size:11px;color:var(--text-tertiary);margin-bottom:8px">Weak sections surface automatically. Refresh fills the diagnosis — edit any cell to make it yours.</div>
 ${buildGapsTable()}
 <button class="gaps-add-btn" onclick="addGapRow()">+ Add gap manually</button>`;
+}
+
+function buildScopedCue(sid) {
+  const coaching = opp() && opp().coaching;
+  if (!coaching || coaching === 'loading') return '';
+
+  // Which data sections map onto this page. Opportunity page covers both POVs.
+  const pageSections = sid === 'accountpov' || sid === 'opppov'
+    ? ['accountpov', 'opppov']
+    : [sid];
+
+  const actions = (coaching.actions || []).filter(a => a.section && pageSections.includes(a.section));
+
+  // Gaps from coaching carry an `id` = MEDD section id → they live on the Qualification page.
+  const gaps = sid === 'meddpicc'
+    ? (coaching.gaps || []).filter(g => g.gap)
+    : [];
+
+  if (actions.length === 0 && gaps.length === 0) return '';
+
+  let html = '';
+
+  if (actions.length) {
+    const items = actions.map(a =>
+      `<div class="scoped-cue-item">${esc(a.action)}${a.why ? `<div class="scoped-cue-why">${esc(a.why)}</div>` : ''}</div>`
+    ).join('<div class="scoped-cue-sep"></div>');
+    html += `<div class="scoped-cue">
+  <span class="scoped-cue-icon">↗</span>
+  <div class="scoped-cue-body">
+    <div class="scoped-cue-label">Next best action${actions.length > 1 ? 's' : ''} for this page</div>
+    ${items}
+  </div>
+</div>`;
+  }
+
+  if (gaps.length) {
+    const items = gaps.map(g =>
+      `<div class="scoped-cue-item">${esc(g.gap)}${g.action ? `<div class="scoped-cue-why">${esc(g.action)}</div>` : ''}</div>`
+    ).join('<div class="scoped-cue-sep"></div>');
+    html += `<div class="scoped-cue is-gap">
+  <span class="scoped-cue-icon">⚠</span>
+  <div class="scoped-cue-body">
+    <div class="scoped-cue-label">Gap${gaps.length > 1 ? 's' : ''} to close here</div>
+    ${items}
+  </div>
+</div>`;
+  }
+
+  return html;
 }
 
 function buildCoachingBanner() {
