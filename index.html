@@ -177,6 +177,16 @@ select.field-input{cursor:pointer}
 .gaps-empty{font-size:12px;color:var(--text-success);padding:8px 0;display:flex;align-items:center;gap:6px}
 .gaps-empty-dot{width:8px;height:8px;border-radius:50%;background:var(--green-pip);flex-shrink:0}
 .gaps-add-btn{font-size:11px;font-family:var(--font);padding:4px 10px;border-radius:var(--radius-md);border:0.5px dashed var(--border-mid);background:transparent;color:var(--text-tertiary);cursor:pointer;margin-top:2px}
+.coach-actions-list{display:flex;flex-direction:column;gap:6px;margin-bottom:6px}
+.coach-action-row{display:flex;align-items:flex-start;gap:10px;width:100%;text-align:left;background:var(--bg-secondary);border:0.5px solid var(--border-light);border-radius:var(--radius-md);padding:11px 12px;cursor:pointer;font-family:var(--font);transition:all 0.12s}
+.coach-action-row:hover{border-color:var(--border-mid);background:var(--bg-tertiary)}
+.coach-action-num{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--bg-info);color:var(--text-info);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.coach-action-body{flex:1;min-width:0}
+.coach-action-text{font-size:13px;font-weight:500;color:var(--text-primary);line-height:1.4}
+.coach-action-why{font-size:12px;color:var(--text-secondary);line-height:1.45;margin-top:3px}
+.coach-action-tag{display:inline-block;font-size:10px;font-weight:500;color:var(--text-tertiary);background:var(--bg-tertiary);border:0.5px solid var(--border-light);border-radius:4px;padding:1px 7px;margin-top:6px}
+.coach-action-arrow{flex-shrink:0;font-size:18px;color:var(--text-tertiary);line-height:1}
+.coach-loading-row{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-tertiary);padding:12px 0}
 .gaps-add-btn:hover{color:var(--text-secondary)}
 .gap-rm{font-size:11px;color:var(--text-tertiary);background:none;border:none;cursor:pointer;font-family:var(--font)}
 .gap-rm:hover{color:var(--text-danger)}
@@ -763,6 +773,7 @@ const SLIDES = [
   { id: 'meddpicc',     title: 'Qualification'        },
   { id: 'map',          title: 'Mutual Action Plan'  },
   { id: 'calls',        title: 'Comms Analysis'      },
+  { id: 'coaching',     title: 'Coaching'           },
   { id: 'pipeline',     title: 'Pipeline'            }
 ];
 
@@ -1308,8 +1319,8 @@ function renderCurrentSlide() {
   const sid = SLIDES[idx] ? SLIDES[idx].id : SLIDES[1].id;
   const slide = document.createElement('div');
   slide.className = 'slide visible';
-  // Coaching banner prepended to every opportunity section
-  slide.innerHTML = buildCoachingBanner() + buildSlide(sid);
+  // Coaching banner prepended to every opportunity section — except the dedicated Coaching slide, which renders its own
+  slide.innerHTML = (sid === 'coaching' ? '' : buildCoachingBanner()) + buildSlide(sid);
   c.appendChild(slide);
   attachListeners();
   attachFormatters();
@@ -1323,8 +1334,55 @@ function renderCurrentSlide() {
 
 const SLIDE_NAV_IDX = {
   snapshot: 1, stakeholders: 2, accountpov: 3, opppov: 3,
-  meddpicc: 4, map: 5, calls: 6
+  meddpicc: 4, map: 5, calls: 6, coaching: 7
 };
+
+function buildCoachingSlide() {
+  const coaching = opp() && opp().coaching;
+  const ma = (d().meddpicc && d().meddpicc.meddAnswers) || {};
+  const ov = (d().meddpicc && d().meddpicc.gapOverrides) || {};
+  const manual = (ov.__manual || []);
+  const weakBlockers = MEDD.filter(s => s.blocker && meddYes(s.id, s.questions.length) < Math.ceil(s.questions.length / 2));
+
+  // ── Next best actions ──
+  let actionsHTML;
+  if (!coaching || coaching === 'loading') {
+    actionsHTML = `<div class="coach-loading-row"><div class="coaching-dot"></div><div class="coaching-dot"></div><div class="coaching-dot"></div><span>Reading your plan…</span></div>`;
+  } else {
+    const actions = coaching.actions || [];
+    if (actions.length === 0) {
+      actionsHTML = `<div style="font-size:13px;color:var(--text-tertiary);padding:12px 0">No actions generated yet — tap Refresh.</div>`;
+    } else {
+      actionsHTML = actions.map((a, i) => {
+        const navIdx = SLIDE_NAV_IDX[a.section] || 1;
+        const tag = a.section ? ({'snapshot':'Snapshot','stakeholders':'Stakeholders','accountpov':'Opportunity','opppov':'Opportunity','meddpicc':'Qualification','map':'Mutual Action Plan','calls':'Comms Analysis'}[a.section] || a.section) : '';
+        return `<button class="coach-action-row" onclick="navigateToSection(${navIdx})">
+  <div class="coach-action-num">${i + 1}</div>
+  <div class="coach-action-body">
+    <div class="coach-action-text">${esc(a.action)}</div>
+    <div class="coach-action-why">${esc(a.why)}</div>
+    ${tag ? `<span class="coach-action-tag">${esc(tag)}</span>` : ''}
+  </div>
+  <div class="coach-action-arrow">›</div>
+</button>`;
+      }).join('');
+    }
+  }
+  const stage = coaching && coaching !== 'loading' ? coaching.stage : '';
+  const stageLabel = { early: 'Early stage', mid: 'Mid stage', late: 'Late stage' }[stage] || '';
+
+  return `${oppNameBadge()}<div class="slide-title">Coaching</div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+  <div class="sec-div first" style="border:none;padding:0;margin:0">Top next actions${stageLabel ? ' · ' + stageLabel : ''}</div>
+  <button class="gaps-add-btn" style="margin:0" onclick="refreshCoaching()">↻ Refresh</button>
+</div>
+<div style="font-size:11px;color:var(--text-tertiary);margin-bottom:10px">Ranked by leverage on this deal. Tap to jump to the section.</div>
+<div class="coach-actions-list">${actionsHTML}</div>
+<div class="sec-div">Gaps to address</div>
+<div style="font-size:11px;color:var(--text-tertiary);margin-bottom:8px">Blocker sections below 50% surface automatically.</div>
+${buildGapsTable()}
+<button class="gaps-add-btn" onclick="addGapRow()">+ Add gap manually</button>`;
+}
 
 function buildCoachingBanner() {
   const coaching = opp() && opp().coaching;
@@ -1783,6 +1841,7 @@ function oppNameBadge() {
 function buildSlide(id) {
   // oppNameBadge() is now a global function callable from any builder
   if (id === 'snapshot')     return buildSnapshot();
+  if (id === 'coaching')     return buildCoachingSlide();
   if (id === 'stakeholders') return buildStakeholders();
   if (id === 'opppov')       return buildOppPov();
   if (id === 'meddpicc')     return buildMeddpiccSlide();
