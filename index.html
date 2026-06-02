@@ -60,10 +60,8 @@ body{font-family:var(--font);background:var(--bg-secondary);color:var(--text-pri
 .add-opp-btn:hover{color:rgba(255,255,255,0.65);border-color:rgba(255,255,255,0.35)}
 .skyview-label{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;letter-spacing:0.04em;color:rgba(255,255,255,0.85);padding:4px 8px 8px}
 .skyview-label .sky-dot{width:6px;height:6px;border-radius:50%;background:#5DCAA5;flex-shrink:0}
-.backup-row{display:flex;align-items:center;gap:6px;margin-top:8px}
-.backup-link{font-size:11px;font-family:var(--font);background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;padding:0;transition:color 0.12s}
-.backup-link:hover{color:rgba(255,255,255,0.8)}
-.backup-sep{font-size:11px;color:rgba(255,255,255,0.2)}
+.backup-link{font-size:12px;font-family:var(--font);background:none;border:none;color:var(--text-tertiary);cursor:pointer;padding:6px 4px;transition:color 0.12s}
+.backup-link:hover{color:var(--text-secondary)}
 .branch-header{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:rgba(255,255,255,0.4);padding:6px 8px 4px;cursor:pointer;user-select:none;border-radius:6px;transition:color 0.12s}
 .branch-header:hover{color:rgba(255,255,255,0.7)}
 .branch-chevron{font-size:9px;transition:transform 0.15s;display:inline-block;width:8px}
@@ -614,12 +612,6 @@ select.field-input{cursor:pointer}
       <div class="sidebar-score" id="headerScore">
         <span class="save-indicator" id="saveIndicator">&#10003; Saved</span>
       </div>
-      <div class="backup-row">
-        <button class="backup-link" onclick="backupToFile()" title="Download a JSON backup of all deals and pipeline">Backup</button>
-        <span class="backup-sep">·</span>
-        <button class="backup-link" onclick="document.getElementById('restoreFileInput').click()" title="Restore from a JSON backup file">Restore</button>
-        <input type="file" id="restoreFileInput" accept=".json,application/json" style="display:none" onchange="restoreFromFile(event)">
-      </div>
     </div>
     <div class="sidebar-opp">
       <div class="opp-bar" id="oppBar"></div>
@@ -1066,14 +1058,21 @@ function renderHeaderScore() {
 function renderBottomBar() {
   const bar = document.getElementById('bottomBar');
   if (!bar) return;
+  const backupGroup = `
+    <span class="bottom-right-group" style="margin-left:auto;display:flex;align-items:center;gap:10px">
+      <button class="backup-link" onclick="backupToFile()" title="Download a JSON backup of all deals and pipeline">Backup</button>
+      <button class="backup-link" onclick="document.getElementById('restoreFileInput').click()" title="Restore from a JSON backup file">Restore</button>
+      <input type="file" id="restoreFileInput" accept=".json,application/json" style="display:none" onchange="restoreFromFile(event)">
+    </span>`;
   if (showDashboard || showPipeline) {
-    bar.innerHTML = `<button class="action-btn primary" onclick="exportPlan()">Export Summary</button>`;
+    bar.innerHTML = `<button class="action-btn primary" onclick="exportPlan()">Export Summary</button>${backupGroup}`;
   } else {
     bar.innerHTML = `
       <button class="action-btn" onclick="saveToLog()">Save to Log</button>
       <button class="action-btn primary" onclick="exportPlan()">Export Summary</button>
       <button class="action-btn" onclick="publishDeck()" style="background:var(--bg-info);color:var(--text-info);border-color:var(--border-info)">▶ Publish Deal Review</button>
-      <button class="delete-opp-btn" onclick="deleteOpp()" style="margin-left:auto">Delete Opportunity</button>`;
+      ${backupGroup}
+      <button class="delete-opp-btn" onclick="deleteOpp()">Delete Opportunity</button>`;
   }
 }
 
