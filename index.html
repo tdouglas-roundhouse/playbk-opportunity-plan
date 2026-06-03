@@ -2974,28 +2974,28 @@ function openRelPicker() {
     `<button class="action-btn" style="display:block;width:100%;text-align:left;margin-bottom:7px" onclick="commitEdge('${t}')">
       <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${REL_COLOR[t]};margin-right:8px;vertical-align:middle"></span>${t}
     </button>`).join('');
-  showModal(`Link: ${esc(a.name || 'Unnamed')} → ${esc(b.name || 'Unnamed')}`, choices + `<button class="action-btn" style="width:100%;margin-top:4px" onclick="cancelEdge()">Cancel</button>`);
+  showRelModal(`Link: ${esc(a.name || 'Unnamed')} → ${esc(b.name || 'Unnamed')}`, choices + `<button class="action-btn" style="width:100%;margin-top:4px" onclick="cancelEdge()">Cancel</button>`);
 }
 function commitEdge(type) {
   if (!d().edges) d().edges = [];
   d().edges = d().edges.filter(e => !(e.from === pendingEdge.from && e.to === pendingEdge.to));
   d().edges.push({ from: pendingEdge.from, to: pendingEdge.to, type });
-  pendingEdge = null; mapState.connectSrc = null; closeModal(); render();
+  pendingEdge = null; mapState.connectSrc = null; closeRelModal(); render();
 }
-function cancelEdge() { pendingEdge = null; mapState.connectSrc = null; closeModal(); render(); }
+function cancelEdge() { pendingEdge = null; mapState.connectSrc = null; closeRelModal(); render(); }
 
-/* lightweight modal (reuses app tokens) */
-function showModal(title, bodyHtml) {
-  closeModal();
+/* dedicated map picker overlay — separate from the app's #inlineModal */
+function showRelModal(title, bodyHtml) {
+  closeRelModal();
   const ov = document.createElement('div');
-  ov.id = 'mapModal';
+  ov.id = 'relModal';
   ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:flex;align-items:center;justify-content:center';
   ov.onclick = e => { if (e.target === ov) cancelEdge(); };
   ov.innerHTML = `<div style="background:var(--bg-primary);border:0.5px solid var(--border-mid);border-radius:var(--radius-lg);padding:20px 22px;width:340px;max-width:90vw;box-shadow:0 12px 40px rgba(0,0,0,0.3)">
     <div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:14px">${title}</div>${bodyHtml}</div>`;
   document.body.appendChild(ov);
 }
-function closeModal() { const m = document.getElementById('mapModal'); if (m) m.remove(); }
+function closeRelModal() { const m = document.getElementById('relModal'); if (m) m.remove(); }
 
 function addMapRow() { if (!d().map.rows) d().map.rows = []; d().map.rows.push({ date: '', ownerEleven: '', ownerAccount: '', action: '', status: 'Open' }); render(); }
 function addGapRow() {
