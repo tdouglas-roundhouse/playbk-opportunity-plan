@@ -123,6 +123,52 @@ select.field-input{cursor:pointer}
 .stk-win{font-size:11px;color:var(--text-secondary);border-bottom:0.5px solid var(--border-light);padding:3px 0;margin-top:4px}
 .sc-remove{position:absolute;bottom:8px;right:8px;font-size:11px;color:var(--text-tertiary);background:none;border:none;cursor:pointer;font-family:var(--font)}
 .sc-remove:hover{color:var(--text-danger)}
+/* ── Stakeholder map ── */
+.cov-strip{display:flex;align-items:stretch;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.cov-card{flex:1;min-width:170px;display:flex;align-items:center;gap:9px;background:var(--bg-secondary);border:0.5px solid var(--border-light);border-radius:var(--radius-md);padding:8px 11px;position:relative;overflow:hidden}
+.cov-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.cov-card.ok::before{background:var(--green-pip)}
+.cov-card.warn::before{background:var(--amber-pip)}
+.cov-card.bad::before{background:var(--text-danger)}
+.cov-card.ok{border-color:var(--border-success)}
+.cov-card.warn{border-color:var(--border-warning)}
+.cov-card.bad{border-color:var(--border-danger)}
+.cov-ico{width:20px;height:20px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.cov-ico.ok{background:var(--bg-success);color:var(--text-success)}
+.cov-ico.warn{background:var(--bg-warning);color:var(--text-warning)}
+.cov-ico.bad{background:var(--bg-danger);color:var(--text-danger)}
+.cov-body{min-width:0;flex:1}
+.cov-role{font-size:11.5px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cov-stat{font-size:10px;color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cov-cta{font-size:10px;font-weight:600;color:var(--text-info);border:0.5px solid var(--border-info);border-radius:5px;padding:3px 7px;cursor:pointer;white-space:nowrap;background:var(--bg-info);font-family:var(--font);flex-shrink:0}
+.cov-cta:hover{filter:brightness(0.97)}
+.stk-view-toggle{display:inline-flex;border:0.5px solid var(--border-mid);border-radius:7px;overflow:hidden;margin-left:auto}
+.stk-view-toggle button{font-size:12px;font-family:var(--font);padding:5px 14px;border:none;background:transparent;color:var(--text-secondary);cursor:pointer}
+.stk-view-toggle button.active{background:var(--bg-tertiary);color:var(--text-primary);font-weight:600}
+.stk-body{display:flex;gap:14px;align-items:stretch}
+.stk-map-wrap{flex:1;min-width:0;position:relative;background:var(--bg-primary);border:0.5px solid var(--border-light);border-radius:var(--radius-md);overflow:hidden;min-height:440px;background-image:radial-gradient(circle at 1px 1px,var(--border-light) 1px,transparent 0);background-size:24px 24px}
+.stk-map-svg{position:absolute;inset:0;width:100%;height:100%;cursor:default}
+.stk-map-tools{position:absolute;top:10px;left:10px;display:flex;gap:6px;z-index:4}
+.map-tool{background:var(--bg-primary);border:0.5px solid var(--border-mid);border-radius:6px;color:var(--text-secondary);font-size:11px;font-weight:600;padding:5px 11px;cursor:pointer;font-family:var(--font);transition:all .12s}
+.map-tool:hover{border-color:var(--border-strong);color:var(--text-primary)}
+.map-tool.active{background:var(--bg-info);border-color:var(--border-info);color:var(--text-info)}
+.map-banner{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:var(--text-info);color:#fff;font-size:11.5px;font-weight:600;padding:5px 14px;border-radius:16px;z-index:5;box-shadow:0 3px 10px rgba(0,0,0,.18)}
+.map-legend{position:absolute;bottom:10px;right:10px;display:flex;gap:12px;background:var(--bg-primary);border:0.5px solid var(--border-light);border-radius:7px;padding:6px 12px;font-size:10.5px;z-index:4}
+.map-legend .lg{display:flex;align-items:center;gap:5px;color:var(--text-secondary)}
+.map-legend .dot{width:9px;height:9px;border-radius:50%}
+.map-hint{position:absolute;bottom:10px;left:10px;font-size:10.5px;color:var(--text-tertiary);background:var(--bg-primary);border:0.5px solid var(--border-light);border-radius:6px;padding:5px 10px;z-index:4}
+.stk-rail{width:272px;flex-shrink:0;display:flex;flex-direction:column;gap:10px;max-height:520px;overflow-y:auto;padding-right:2px}
+.stk-rail .stk-card{min-height:0;width:100%}
+.stk-card.map-sel{border-color:var(--border-info);box-shadow:0 0 0 2px var(--bg-info)}
+.node-g{cursor:grab}
+.node-g.connect-mode{cursor:crosshair}
+.node-name{font:600 11.5px var(--font);fill:var(--text-primary)}
+.node-title{font:400 9.5px var(--font);fill:var(--text-tertiary)}
+.node-chip-tx{font:700 7.5px var(--font);letter-spacing:.03em}
+.node-initials{font-weight:700;fill:#fff}
+.map-edge{fill:none}
+.map-edge-lbl{font:600 8px var(--font);fill:var(--text-tertiary)}
+@media(max-width:880px){.stk-body{flex-direction:column}.stk-rail{width:100%;max-height:none;flex-direction:row;overflow-x:auto;overflow-y:hidden}.stk-rail .stk-card{min-width:220px}}
 .pov-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
 .pov-card{background:var(--bg-secondary);border:0.5px solid var(--border-light);border-radius:var(--radius-md);padding:10px 12px}
 .pov-q{font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px}
@@ -892,6 +938,7 @@ function freshData() {
   return {
     snapshot:     { firmName: '', firmType: '', aum: '', contactCount: '', healthStatus: '', journey: '', currentArr: '', targetArr: '', renewalQ: '', notes: '', stakeholderGaps: '' },
     stakeholders: [],
+    edges: [],
     accountpov:   { whyChange: '', whyNow: '', whyUs: '', whatSolution: '', objective1: '', obj1date: '', objective2: '', obj2date: '', objective3: '', obj3date: '' },
     opppov:       { whitespace: '', businessProblem: '', successMetric: '', alternative: '', incumbents: '', competitiveStrategy: '', competitive: '' },
     meddpicc:     { meddAnswers: {}, meddNotes: {}, gapOverrides: { __manual: [] } },
@@ -2504,8 +2551,10 @@ function buildStakeholders() {
     const dot  = sentDot[sent]    || sentDot.Neutral;
     // Cycle order: Advocate → Neutral → Risk → Advocate
     const nextSent = { Advocate: 'Neutral', Neutral: 'Risk', Risk: 'Advocate' }[sent];
+    const inf = s.influence == null ? 3 : s.influence;
+    const selCls = (mapState.selected === i) ? ' map-sel' : '';
 
-    return `<div class="stk-card">
+    return `<div class="stk-card${selCls}" id="stkcard_${i}">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
     <button onclick="setStkField(${i},'sentiment','${nextSent}');render()"
       style="display:inline-flex;align-items:center;gap:5px;padding:3px 8px 3px 5px;border-radius:5px;border:0.5px solid ${bc};background:${bg};cursor:pointer;font-family:var(--font);transition:all 0.12s"
@@ -2517,6 +2566,11 @@ function buildStakeholders() {
   </div>
   <div style="margin-bottom:3px"><input class="stk-input stk-name" data-stk="${i}.name" value="${esc(s.name)}" placeholder="Name"></div>
   <div><input class="stk-input stk-sub" data-stk="${i}.title" value="${esc(s.title)}" placeholder="Title / role"></div>
+  <div style="margin-top:8px;display:flex;align-items:center;gap:8px">
+    <span class="field-label" style="margin:0">Influence</span>
+    <input type="range" min="1" max="5" step="1" value="${inf}" data-stkinf="${i}" style="flex:1;height:4px;cursor:pointer">
+    <span style="font-size:11px;font-weight:600;color:var(--text-secondary)" id="infval_${i}">${inf}</span>
+  </div>
   <div style="margin-top:6px">
     <div class="field-label">Personal win</div>
     <div class="talk-wrap"><textarea class="stk-input stk-win" data-stk="${i}.win" rows="3" placeholder="What do they gain from yes?" style="resize:none;line-height:1.4">${esc(s.win || '')}</textarea><button class="talk-btn" onclick="startStkTalk(event,${i},'win')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div>
@@ -2526,16 +2580,80 @@ function buildStakeholders() {
 </div>`;
   }).join('');
 
+  const railEmpty = '<div style="font-size:13px;color:var(--text-tertiary);padding:10px 0">No stakeholders yet — add one above.</div>';
+  const isMap = mapState.view === 'map';
+
   return `${oppNameBadge()}<div class="slide-title">Stakeholders</div>
-<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+${buildCoverageStrip()}
+<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
   ${['Economic buyer', 'Executive Sponsor', 'Champion', 'Coach', 'Blocker', 'Neutral'].map(r => `<button class="action-btn" style="font-size:12px;padding:5px 12px" onclick="addStakeholder('${r}')">+ ${r}</button>`).join('')}
+  <div class="stk-view-toggle">
+    <button class="${isMap ? '' : 'active'}" onclick="setStkView('cards')">Cards</button>
+    <button class="${isMap ? 'active' : ''}" onclick="setStkView('map')">Map</button>
+  </div>
 </div>
-<div class="stk-grid">${cards || '<div style="font-size:13px;color:var(--text-tertiary);padding:10px 0">No stakeholders yet — add one above.</div>'}</div>
+${isMap ? `
+<div class="stk-body">
+  <div class="stk-map-wrap">
+    <div class="stk-map-tools">
+      <button class="map-tool ${mapState.mode==='select'?'active':''}" onclick="setMapMode('select')">↖ Move</button>
+      <button class="map-tool ${mapState.mode==='connect'?'active':''}" onclick="setMapMode('connect')">⤳ Link</button>
+    </div>
+    ${mapState.mode==='connect' ? `<div class="map-banner">Click a source, then a target to link them</div>` : ''}
+    <svg class="stk-map-svg" id="stkMapSvg"></svg>
+    <div class="map-hint">Drag to move · click a node to open its card</div>
+    <div class="map-legend">
+      <div class="lg"><span class="dot" style="background:var(--green-pip)"></span>Advocate</div>
+      <div class="lg"><span class="dot" style="background:var(--amber-pip)"></span>Neutral</div>
+      <div class="lg"><span class="dot" style="background:#a32d2d"></span>Risk</div>
+      <div class="lg" style="opacity:.7">◯ = influence</div>
+    </div>
+  </div>
+  <div class="stk-rail" id="stkRail">${cards || railEmpty}</div>
+</div>` : `
+<div class="stk-grid">${cards || railEmpty}</div>`}
 <div class="sec-div">Access & coverage gaps</div>
 <div class="field-full">
   <div class="field-label">Who are we missing? What access do we need?</div>
   <div class="talk-wrap"><textarea class="field-input" rows="2" data-f="snapshot.stakeholderGaps" placeholder="e.g. No direct access to principal yet — working through Chief of Staff…">${esc(d().snapshot.stakeholderGaps)}</textarea><button class="talk-btn" onclick="startTalk(event,'snapshot.stakeholderGaps')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_snapshot_stakeholderGaps"></div>
 </div>`;
+}
+
+/* ── Coverage strip: reads real roles + sentiment, ties to Qualification ── */
+function buildCoverageStrip() {
+  const stk = d().stakeholders;
+  const find = r => stk.find(p => (p.role || '').toLowerCase() === r.toLowerCase());
+  const eb = find('Economic buyer');
+  const champ = find('Champion');
+  const blocker = find('Blocker');
+  const coach = find('Coach');
+
+  const checks = [];
+  // Economic Buyer mapped?
+  if (!eb) checks.push({ role: 'Economic Buyer', stat: 'Not mapped — who signs?', status: 'bad', cta: 'Add', act: `addStakeholder('Economic buyer')` });
+  else if (eb.sentiment === 'Risk') checks.push({ role: 'Economic Buyer', stat: `${eb.name || 'Unnamed'} · leaning against`, status: 'warn' });
+  else if (eb.sentiment !== 'Advocate') checks.push({ role: 'Economic Buyer', stat: `${eb.name || 'Unnamed'} · sentiment unknown`, status: 'warn' });
+  else checks.push({ role: 'Economic Buyer', stat: `${eb.name} · advocate`, status: 'ok' });
+  // Champion with Advocate sentiment?
+  if (!champ) checks.push({ role: 'Champion', stat: 'No champion identified', status: 'bad', cta: 'Add', act: `addStakeholder('Champion')` });
+  else if (champ.sentiment !== 'Advocate') checks.push({ role: 'Champion', stat: `${champ.name || 'Unnamed'} · not yet an advocate`, status: 'warn' });
+  else checks.push({ role: 'Champion', stat: `${champ.name} · advocate`, status: 'ok' });
+  // Blocker identified? (warn-not-bad: absence is a known-unknown)
+  if (!blocker) checks.push({ role: 'Paper-Process Blocker', stat: 'None surfaced — confirm before legal', status: 'warn', cta: 'Add', act: `addStakeholder('Blocker')` });
+  else checks.push({ role: 'Paper-Process Blocker', stat: `${blocker.name || 'Unnamed'} · ${blocker.title || 'identified'}`, status: 'ok' });
+  // Coach / access path
+  if (!coach && !champ) checks.push({ role: 'Coach / Access', stat: 'No internal guide', status: 'warn', cta: 'Add', act: `addStakeholder('Coach')` });
+  else checks.push({ role: 'Coach / Access', stat: (coach ? `${coach.name || 'Coach'} mapped` : 'Champion covering'), status: 'ok' });
+
+  const cards = checks.map(c => {
+    const icon = c.status === 'ok' ? '✓' : (c.status === 'warn' ? '!' : '✕');
+    return `<div class="cov-card ${c.status}">
+      <div class="cov-ico ${c.status}">${icon}</div>
+      <div class="cov-body"><div class="cov-role">${esc(c.role)}</div><div class="cov-stat">${esc(c.stat)}</div></div>
+      ${c.cta ? `<button class="cov-cta" onclick="${c.act}">+ ${c.cta}</button>` : ''}
+    </div>`;
+  }).join('');
+  return `<div class="cov-strip">${cards}</div>`;
 }
 
 function buildMap() {
@@ -2595,6 +2713,17 @@ function attachListeners() {
       if (d().stakeholders[+i]) d().stakeholders[+i][field] = el.value;
     });
   });
+  document.querySelectorAll('[data-stkinf]').forEach(el => {
+    el.addEventListener('input', () => {
+      const i = +el.getAttribute('data-stkinf');
+      if (d().stakeholders[i]) {
+        d().stakeholders[i].influence = +el.value;
+        const v = document.getElementById('infval_' + i); if (v) v.textContent = el.value;
+        renderStakeholderMap();
+      }
+    });
+  });
+  renderStakeholderMap();
   document.querySelectorAll('[data-map]').forEach(el => {
     el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => {
       const [i, field] = el.getAttribute('data-map').split('.');
@@ -2655,9 +2784,219 @@ function toggleMeddNote(sid) {
 }
 
 function setMeddNote(sid, val) { d().meddpicc.meddNotes[sid] = val; }
-function addStakeholder(role) { d().stakeholders.push({ role, name: '', title: '', sentiment: 'Neutral', win: '' }); render(); }
-function removeStakeholder(i) { d().stakeholders.splice(i, 1); render(); }
+function addStakeholder(role) { d().stakeholders.push({ role, name: '', title: '', sentiment: 'Neutral', win: '', influence: 3 }); render(); }
+function removeStakeholder(i) {
+  d().stakeholders.splice(i, 1);
+  // drop edges touching i, reindex the rest
+  if (d().edges) {
+    d().edges = d().edges
+      .filter(e => e.from !== i && e.to !== i)
+      .map(e => ({ ...e, from: e.from > i ? e.from - 1 : e.from, to: e.to > i ? e.to - 1 : e.to }));
+  }
+  if (mapState.selected === i) mapState.selected = null;
+  else if (mapState.selected > i) mapState.selected--;
+  render();
+}
 function setStkField(i, f, v) { if (d().stakeholders[i]) d().stakeholders[i][f] = v; }
+
+/* ════════════ Stakeholder relationship map ════════════ */
+const mapState = { view: 'cards', mode: 'select', selected: null, connectSrc: null,
+  drag: null, dragOff: { x: 0, y: 0}, didDrag: false };
+const REL_COLOR = { 'reports-to': 'var(--border-strong)', 'allies-with': '#1D9E75', 'blocks': '#a32d2d' };
+const REL_DASH  = { 'reports-to': '0', 'allies-with': '0', 'blocks': '5 4' };
+const REL_TYPES = ['reports-to', 'allies-with', 'blocks'];
+const SVGNS = 'http://www.w3.org/2000/svg';
+
+function setStkView(v) { mapState.view = v; mapState.connectSrc = null; render(); }
+function setMapMode(m) { mapState.mode = m; mapState.connectSrc = null; render(); }
+
+function stkSentColors(sent) {
+  if (sent === 'Advocate') return { stroke: 'var(--green-pip)', fill: 'var(--bg-success)' };
+  if (sent === 'Risk')     return { stroke: '#a32d2d',          fill: 'var(--bg-danger)'  };
+  return { stroke: 'var(--amber-pip)', fill: 'var(--bg-warning)' };
+}
+function roleChip(role) {
+  const r = (role || '').toLowerCase();
+  if (r === 'champion')        return { bg: 'var(--bg-success)', tx: 'var(--text-success)', label: 'CHAMPION' };
+  if (r === 'economic buyer')  return { bg: 'var(--bg-info)',    tx: 'var(--text-info)',    label: 'ECON BUYER' };
+  if (r === 'executive sponsor') return { bg: '#2d1b69',         tx: '#b794f4',             label: 'EXEC SPONSOR' };
+  if (r === 'coach')           return { bg: 'var(--bg-warning)', tx: 'var(--text-warning)', label: 'COACH' };
+  if (r === 'blocker')         return { bg: 'var(--bg-danger)',  tx: 'var(--text-danger)',  label: 'BLOCKER' };
+  return { bg: 'var(--bg-tertiary)', tx: 'var(--text-secondary)', label: (role || 'NEUTRAL').toUpperCase() };
+}
+function nodeRadius(inf) { return 20 + (inf == null ? 3 : inf) * 5; } // 25 → 45
+function mEl(tag, attrs) { const e = document.createElementNS(SVGNS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; }
+
+/* Auto-layout any stakeholder missing x/y so first render isn't a pile-up */
+function ensureLayout() {
+  const stk = d().stakeholders;
+  const svg = document.getElementById('stkMapSvg');
+  const W = svg ? svg.clientWidth  || 640 : 640;
+  const H = svg ? svg.clientHeight || 440 : 440;
+  const unplaced = stk.filter(s => s.x == null || s.y == null);
+  if (unplaced.length) {
+    // simple tier layout: buyers/sponsors top, champions/coaches mid, others bottom
+    const tier = s => {
+      const r = (s.role || '').toLowerCase();
+      if (r === 'economic buyer' || r === 'executive sponsor') return 0;
+      if (r === 'champion' || r === 'coach') return 1;
+      return 2;
+    };
+    const tiers = [[], [], []];
+    stk.forEach((s, i) => { if (s.x == null || s.y == null) tiers[tier(s)].push(i); });
+    tiers.forEach((idxs, t) => {
+      const y = 90 + t * ((H - 160) / 2);
+      idxs.forEach((idx, k) => {
+        stk[idx].x = (W / (idxs.length + 1)) * (k + 1);
+        stk[idx].y = y;
+      });
+    });
+  }
+}
+
+function renderStakeholderMap() {
+  const svg = document.getElementById('stkMapSvg');
+  if (!svg) return;
+  ensureLayout();
+  const stk = d().stakeholders;
+  const edges = d().edges || [];
+  svg.innerHTML = '';
+
+  // arrowhead defs
+  const defs = mEl('defs', {});
+  REL_TYPES.forEach(t => {
+    const m = mEl('marker', { id: 'mk-' + t, viewBox: '0 0 10 10', refX: '9', refY: '5', markerWidth: '6', markerHeight: '6', orient: 'auto-start-reverse' });
+    m.appendChild(mEl('path', { d: 'M0,0 L10,5 L0,10 z', fill: REL_COLOR[t] }));
+    defs.appendChild(m);
+  });
+  svg.appendChild(defs);
+
+  // edges
+  edges.forEach(e => {
+    const a = stk[e.from], b = stk[e.to];
+    if (!a || !b) return;
+    const ra = nodeRadius(a.influence), rb = nodeRadius(b.influence);
+    const dx = b.x - a.x, dy = b.y - a.y, dist = Math.hypot(dx, dy) || 1;
+    const ux = dx / dist, uy = dy / dist;
+    const x1 = a.x + ux * ra, y1 = a.y + uy * ra, x2 = b.x - ux * (rb + 7), y2 = b.y - uy * (rb + 7);
+    svg.appendChild(mEl('line', { x1, y1, x2, y2, class: 'map-edge', stroke: REL_COLOR[e.type], 'stroke-width': 1.8, 'stroke-dasharray': REL_DASH[e.type], 'marker-end': 'url(#mk-' + e.type + ')' }));
+    const lbl = mEl('text', { x: (x1 + x2) / 2, y: (y1 + y2) / 2 - 3, class: 'map-edge-lbl', 'text-anchor': 'middle' });
+    lbl.textContent = e.type; svg.appendChild(lbl);
+  });
+
+  // nodes
+  stk.forEach((s, i) => {
+    const r = nodeRadius(s.influence);
+    const col = stkSentColors(s.sentiment || 'Neutral');
+    const g = mEl('g', { class: 'node-g' + (mapState.mode === 'connect' ? ' connect-mode' : ''), 'data-idx': i });
+
+    if (mapState.selected === i || mapState.connectSrc === i) {
+      g.appendChild(mEl('circle', { cx: s.x, cy: s.y, r: r + 5, fill: 'none', stroke: 'var(--text-info)', 'stroke-width': 2, 'stroke-dasharray': '4 3' }));
+    }
+    g.appendChild(mEl('circle', { cx: s.x, cy: s.y, r, fill: col.fill, stroke: col.stroke, 'stroke-width': 2.5 }));
+
+    const initials = (s.name || '?').split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || '?';
+    const ini = mEl('text', { x: s.x, y: s.y, 'text-anchor': 'middle', 'dominant-baseline': 'central', class: 'node-initials', style: `font-size:${11 + (s.influence||3)}px;fill:${col.stroke}` });
+    ini.textContent = initials; g.appendChild(ini);
+
+    // role chip
+    const chip = roleChip(s.role);
+    const cw = chip.label.length * 5 + 12;
+    g.appendChild(mEl('rect', { x: s.x - cw / 2, y: s.y - r - 19, width: cw, height: 14, rx: 7, fill: chip.bg, stroke: chip.tx, 'stroke-width': 0.5, 'stroke-opacity': 0.5 }));
+    const ct = mEl('text', { x: s.x, y: s.y - r - 12, 'text-anchor': 'middle', 'dominant-baseline': 'central', class: 'node-chip-tx', fill: chip.tx });
+    ct.textContent = chip.label; g.appendChild(ct);
+
+    // name + title below
+    const nm = mEl('text', { x: s.x, y: s.y + r + 14, 'text-anchor': 'middle', class: 'node-name' });
+    nm.textContent = s.name || 'Unnamed'; g.appendChild(nm);
+    if (s.title) { const tt = mEl('text', { x: s.x, y: s.y + r + 26, 'text-anchor': 'middle', class: 'node-title' }); tt.textContent = s.title; g.appendChild(tt); }
+
+    svg.appendChild(g);
+  });
+
+  bindMapEvents();
+}
+
+function bindMapEvents() {
+  const svg = document.getElementById('stkMapSvg');
+  if (!svg) return;
+  svg.querySelectorAll('.node-g').forEach(g => {
+    const idx = +g.getAttribute('data-idx');
+    g.addEventListener('mousedown', ev => {
+      if (mapState.mode === 'connect') return;
+      const pt = mapPoint(ev); const s = d().stakeholders[idx];
+      mapState.drag = idx; mapState.didDrag = false;
+      mapState.dragOff = { x: pt.x - s.x, y: pt.y - s.y };
+      ev.preventDefault();
+    });
+    g.addEventListener('click', () => {
+      if (mapState.mode === 'connect') { handleConnect(idx); return; }
+      if (mapState.didDrag) return;
+      selectMapNode(idx);
+    });
+  });
+}
+function mapPoint(ev) { const svg = document.getElementById('stkMapSvg'); const r = svg.getBoundingClientRect(); return { x: ev.clientX - r.left, y: ev.clientY - r.top }; }
+
+function onMapMove(ev) {
+  if (mapState.drag == null) return;
+  const pt = mapPoint(ev); const s = d().stakeholders[mapState.drag];
+  s.x = Math.max(40, pt.x - mapState.dragOff.x);
+  s.y = Math.max(40, pt.y - mapState.dragOff.y);
+  mapState.didDrag = true;
+  renderStakeholderMap();
+}
+function onMapUp() { if (mapState.drag != null) { mapState.drag = null; } }
+document.addEventListener('mousemove', onMapMove);
+document.addEventListener('mouseup', onMapUp);
+
+function selectMapNode(idx) {
+  mapState.selected = idx;
+  render();
+  // scroll the matching card into view + flash
+  setTimeout(() => {
+    const card = document.getElementById('stkcard_' + idx);
+    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 30);
+}
+
+function handleConnect(idx) {
+  if (mapState.connectSrc == null) { mapState.connectSrc = idx; renderStakeholderMap(); return; }
+  if (mapState.connectSrc === idx) { mapState.connectSrc = null; renderStakeholderMap(); return; }
+  pendingEdge = { from: mapState.connectSrc, to: idx };
+  openRelPicker();
+}
+let pendingEdge = null;
+function openRelPicker() {
+  const stk = d().stakeholders;
+  const a = stk[pendingEdge.from], b = stk[pendingEdge.to];
+  const choices = REL_TYPES.map(t =>
+    `<button class="action-btn" style="display:block;width:100%;text-align:left;margin-bottom:7px" onclick="commitEdge('${t}')">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${REL_COLOR[t]};margin-right:8px;vertical-align:middle"></span>${t}
+    </button>`).join('');
+  showModal(`Link: ${esc(a.name || 'Unnamed')} → ${esc(b.name || 'Unnamed')}`, choices + `<button class="action-btn" style="width:100%;margin-top:4px" onclick="cancelEdge()">Cancel</button>`);
+}
+function commitEdge(type) {
+  if (!d().edges) d().edges = [];
+  d().edges = d().edges.filter(e => !(e.from === pendingEdge.from && e.to === pendingEdge.to));
+  d().edges.push({ from: pendingEdge.from, to: pendingEdge.to, type });
+  pendingEdge = null; mapState.connectSrc = null; closeModal(); render();
+}
+function cancelEdge() { pendingEdge = null; mapState.connectSrc = null; closeModal(); render(); }
+
+/* lightweight modal (reuses app tokens) */
+function showModal(title, bodyHtml) {
+  closeModal();
+  const ov = document.createElement('div');
+  ov.id = 'mapModal';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:flex;align-items:center;justify-content:center';
+  ov.onclick = e => { if (e.target === ov) cancelEdge(); };
+  ov.innerHTML = `<div style="background:var(--bg-primary);border:0.5px solid var(--border-mid);border-radius:var(--radius-lg);padding:20px 22px;width:340px;max-width:90vw;box-shadow:0 12px 40px rgba(0,0,0,0.3)">
+    <div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:14px">${title}</div>${bodyHtml}</div>`;
+  document.body.appendChild(ov);
+}
+function closeModal() { const m = document.getElementById('mapModal'); if (m) m.remove(); }
+
 function addMapRow() { if (!d().map.rows) d().map.rows = []; d().map.rows.push({ date: '', ownerEleven: '', ownerAccount: '', action: '', status: 'Open' }); render(); }
 function addGapRow() {
   if (!d().meddpicc.gapOverrides) d().meddpicc.gapOverrides = { __manual: [] };
@@ -4037,10 +4376,18 @@ function buildExampleOpp() {
 
   // Stakeholders
   data.stakeholders = [
-    { name: 'Marcus Webb', title: 'CIO', role: 'Champion', sentiment: 'Advocate', win: 'Eliminate the monthly reporting reconciliation that consumes 2 days of his team. Wants to look good in front of the principal after the data error.' },
-    { name: 'Sarah Chen', title: 'Director of Operations', role: 'Coach', sentiment: 'Advocate', win: 'Reduce manual data entry burden on her team. Has been coordinating all meetings — strong internal ally.' },
-    { name: 'Robert Hargrove', title: 'Managing Principal', role: 'Economic buyer', sentiment: 'Neutral', win: 'Single view of family wealth without calling three advisors. Values privacy and control above cost.' },
-    { name: 'David Okafor', title: 'Chief Compliance Officer', role: 'Neutral', sentiment: 'Risk', win: 'Unknown — has not engaged yet. Could become a blocker on cloud data policy.' }
+    { name: 'Marcus Webb', title: 'CIO', role: 'Champion', sentiment: 'Advocate', win: 'Eliminate the monthly reporting reconciliation that consumes 2 days of his team. Wants to look good in front of the principal after the data error.', influence: 4, x: 200, y: 250 },
+    { name: 'Sarah Chen', title: 'Director of Operations', role: 'Coach', sentiment: 'Advocate', win: 'Reduce manual data entry burden on her team. Has been coordinating all meetings — strong internal ally.', influence: 2, x: 200, y: 410 },
+    { name: 'Robert Hargrove', title: 'Managing Principal', role: 'Economic buyer', sentiment: 'Neutral', win: 'Single view of family wealth without calling three advisors. Values privacy and control above cost.', influence: 5, x: 470, y: 100 },
+    { name: 'David Okafor', title: 'Chief Compliance Officer', role: 'Neutral', sentiment: 'Risk', win: 'Unknown — has not engaged yet. Could become a blocker on cloud data policy.', influence: 3, x: 480, y: 380 }
+  ];
+
+  // Stakeholder relationship edges (indexes into stakeholders above)
+  data.edges = [
+    { from: 0, to: 2, type: 'reports-to' },   // Marcus → Robert
+    { from: 1, to: 0, type: 'reports-to' },   // Sarah → Marcus
+    { from: 0, to: 1, type: 'allies-with' },  // Marcus ↔ Sarah
+    { from: 3, to: 0, type: 'blocks' }        // David blocks Marcus's path
   ];
 
   // Account POV
