@@ -575,6 +575,8 @@ select.field-input{cursor:pointer}
 .log-medd-fill{height:100%;border-radius:2px;background:var(--green-pip);transition:width 0.3s}
 .log-next{font-size:12px;color:var(--text-secondary)}
 .log-updated{font-size:11px;color:var(--text-tertiary)}
+.hs-dot{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;letter-spacing:-0.02em}
+.hs-dot.hs-empty{background:transparent;color:var(--text-tertiary);font-weight:500}
 .log-empty{padding:40px 0;text-align:center;color:var(--text-tertiary);font-size:13px}
 .save-indicator{font-size:11px;color:var(--text-success);opacity:0;transition:opacity 0.4s;white-space:nowrap}
 .save-indicator.show{opacity:1}
@@ -3295,6 +3297,7 @@ function buildLogEntry(a) {
     renewalQ:    s.renewalQ    || '',
     meddScore:   yes,
     meddTotal:   total,
+    healthScore: calcHealthScore(a.data),
     forecast:    fc,
     nextTouch:   m.nextTouch   || '',
     topAsk:      m.topAsk      || '',
@@ -3566,6 +3569,12 @@ function buildPipelinePage() {
     const saved = new Date(e.savedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const fcClass = { Commit: 'fc-commit', Upside: 'fc-upside', Pipeline: 'fc-pipeline', Omit: 'fc-omit' }[e.forecast] || 'fc-omit';
     const stageClass = stageColors[e.journey] || 'fc-pipeline';
+    // Prefer live in-memory score (always current); fall back to stored value
+    const liveOpp = opps.find(o => o.id === e.id);
+    const hs = liveOpp ? calcHealthScore(liveOpp.data) : (typeof e.healthScore === 'number' ? e.healthScore : null);
+    const hsCircle = hs === null
+      ? `<span class="hs-dot hs-empty">—</span>`
+      : `<span class="hs-dot" style="background:${hs >= 70 ? 'var(--text-success)' : hs >= 40 ? 'var(--text-warning)' : 'var(--text-danger)'}">${hs}</span>`;
     const action = isArchived
       ? `<button class="row-action restore" onclick="event.stopPropagation();restoreOpp('${e.id}')" title="Restore to active">Restore</button>`
       : `<button class="row-action" onclick="event.stopPropagation();archiveOpp('${e.id}')" title="Archive opportunity">Archive</button>`;
@@ -3585,6 +3594,7 @@ function buildPipelinePage() {
     <div class="log-medd">${e.meddScore}/${e.meddTotal}</div>
     <div class="log-medd-bar"><div class="log-medd-fill" style="width:${pct}%"></div></div>
   </td>
+  <td style="text-align:center">${hsCircle}</td>
   <td><span class="forecast-badge ${fcClass}" style="font-size:11px;padding:2px 9px">${e.forecast}</span></td>
   <td><span style="font-size:11px;color:var(--text-secondary)">${esc(e.renewalQ || '—')}</span></td>
   <td><span class="log-next">${esc(e.nextTouch || '—')}</span></td>
@@ -3601,6 +3611,7 @@ function buildPipelinePage() {
       case 'stage':       return stageRank[e.journey] || 0;
       case 'arr':         return parseARR(e.targetArr);
       case 'qualify':     return e.meddTotal ? e.meddScore / e.meddTotal : 0;
+      case 'health':      { const lo = opps.find(o => o.id === e.id); return lo ? calcHealthScore(lo.data) : (typeof e.healthScore === 'number' ? e.healthScore : -1); }
       case 'forecast':    return fcRank[e.forecast] || 0;
       case 'close':       return (e.renewalQ || '');
       case 'nexttouch':   return (e.nextTouch || '');
@@ -3640,6 +3651,7 @@ function buildPipelinePage() {
     ${th('stage','Stage',80)}
     ${th('arr','Target ARR',100)}
     ${th('qualify','Qualify',90)}
+    ${th('health','Health',64)}
     ${th('forecast','Forecast',90)}
     ${th('close','Close',80)}
     ${th('nexttouch','Next touch',120)}
@@ -3881,6 +3893,23 @@ function removeCall(ci) {
 async function analyseCall() {
   const transcript = document.getElementById('callTranscript').value.trim();
   if (!transcript) { showAnalyseError('Please paste a transcript first.'); return; }
+
+  // Duplicate guard — normalize whitespace/case and compare against logged calls
+  const normT = transcript.replace(/\s+/g, ' ').toLowerCase();
+  const dupe = (d().calls || []).some(c => (c.transcript || '').replace(/\s+/g, ' ').toLowerCase() === normT);
+  if (dupe) {
+    showModal({
+      title: 'Already analysed',
+      desc: 'This transcript matches one you\u2019ve already analysed on this deal. Analyse it again anyway?',
+      confirmLabel: 'Analyse again',
+      onConfirm: () => runCallAnalysis(transcript)
+    });
+    return;
+  }
+  runCallAnalysis(transcript);
+}
+
+async function runCallAnalysis(transcript) {
   const date         = document.getElementById('callDate').value.trim();
   const participants = document.getElementById('callParticipants').value.trim();
 
@@ -4051,7 +4080,17 @@ function acceptFinding(ci, fi) {
     } else if (field === 'map.nextTouch') {
       d().map.nextTouch = value;
     } else if (field === 'stakeholder.new') {
-      d().stakeholders.push({ role: 'Neutral', name: value, title: '', sentiment: 'Neutral', win: '' });
+      const nm = (value || '').trim();
+      const existing = d().stakeholders.find(st => (st.name || '').trim().toLowerCase() === nm.toLowerCase());
+      if (nm && !existing) {
+        d().stakeholders.push({ role: 'Neutral', name: nm, title: '', sentiment: 'Neutral', win: '' });
+      }
+      // If the stakeholder already exists, skip — no duplicate added
+    } else if (field.startsWith('stakeholder.') && field.endsWith('.sentiment')) {
+      const nm = field.slice('stakeholder.'.length, -('.sentiment'.length)).trim();
+      const st = d().stakeholders.find(s => (s.name || '').trim().toLowerCase() === nm.toLowerCase());
+      if (st) st.sentiment = value;
+      else d().stakeholders.push({ role: 'Neutral', name: nm, title: '', sentiment: value || 'Neutral', win: '' });
     } else if (field.startsWith('gap.')) {
       const sid = field.split('.')[1];
       if (!d().meddpicc.gapOverrides) d().meddpicc.gapOverrides = { __manual: [] };
