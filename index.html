@@ -2315,32 +2315,30 @@ function buildOppPov() {
     <div class="pov-q">What solution? <span class="fmt-hint" style="font-weight:400">incl. expansion / whitespace</span></div>
     <div class="talk-wrap"><textarea class="field-input" rows="2" data-f="accountpov.whatSolution" placeholder="Which modules now, what expands later? Quantified ROI?">${esc(p.whatSolution)}</textarea><button class="talk-btn" onclick="startTalk(event,'accountpov.whatSolution')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_accountpov_whatSolution"></div>
   </div>
-</div>
-<div class="sec-div">The business case</div>
-<div class="field-full">
-  <div class="field-label">What business problem does this solve? <span class="fmt-hint">Operational / financial pain — not technical features</span></div>
-  <div class="talk-wrap"><textarea class="field-input" rows="2" data-f="opppov.businessProblem" placeholder="e.g. The principal's team spends 3 days per month reconciling data across 6 systems with no single view of net worth or exposure. This is a control and reputational risk problem, not a reporting problem.">${esc(o.businessProblem)}</textarea><button class="talk-btn" onclick="startTalk(event,'opppov.businessProblem')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_opppov_businessProblem"></div>
-</div>
-<div class="field-full">
-  <div class="field-label">How is success measured? <span class="fmt-hint">Quantified outcomes the champion can take to the EB</span></div>
-  <div class="talk-wrap"><textarea class="field-input" rows="2" data-f="opppov.successMetric" placeholder="e.g. Reduce monthly reporting prep from 3 days to 2 hours. Single dashboard the principal reviews weekly without advisor involvement.">${esc(o.successMetric)}</textarea><button class="talk-btn" onclick="startTalk(event,'opppov.successMetric')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_opppov_successMetric"></div>
-</div>
-<div class="sec-div">Competitive reality</div>
-<div class="field-full">
-  <div class="field-label">What's the alternative — and who are we really against? <span class="fmt-hint">"Good enough" status quo is usually the real competitor. Name it, and any incumbent vendor.</span></div>
-  <div class="talk-wrap"><textarea class="field-input" rows="3" data-f="opppov.alternative" placeholder="e.g. Status quo is Excel + Addepar reports emailed monthly — champion says it works 'well enough.' Real competition is inertia plus Addepar's account team. The trigger: CFO had a data discrepancy in front of the principal last quarter.">${esc(o.alternative)}</textarea><button class="talk-btn" onclick="startTalk(event,'opppov.alternative')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_opppov_alternative"></div>
-</div>
-<div class="field-full">
-  <div class="field-label">Our strategy &amp; how we win</div>
-  <div class="chip-group" style="margin-top:4px">
-    ${[
-      ['Direct',           'Head-to-head — we win on superior product or fit'],
-      ['Flank',            'Attack their weakness — go where incumbent is weakest'],
-      ['Divide & conquer', 'Separate the EB from the champion, win each differently'],
-      ['Defend',           'We\'re the incumbent — protect and expand']
-    ].map(([v, tip]) => `<button class="chip${o.competitiveStrategy === v ? ' sel-blue' : ''}" onclick="setDeep('opppov.competitiveStrategy','${v}');render()" title="${tip}">${v}</button>`).join('')}
+  <div class="pov-card">
+    <div class="pov-q">Business problem <span class="fmt-hint" style="font-weight:400">operational / financial pain</span></div>
+    <div class="talk-wrap"><textarea class="field-input" rows="2" data-f="opppov.businessProblem" placeholder="e.g. The principal's team spends 3 days per month reconciling data across 6 systems with no single view of net worth or exposure. A control and reputational risk problem, not a reporting problem.">${esc(o.businessProblem)}</textarea><button class="talk-btn" onclick="startTalk(event,'opppov.businessProblem')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_opppov_businessProblem"></div>
   </div>
-  <div class="talk-wrap"><textarea class="field-input" rows="2" style="margin-top:8px" data-f="opppov.competitive" placeholder="How do we win? Differentiated angle vs. the alternative?">${esc(o.competitive)}</textarea><button class="talk-btn" onclick="startTalk(event,'opppov.competitive')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_opppov_competitive"></div>
+  <div class="pov-card">
+    <div class="pov-q">Success metric <span class="fmt-hint" style="font-weight:400">quantified, EB-ready</span></div>
+    <div class="talk-wrap"><textarea class="field-input" rows="2" data-f="opppov.successMetric" placeholder="e.g. Reduce monthly reporting prep from 3 days to 2 hours. Single dashboard the principal reviews weekly without advisor involvement.">${esc(o.successMetric)}</textarea><button class="talk-btn" onclick="startTalk(event,'opppov.successMetric')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_opppov_successMetric"></div>
+  </div>
+  <div class="pov-card">
+    <div class="pov-q">The alternative <span class="fmt-hint" style="font-weight:400">status quo = the real competitor</span></div>
+    <div class="talk-wrap"><textarea class="field-input" rows="2" data-f="opppov.alternative" placeholder="e.g. Status quo is Excel + Addepar reports emailed monthly — 'works well enough.' Real competition is inertia plus Addepar's account team. Trigger: a data discrepancy in front of the principal last quarter.">${esc(o.alternative)}</textarea><button class="talk-btn" onclick="startTalk(event,'opppov.alternative')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_opppov_alternative"></div>
+  </div>
+  <div class="pov-card">
+    <div class="pov-q">Strategy &amp; how we win</div>
+    <div class="chip-group" style="margin-bottom:6px">
+      ${[
+        ['Direct',           'Head-to-head — we win on superior product or fit'],
+        ['Flank',            'Attack their weakness — go where incumbent is weakest'],
+        ['Divide & conquer', 'Separate the EB from the champion, win each differently'],
+        ['Defend',           'We\'re the incumbent — protect and expand']
+      ].map(([v, tip]) => `<button class="chip${o.competitiveStrategy === v ? ' sel-blue' : ''}" onclick="setDeep('opppov.competitiveStrategy','${v}');render()" title="${tip}">${v}</button>`).join('')}
+    </div>
+    <div class="talk-wrap"><textarea class="field-input" rows="2" data-f="opppov.competitive" placeholder="How do we win? Differentiated angle vs. the alternative?">${esc(o.competitive)}</textarea><button class="talk-btn" onclick="startTalk(event,'opppov.competitive')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_opppov_competitive"></div>
+  </div>
 </div>`;
 }
 
