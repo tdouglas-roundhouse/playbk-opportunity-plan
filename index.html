@@ -389,10 +389,14 @@ select.field-input{cursor:pointer}
 .dash-sort-pill{font-size:12px;font-family:var(--font);padding:5px 12px;border-radius:6px;border:0.5px solid var(--border-mid);background:var(--bg-primary);color:var(--text-secondary);cursor:pointer;transition:all .12s}
 .dash-sort-pill:hover{border-color:var(--border-strong);color:var(--text-primary)}
 .dash-sort-pill.active{background:var(--bg-tertiary);border-color:var(--border-strong);color:var(--text-primary);font-weight:600}
-.sortable-th{cursor:pointer;user-select:none;white-space:nowrap;transition:color .12s}
-.sortable-th:hover{color:var(--text-primary)}
-.sortable-th.sorted{color:var(--text-primary)}
-.sort-arrow{font-size:9px;color:var(--text-tertiary)}
+.sortable-th{user-select:none;white-space:nowrap}
+.sortable-th.sorted .th-label{color:var(--text-primary)}
+.th-inner{display:inline-flex;align-items:center;gap:5px}
+.th-label{cursor:pointer;transition:color .12s}
+.th-label:hover{color:var(--text-primary)}
+.th-arrows{display:inline-flex;flex-direction:column;line-height:0.7;font-size:8px}
+.th-arrow{cursor:pointer;transition:color .12s}
+.th-arrow:hover{color:var(--text-primary)!important}
 .dash-header{margin-bottom:24px}
 .dash-title{font-size:22px;font-weight:600;letter-spacing:-0.02em;color:var(--text-primary)}
 .dash-subtitle{font-size:13px;color:var(--text-tertiary);margin-top:3px}
@@ -3617,8 +3621,20 @@ function buildPipelinePage() {
     ? `<div style="text-align:center;padding:32px 0;color:var(--text-tertiary);font-size:13px">No saved opportunities yet. Open any opportunity plan and hit <strong>Save to Log</strong>.</div>`
     : '';
 
-  const sortArrow = key => pipeSort.key === key ? (pipeSort.dir === 'asc' ? ' ▲' : ' ▼') : '';
-  const th = (key, label, w) => `<th style="width:${w}px" class="sortable-th${pipeSort.key===key?' sorted':''}" onclick="setPipeSort('${key}')">${label}<span class="sort-arrow">${sortArrow(key)}</span></th>`;
+  const th = (key, label, w) => {
+    const active = pipeSort.key === key;
+    const upCol = active && pipeSort.dir === 'asc' ? 'var(--text-primary)' : 'var(--text-tertiary)';
+    const dnCol = active && pipeSort.dir === 'desc' ? 'var(--text-primary)' : 'var(--text-tertiary)';
+    return `<th style="width:${w}px" class="sortable-th${active?' sorted':''}">
+      <span class="th-inner">
+        <span class="th-label" onclick="setPipeSort('${key}','toggle')">${label}</span>
+        <span class="th-arrows">
+          <span class="th-arrow${active&&pipeSort.dir==='asc'?' on':''}" style="color:${upCol}" onclick="event.stopPropagation();setPipeSort('${key}','asc')">▲</span>
+          <span class="th-arrow${active&&pipeSort.dir==='desc'?' on':''}" style="color:${dnCol}" onclick="event.stopPropagation();setPipeSort('${key}','desc')">▼</span>
+        </span>
+      </span>
+    </th>`;
+  };
   const tableHeaders = `<thead><tr>
     ${th('opportunity','Opportunity',170)}
     ${th('stage','Stage',80)}
@@ -3653,8 +3669,11 @@ ${emptyActive}
 ${archivedSection}`;
 }
 
-function setPipeSort(key) {
-  if (pipeSort.key === key) {
+function setPipeSort(key, dir) {
+  if (dir === 'asc' || dir === 'desc') {
+    pipeSort.key = key;
+    pipeSort.dir = dir;
+  } else if (pipeSort.key === key) {
     pipeSort.dir = pipeSort.dir === 'asc' ? 'desc' : 'asc';
   } else {
     pipeSort.key = key;
