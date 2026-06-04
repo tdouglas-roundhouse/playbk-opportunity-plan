@@ -384,6 +384,15 @@ select.field-input{cursor:pointer}
 
 /* ── Dashboard ── */
 .dashboard{padding:0}
+.dash-sort-row{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.dash-sort-label{font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-tertiary);margin-right:4px}
+.dash-sort-pill{font-size:12px;font-family:var(--font);padding:5px 12px;border-radius:6px;border:0.5px solid var(--border-mid);background:var(--bg-primary);color:var(--text-secondary);cursor:pointer;transition:all .12s}
+.dash-sort-pill:hover{border-color:var(--border-strong);color:var(--text-primary)}
+.dash-sort-pill.active{background:var(--bg-tertiary);border-color:var(--border-strong);color:var(--text-primary);font-weight:600}
+.sortable-th{cursor:pointer;user-select:none;white-space:nowrap;transition:color .12s}
+.sortable-th:hover{color:var(--text-primary)}
+.sortable-th.sorted{color:var(--text-primary)}
+.sort-arrow{font-size:9px;color:var(--text-tertiary)}
 .dash-header{margin-bottom:24px}
 .dash-title{font-size:22px;font-weight:600;letter-spacing:-0.02em;color:var(--text-primary)}
 .dash-subtitle{font-size:13px;color:var(--text-tertiary);margin-top:3px}
@@ -865,6 +874,8 @@ const SLIDES = [
 let showDashboard = true;
 let showPipeline = false;
 let showThemes = false;
+let dashSort = 'qual-desc';   // qual-desc | qual-asc | arr-desc | health-desc | recent
+let pipeSort = { key: 'qualify', dir: 'desc' };  // sortable pipeline columns
 
 const MEDD = [
   { id: 'economic_buyer', title: 'Economic buyer', desc: 'Is the principal or CIO reachable?', blocker: true,
@@ -2160,7 +2171,20 @@ function buildDashboard() {
 </div>`;
   }).join('');
 
-  const cards = opps.filter(a => !a.archived).map((a) => {
+  const sortedOpps = opps.filter(a => !a.archived).slice().sort((a, b) => {
+    const qa = (() => { const m = (a.data.meddpicc && a.data.meddpicc.meddAnswers) || {}; let y = 0, t = 0; MEDD.forEach(s => s.questions.forEach((_, i) => { t++; if (m[s.id + '_' + i] === 'yes') y++; })); return t ? y / t : 0; })();
+    const qb = (() => { const m = (b.data.meddpicc && b.data.meddpicc.meddAnswers) || {}; let y = 0, t = 0; MEDD.forEach(s => s.questions.forEach((_, i) => { t++; if (m[s.id + '_' + i] === 'yes') y++; })); return t ? y / t : 0; })();
+    switch (dashSort) {
+      case 'qual-asc':    return qa - qb;
+      case 'arr-desc':    return parseARR(b.data.snapshot.targetArr) - parseARR(a.data.snapshot.targetArr);
+      case 'health-desc': return calcHealthScore(b.data) - calcHealthScore(a.data);
+      case 'recent':      return (b.updatedAt || 0) - (a.updatedAt || 0);
+      case 'qual-desc':
+      default:            return qb - qa;
+    }
+  });
+
+  const cards = sortedOpps.map((a) => {
     const idx = opps.indexOf(a);
     const hs = calcHealthScore(a.data);
     const hsColor   = hs >= 70 ? '#1D9E75' : hs >= 40 ? '#EF9F27' : '#a32d2d';
@@ -2234,6 +2258,10 @@ function buildDashboard() {
     <span class="wf-total-sub">target ARR · ${opps.length} opp${opps.length !== 1 ? 's' : ''}</span>
   </div>
 </div>
+<div class="dash-sort-row">
+  <span class="dash-sort-label">Sort</span>
+  ${[['qual-desc','Top qualified'],['qual-asc','Least qualified'],['health-desc','Deal health'],['arr-desc','Target ARR'],['recent','Recent']].map(([k,lbl]) => `<button class="dash-sort-pill${dashSort===k?' active':''}" onclick="setDashSort('${k}')">${lbl}</button>`).join('')}
+</div>
 <div class="opp-cards">
   ${cards}
   <div class="opp-card-add" onclick="addOpp()">
@@ -2242,6 +2270,8 @@ function buildDashboard() {
   </div>
 </div>`;
 }
+
+function setDashSort(key) { dashSort = key; renderCurrentSlide(); }
 
 function buildOnboarding() {
   return `<div class="onboarding">
@@ -3559,22 +3589,45 @@ function buildPipelinePage() {
 </tr>`;
   };
 
-  const activeRows  = active.map(e => makeRow(e, false)).join('');
-  const archivedRows = archived.map(e => makeRow(e, true)).join('');
+  const fcRank = { Commit: 4, Upside: 3, Pipeline: 2, Omit: 1 };
+  const stageRank = { Land: 1, Adopt: 2, Expand: 3, Renew: 4 };
+  const pipeVal = (e, key) => {
+    switch (key) {
+      case 'opportunity': return (e.name || '').toLowerCase();
+      case 'stage':       return stageRank[e.journey] || 0;
+      case 'arr':         return parseARR(e.targetArr);
+      case 'qualify':     return e.meddTotal ? e.meddScore / e.meddTotal : 0;
+      case 'forecast':    return fcRank[e.forecast] || 0;
+      case 'close':       return (e.renewalQ || '');
+      case 'nexttouch':   return (e.nextTouch || '');
+      case 'saved':       return e.savedAt || 0;
+      default:            return 0;
+    }
+  };
+  const sortRows = arr => arr.slice().sort((a, b) => {
+    const va = pipeVal(a, pipeSort.key), vb = pipeVal(b, pipeSort.key);
+    let cmp = typeof va === 'string' ? va.localeCompare(vb) : va - vb;
+    return pipeSort.dir === 'asc' ? cmp : -cmp;
+  });
+
+  const activeRows  = sortRows(active).map(e => makeRow(e, false)).join('');
+  const archivedRows = sortRows(archived).map(e => makeRow(e, true)).join('');
 
   const emptyActive = active.length === 0
     ? `<div style="text-align:center;padding:32px 0;color:var(--text-tertiary);font-size:13px">No saved opportunities yet. Open any opportunity plan and hit <strong>Save to Log</strong>.</div>`
     : '';
 
+  const sortArrow = key => pipeSort.key === key ? (pipeSort.dir === 'asc' ? ' ▲' : ' ▼') : '';
+  const th = (key, label, w) => `<th style="width:${w}px" class="sortable-th${pipeSort.key===key?' sorted':''}" onclick="setPipeSort('${key}')">${label}<span class="sort-arrow">${sortArrow(key)}</span></th>`;
   const tableHeaders = `<thead><tr>
-    <th style="width:170px">Opportunity</th>
-    <th style="width:80px">Stage</th>
-    <th style="width:100px">Target ARR</th>
-    <th style="width:90px">Qualify</th>
-    <th style="width:90px">Forecast</th>
-    <th style="width:80px">Close</th>
-    <th style="width:120px">Next touch</th>
-    <th style="width:70px">Saved</th>
+    ${th('opportunity','Opportunity',170)}
+    ${th('stage','Stage',80)}
+    ${th('arr','Target ARR',100)}
+    ${th('qualify','Qualify',90)}
+    ${th('forecast','Forecast',90)}
+    ${th('close','Close',80)}
+    ${th('nexttouch','Next touch',120)}
+    ${th('saved','Saved',70)}
     <th style="width:70px"></th>
   </tr></thead>`;
 
@@ -3598,6 +3651,16 @@ ${summaryHTML}
 </table>
 ${emptyActive}
 ${archivedSection}`;
+}
+
+function setPipeSort(key) {
+  if (pipeSort.key === key) {
+    pipeSort.dir = pipeSort.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    pipeSort.key = key;
+    pipeSort.dir = key === 'opportunity' ? 'asc' : 'desc';
+  }
+  renderCurrentSlide();
 }
 
 function archiveOpp(id) {
