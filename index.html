@@ -1134,9 +1134,7 @@ function renderMobile() {
   // Sync drawer score
   const ds = document.getElementById('drawerScore');
   if (ds && !showDashboard && !showPipeline && !showThemes) {
-    const { yes, total } = calcScore();
-    const fc = calcForecast();
-    ds.innerHTML = `<span class="sc">${yes}/${total}</span><span class="forecast-badge ${FC_CLASS[fc]}">${fc}</span>`;
+    ds.innerHTML = '';
   } else if (ds) {
     ds.innerHTML = '';
   }
@@ -1151,9 +1149,7 @@ function renderHeaderScore() {
     if (saveEl) el.appendChild(saveEl);
     return;
   }
-  const { yes, total } = calcScore();
-  const fc = calcForecast();
-  el.innerHTML = `<span class="sc">${yes}/${total}</span><span class="forecast-badge ${FC_CLASS[fc]}">${fc}</span>`;
+  el.innerHTML = '';
   if (saveEl) el.appendChild(saveEl);
 }
 
