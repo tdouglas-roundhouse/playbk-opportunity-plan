@@ -527,6 +527,11 @@ select.field-input{cursor:pointer}
 .call-empty{font-size:13px;color:var(--text-tertiary);padding:24px 0;text-align:center}
 .call-remove{font-size:11px;color:var(--text-tertiary);background:none;border:none;cursor:pointer;font-family:var(--font);padding:0}
 .call-remove:hover{color:var(--text-danger)}
+.call-toggle{font-size:11px;color:var(--text-tertiary);background:none;border:none;cursor:pointer;font-family:var(--font);padding:0}
+.call-toggle:hover{color:var(--text-primary)}
+.call-log-bar{display:flex;justify-content:flex-end;gap:14px;margin-bottom:8px}
+.call-log-bar button{font-size:11px;font-weight:600;color:var(--text-secondary);background:none;border:none;cursor:pointer;font-family:var(--font);padding:0}
+.call-log-bar button:hover{color:var(--text-primary)}
 .red-flag-box{background:var(--bg-danger);border:0.5px solid var(--border-danger);border-radius:var(--radius-md);padding:10px 12px;margin-bottom:8px}
 .coaching-section{margin-top:16px;padding-top:14px;border-top:0.5px solid var(--border-light)}
 .coaching-header{font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:10px;display:flex;align-items:center;gap:6px}
@@ -3792,7 +3797,9 @@ function buildCalls() {
   if (calls.length === 0) {
     callsHTML = '<div class="call-empty">No calls logged yet. Paste a transcript below to analyse it.</div>';
   } else {
-    callsHTML = '<div class="call-log">' + calls.map((c, ci) => {
+    callsHTML = '<div class="call-log">'
+      + (calls.length > 1 ? '<div class="call-log-bar"><button onclick="setAllCalls(false)">Collapse all</button><button onclick="setAllCalls(true)">Expand all</button></div>' : '')
+      + calls.map((c, ci) => {
       const accepted = (c.findings || []).filter(f => f.status === 'accepted').length;
       const pending  = (c.findings || []).filter(f => !f.status).length;
       const isOpen   = c.open !== false;
@@ -3852,6 +3859,7 @@ function buildCalls() {
       ${c.findings && c.findings.length ? `<span class="call-finding-count">${accepted} applied · ${pending} pending</span>` : ''}
     </div>
     <div style="display:flex;align-items:center;gap:8px">
+      <button class="call-toggle" onclick="event.stopPropagation();toggleCall(${ci})">${isOpen ? 'collapse' : 'expand'}</button>
       <button class="call-remove" onclick="event.stopPropagation();removeCall(${ci})">remove</button>
       <svg style="width:14px;height:14px;stroke:var(--text-tertiary);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform 0.2s;${isOpen ? 'transform:rotate(180deg)' : ''}" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
     </div>
@@ -3896,6 +3904,10 @@ ${callsHTML}
 function toggleCall(ci) {
   const calls = d().calls || [];
   if (calls[ci]) { calls[ci].open = calls[ci].open === false ? true : false; }
+  renderCurrentSlide();
+}
+function setAllCalls(open) {
+  (d().calls || []).forEach(c => { c.open = open; });
   renderCurrentSlide();
 }
 
