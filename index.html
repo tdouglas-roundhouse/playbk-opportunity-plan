@@ -274,6 +274,10 @@ select.field-input{cursor:pointer}
 .map-table td input,.map-table td select{width:100%;font-size:12px;font-family:var(--font);color:var(--text-primary);background:transparent;border:none;outline:none;padding:3px 0}
 .map-table td input::placeholder{color:var(--text-tertiary)}
 .add-row-btn{font-size:12px;font-family:var(--font);padding:5px 12px;border-radius:var(--radius-md);border:0.5px dashed var(--border-mid);background:transparent;color:var(--text-tertiary);cursor:pointer;margin-bottom:10px}
+.map-clear-all{margin-left:8px;border-style:solid;border-color:var(--border-mid)}
+.map-clear-all:hover{border-color:var(--text-danger);color:var(--text-danger)}
+.map-row-del{border:none;background:transparent;color:var(--text-tertiary);font-size:18px;line-height:1;cursor:pointer;padding:0 4px;border-radius:4px;transition:all .12s}
+.map-row-del:hover{color:var(--text-danger);background:var(--bg-danger,rgba(204,34,0,0.08))}
 .add-row-btn:hover{color:var(--text-secondary)}
 .ai-draft-btn{font-size:11px;font-family:var(--font);padding:4px 10px;border-radius:var(--radius-md);border:0.5px solid var(--border-info);background:var(--bg-info);color:var(--text-info);cursor:pointer;font-weight:500;transition:all 0.12s;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
 .ai-draft-btn:hover{opacity:0.85}
@@ -2687,6 +2691,7 @@ function buildMap() {
   <td><input data-map="${i}.ownerAccount" value="${esc(r.ownerAccount || '')}" placeholder="Account owner"></td>
   <td><input data-map="${i}.action" value="${esc(r.action)}" placeholder="Action or milestone"></td>
   <td><select data-map="${i}.status">${['Open', 'In progress', 'Done', 'Blocked'].map(v => `<option ${r.status === v ? 'selected' : ''}>${v}</option>`).join('')}</select></td>
+  <td style="text-align:center"><button class="map-row-del" onclick="deleteMapRow(${i})" title="Delete this action">&times;</button></td>
 </tr>`).join('');
   return `${oppNameBadge()}<div class="slide-title">Mutual Action Plan</div>
 <div class="ask-box">
@@ -2701,10 +2706,12 @@ function buildMap() {
     <th style="width:120px">Account owner</th>
     <th>Action / milestone</th>
     <th style="width:96px">Status</th>
+    <th style="width:32px"></th>
   </tr></thead>
   <tbody>${rows}</tbody>
 </table>
 <button class="add-row-btn" onclick="addMapRow()">+ Add action</button>
+${(m.rows && m.rows.length) ? `<button class="add-row-btn map-clear-all" onclick="clearMapRows()">Clear all</button>` : ''}
 <button class="ai-draft-btn" style="margin-top:6px" onclick="suggestMapActions()" title="Draft starter rows from MEDDPICC gaps">✦ Suggest from gaps</button>
 <div class="sec-div">Engagement cadence</div>
 <div class="field-grid">
@@ -3027,6 +3034,18 @@ function showRelModal(title, bodyHtml) {
 function closeRelModal() { const m = document.getElementById('relModal'); if (m) m.remove(); }
 
 function addMapRow() { if (!d().map.rows) d().map.rows = []; d().map.rows.push({ date: '', ownerEleven: '', ownerAccount: '', action: '', status: 'Open' }); render(); }
+function deleteMapRow(i) { if (!d().map.rows) return; d().map.rows.splice(i, 1); render(); }
+function clearMapRows() {
+  const n = (d().map.rows || []).length;
+  if (!n) return;
+  showModal({
+    title: 'Clear all actions?',
+    desc: `This removes all ${n} action${n === 1 ? '' : 's'} from the Mutual Action Plan. Your top ask and engagement cadence stay. This can\u2019t be undone.`,
+    confirmLabel: 'Clear all',
+    danger: true,
+    onConfirm: () => { d().map.rows = []; render(); }
+  });
+}
 function addGapRow() {
   if (!d().meddpicc.gapOverrides) d().meddpicc.gapOverrides = { __manual: [] };
   if (!d().meddpicc.gapOverrides.__manual) d().meddpicc.gapOverrides.__manual = [];
