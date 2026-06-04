@@ -118,6 +118,7 @@ select.field-input{cursor:pointer}
 .role-blocker{background:var(--bg-danger);color:var(--text-danger);border:0.5px solid var(--border-danger)}
 .role-neutral{background:var(--bg-tertiary);color:var(--text-secondary);border:0.5px solid var(--border-mid)}
 .stk-input{background:transparent;border:none;outline:none;font-family:var(--font);width:100%}
+.stk-role-select{font-size:11px;font-weight:600;color:var(--text-primary);background:var(--bg-tertiary);border:0.5px solid var(--border-light);border-radius:5px;padding:3px 6px;font-family:var(--font);cursor:pointer;min-width:0;flex:1}
 .stk-name{font-size:13px;font-weight:500;color:var(--text-primary)}
 .stk-sub{font-size:11px;color:var(--text-tertiary)}
 .stk-win{font-size:11px;color:var(--text-secondary);border-bottom:0.5px solid var(--border-light);padding:3px 0;margin-top:4px}
@@ -157,8 +158,8 @@ select.field-input{cursor:pointer}
 .map-legend .lg{display:flex;align-items:center;gap:5px;color:var(--text-secondary)}
 .map-legend .dot{width:9px;height:9px;border-radius:50%}
 .map-hint{position:absolute;bottom:10px;left:10px;font-size:10.5px;color:var(--text-tertiary);background:var(--bg-primary);border:0.5px solid var(--border-light);border-radius:6px;padding:5px 10px;z-index:4}
-.stk-rail{width:272px;flex-shrink:0;display:flex;flex-direction:column;gap:10px;max-height:520px;overflow-y:auto;padding-right:2px}
-.stk-rail .stk-card{min-height:0;width:100%}
+.stk-rail{width:272px;flex-shrink:0;display:flex;flex-direction:column;gap:10px;max-height:520px;overflow-y:auto;overflow-x:hidden;padding-right:4px}
+.stk-rail .stk-card{min-height:0;width:100%;flex-shrink:0}
 .stk-card.map-sel{border-color:var(--border-info);box-shadow:0 0 0 2px var(--bg-info)}
 .node-g{cursor:grab}
 .node-g.connect-mode{cursor:crosshair}
@@ -168,7 +169,7 @@ select.field-input{cursor:pointer}
 .node-initials{font-weight:700;fill:#fff}
 .map-edge{fill:none}
 .map-edge-lbl{font:600 8px var(--font);fill:var(--text-tertiary)}
-@media(max-width:880px){.stk-body{flex-direction:column}.stk-rail{width:100%;max-height:none;flex-direction:row;overflow-x:auto;overflow-y:hidden}.stk-rail .stk-card{min-width:220px}}
+@media(max-width:880px){.stk-body{flex-direction:column}.stk-rail{width:100%;max-height:none}}
 .pov-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
 .pov-card{background:var(--bg-secondary);border:0.5px solid var(--border-light);border-radius:var(--radius-md);padding:10px 12px}
 .pov-q{font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px}
@@ -2554,14 +2555,17 @@ function buildStakeholders() {
     const inf = s.influence == null ? 3 : s.influence;
     const selCls = (mapState.selected === i) ? ' map-sel' : '';
 
+    const roleOpts = ['Economic buyer', 'Executive Sponsor', 'Champion', 'Coach', 'Blocker', 'Neutral']
+      .map(r => `<option value="${r}"${s.role === r ? ' selected' : ''}>${r}</option>`).join('');
+
     return `<div class="stk-card${selCls}" id="stkcard_${i}">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
+    <select class="stk-role-select" data-stkrole="${i}" title="Stakeholder role">${roleOpts}</select>
     <button onclick="setStkField(${i},'sentiment','${nextSent}');render()"
-      style="display:inline-flex;align-items:center;gap:5px;padding:3px 8px 3px 5px;border-radius:5px;border:0.5px solid ${bc};background:${bg};cursor:pointer;font-family:var(--font);transition:all 0.12s"
+      style="display:inline-flex;align-items:center;gap:5px;padding:3px 8px 3px 6px;border-radius:5px;border:0.5px solid ${bc};background:${bg};cursor:pointer;font-family:var(--font);transition:all 0.12s;flex-shrink:0"
       title="Tap to change sentiment">
       <span style="width:7px;height:7px;border-radius:50%;background:${dot};flex-shrink:0;display:inline-block"></span>
-      <span style="font-size:11px;font-weight:600;color:${fc}">${esc(s.role)}</span>
-      <span style="font-size:10px;color:${fc};opacity:0.65">· ${sent}</span>
+      <span style="font-size:10px;font-weight:600;color:${fc}">${sent}</span>
     </button>
   </div>
   <div style="margin-bottom:3px"><input class="stk-input stk-name" data-stk="${i}.name" value="${esc(s.name)}" placeholder="Name"></div>
@@ -2711,6 +2715,12 @@ function attachListeners() {
     el.addEventListener('input', () => {
       const [i, field] = el.getAttribute('data-stk').split('.');
       if (d().stakeholders[+i]) d().stakeholders[+i][field] = el.value;
+    });
+  });
+  document.querySelectorAll('[data-stkrole]').forEach(el => {
+    el.addEventListener('change', () => {
+      const i = +el.getAttribute('data-stkrole');
+      if (d().stakeholders[i]) { d().stakeholders[i].role = el.value; render(); }
     });
   });
   document.querySelectorAll('[data-stkinf]').forEach(el => {
