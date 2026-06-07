@@ -529,6 +529,10 @@ select.field-input{cursor:pointer}
 .call-remove:hover{color:var(--text-danger)}
 .call-toggle{font-size:11px;color:var(--text-tertiary);background:none;border:none;cursor:pointer;font-family:var(--font);padding:0}
 .call-toggle:hover{color:var(--text-primary)}
+.call-source{margin-top:12px;border-top:0.5px solid var(--border-light);padding-top:10px}
+.call-source-toggle{font-size:11px;font-weight:600;letter-spacing:0.03em;color:var(--text-tertiary);background:none;border:none;cursor:pointer;font-family:var(--font);padding:0}
+.call-source-toggle:hover{color:var(--text-secondary)}
+.call-source-text{margin-top:8px;max-height:280px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;line-height:1.55;color:var(--text-secondary);background:var(--bg-primary);border:0.5px solid var(--border-light);border-radius:var(--radius-md);padding:12px 14px}
 .call-log-bar{display:flex;justify-content:flex-end;gap:14px;margin-bottom:8px}
 .call-log-bar button{font-size:11px;font-weight:600;color:var(--text-secondary);background:none;border:none;cursor:pointer;font-family:var(--font);padding:0}
 .call-log-bar button:hover{color:var(--text-primary)}
@@ -3011,11 +3015,17 @@ let pendingEdge = null;
 function openRelPicker() {
   const stk = d().stakeholders;
   const a = stk[pendingEdge.from], b = stk[pendingEdge.to];
+  const existing = (d().edges || []).find(e => e.from === pendingEdge.from && e.to === pendingEdge.to);
+  const reverse  = !existing && (d().edges || []).find(e => e.from === pendingEdge.to && e.to === pendingEdge.from);
   const choices = REL_TYPES.map(t =>
     `<button class="action-btn" style="display:block;width:100%;text-align:left;margin-bottom:7px" onclick="commitEdge('${t}')">
-      <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${REL_COLOR[t]};margin-right:8px;vertical-align:middle"></span>${t}
+      <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${REL_COLOR[t]};margin-right:8px;vertical-align:middle"></span>${t}${existing && existing.type === t ? ' ✓' : ''}
     </button>`).join('');
-  showRelModal(`Link: ${esc(a.name || 'Unnamed')} → ${esc(b.name || 'Unnamed')}`, choices + `<button class="action-btn" style="width:100%;margin-top:4px" onclick="cancelEdge()">Cancel</button>`);
+  const removeBtn = (existing || reverse)
+    ? `<button class="action-btn" style="width:100%;margin-top:4px;color:var(--text-danger)" onclick="removeEdge()">Remove link${reverse ? ' (' + esc(b.name || 'target') + ' → ' + esc(a.name || 'source') + ')' : ''}</button>`
+    : '';
+  const titlePrefix = existing ? 'Edit link' : 'Link';
+  showRelModal(`${titlePrefix}: ${esc(a.name || 'Unnamed')} → ${esc(b.name || 'Unnamed')}`, choices + removeBtn + `<button class="action-btn" style="width:100%;margin-top:4px" onclick="cancelEdge()">Cancel</button>`);
 }
 function commitEdge(type) {
   if (!d().edges) d().edges = [];
@@ -3024,6 +3034,14 @@ function commitEdge(type) {
   pendingEdge = null; mapState.connectSrc = null; closeRelModal(); render();
 }
 function cancelEdge() { pendingEdge = null; mapState.connectSrc = null; closeRelModal(); render(); }
+function removeEdge() {
+  if (d().edges && pendingEdge) {
+    d().edges = d().edges.filter(e =>
+      !((e.from === pendingEdge.from && e.to === pendingEdge.to) ||
+        (e.from === pendingEdge.to && e.to === pendingEdge.from)));
+  }
+  pendingEdge = null; mapState.connectSrc = null; closeRelModal(); render();
+}
 
 /* dedicated map picker overlay — separate from the app's #inlineModal */
 function showRelModal(title, bodyHtml) {
@@ -3868,6 +3886,10 @@ function buildCalls() {
     ${c.summary ? `<div class="call-summary-pill">📋 ${esc(c.summary)}</div>` : ''}
     ${findingsHTML || '<div style="font-size:12px;color:var(--text-tertiary);padding:4px 0">No findings yet.</div>'}
     ${coachingHTML}
+    ${c.transcript ? `<div class="call-source">
+      <button class="call-source-toggle" onclick="event.stopPropagation();toggleCallSource(${ci})">${c.showSrc ? '▾ Hide original' : '▸ View original'}</button>
+      ${c.showSrc ? `<div class="call-source-text">${esc(c.transcript)}</div>` : ''}
+    </div>` : ''}
   </div>` : ''}
 </div>`;
     }).join('') + '</div>';
@@ -3908,6 +3930,11 @@ function toggleCall(ci) {
 }
 function setAllCalls(open) {
   (d().calls || []).forEach(c => { c.open = open; });
+  renderCurrentSlide();
+}
+function toggleCallSource(ci) {
+  const calls = d().calls || [];
+  if (calls[ci]) { calls[ci].showSrc = !calls[ci].showSrc; }
   renderCurrentSlide();
 }
 
