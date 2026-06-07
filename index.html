@@ -393,6 +393,8 @@ select.field-input{cursor:pointer}
 .dash-sort-pill{font-size:12px;font-family:var(--font);padding:5px 12px;border-radius:6px;border:0.5px solid var(--border-mid);background:var(--bg-primary);color:var(--text-secondary);cursor:pointer;transition:all .12s}
 .dash-sort-pill:hover{border-color:var(--border-strong);color:var(--text-primary)}
 .dash-sort-pill.active{background:var(--bg-tertiary);border-color:var(--border-strong);color:var(--text-primary);font-weight:600}
+.dash-firm-select{font-size:12px;font-family:var(--font);padding:5px 10px;border-radius:6px;border:0.5px solid var(--border-mid);background:var(--bg-primary);color:var(--text-secondary);cursor:pointer}
+.dash-firm-select:hover{border-color:var(--border-strong);color:var(--text-primary)}
 .sortable-th{user-select:none;white-space:nowrap}
 .sortable-th.sorted .th-label{color:var(--text-primary)}
 .th-inner{display:inline-flex;align-items:center;gap:5px}
@@ -899,6 +901,7 @@ let showDashboard = true;
 let showPipeline = false;
 let showThemes = false;
 let dashSort = 'qual-desc';   // qual-desc | qual-asc | arr-desc | health-desc | recent
+let dashFirmType = 'all';     // all | <firmType value>
 let pipeSort = { key: 'qualify', dir: 'desc' };  // sortable pipeline columns
 
 const MEDD = [
@@ -2163,9 +2166,13 @@ function oppForecast(a) {
 function buildDashboard() {
   if (opps.length === 0) return buildOnboarding();
 
+  // Firm-type filter applies to the whole dashboard (waterfall + counts + cards)
+  const matchesFirm = a => dashFirmType === 'all' || (a.data?.snapshot?.firmType || '') === dashFirmType;
+  const baseOpps = opps.filter(a => !a.archived && matchesFirm(a));
+
   // Waterfall data
   const buckets = { Commit: { arr: 0, count: 0 }, Upside: { arr: 0, count: 0 }, Pipeline: { arr: 0, count: 0 }, Omit: { arr: 0, count: 0 } };
-  opps.filter(a => !a.archived).forEach(a => {
+  baseOpps.forEach(a => {
     const fc = oppForecast(a);
     const arr = parseARR(a.data.snapshot.targetArr);
     buckets[fc].arr += arr;
@@ -2195,7 +2202,7 @@ function buildDashboard() {
 </div>`;
   }).join('');
 
-  const sortedOpps = opps.filter(a => !a.archived).slice().sort((a, b) => {
+  const sortedOpps = baseOpps.slice().sort((a, b) => {
     const qa = (() => { const m = (a.data.meddpicc && a.data.meddpicc.meddAnswers) || {}; let y = 0, t = 0; MEDD.forEach(s => s.questions.forEach((_, i) => { t++; if (m[s.id + '_' + i] === 'yes') y++; })); return t ? y / t : 0; })();
     const qb = (() => { const m = (b.data.meddpicc && b.data.meddpicc.meddAnswers) || {}; let y = 0, t = 0; MEDD.forEach(s => s.questions.forEach((_, i) => { t++; if (m[s.id + '_' + i] === 'yes') y++; })); return t ? y / t : 0; })();
     switch (dashSort) {
@@ -2270,24 +2277,31 @@ function buildDashboard() {
 </div>`;
   }).join('');
 
-  const activeOpps = opps.filter(a => !a.archived);
+  const activeOpps = baseOpps;
+  const FIRM_TYPES = ['Single-family office', 'Multi-family office', 'Institutional WM', 'RIA', 'Private bank'];
+  const firmLabel = dashFirmType === 'all' ? '' : ` · ${esc(dashFirmType)}`;
   return `<div class="slide-title">Opportunity Dashboard</div>
-<div class="dash-subtitle" style="font-size:13px;color:var(--text-tertiary);margin-top:-10px;margin-bottom:18px">${activeOpps.length} opportunit${activeOpps.length !== 1 ? 'ies' : 'y'} · ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
+<div class="dash-subtitle" style="font-size:13px;color:var(--text-tertiary);margin-top:-10px;margin-bottom:18px">${activeOpps.length} opportunit${activeOpps.length !== 1 ? 'ies' : 'y'}${firmLabel} · ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
 <div class="waterfall">
   <div class="waterfall-title">Target ARR by forecast</div>
   <div class="waterfall-bars">${wfBars}</div>
   <div class="waterfall-total">
     <span class="wf-total-label">Total pipeline</span>
     <span class="wf-total-arr">${totalARR > 0 ? fmtARR(totalARR) : '—'}</span>
-    <span class="wf-total-sub">target ARR · ${opps.length} opp${opps.length !== 1 ? 's' : ''}</span>
+    <span class="wf-total-sub">target ARR · ${baseOpps.length} opp${baseOpps.length !== 1 ? 's' : ''}</span>
   </div>
 </div>
 <div class="dash-sort-row">
-  <span class="dash-sort-label">Sort</span>
+  <span class="dash-sort-label">Segment</span>
+  <select class="dash-firm-select" onchange="setDashFirmType(this.value)">
+    <option value="all"${dashFirmType==='all'?' selected':''}>All segments</option>
+    ${FIRM_TYPES.map(t => `<option value="${esc(t)}"${dashFirmType===t?' selected':''}>${esc(t)}</option>`).join('')}
+  </select>
+  <span class="dash-sort-label" style="margin-left:10px">Sort</span>
   ${[['qual-desc','Top qualified'],['qual-asc','Least qualified'],['health-desc','Deal health'],['arr-desc','Target ARR'],['recent','Recent']].map(([k,lbl]) => `<button class="dash-sort-pill${dashSort===k?' active':''}" onclick="setDashSort('${k}')">${lbl}</button>`).join('')}
 </div>
 <div class="opp-cards">
-  ${cards}
+  ${cards || '<div style="font-size:13px;color:var(--text-tertiary);padding:16px 0;grid-column:1/-1">No opportunities in this segment.</div>'}
   <div class="opp-card-add" onclick="addOpp()">
     <div class="opp-card-add-plus">+</div>
     <div class="opp-card-add-label">Add opportunity</div>
@@ -2296,6 +2310,7 @@ function buildDashboard() {
 }
 
 function setDashSort(key) { dashSort = key; renderCurrentSlide(); }
+function setDashFirmType(v) { dashFirmType = v; renderCurrentSlide(); }
 
 function buildOnboarding() {
   return `<div class="onboarding">
