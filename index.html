@@ -3833,7 +3833,8 @@ function buildCalls() {
   ${f.evidence ? '<div style="font-size:11px;color:var(--text-danger);margin-top:3px;font-style:italic">' + esc(f.evidence) + '</div>' : ''}
 </div>`).join('');
         }
-        findingsHTML += '<div class="findings-list">' + others.map((f, fi) => {
+        findingsHTML += '<div class="findings-list">' + others.map((f) => {
+          const fi = c.findings.indexOf(f);
           const typeClass = { meddpicc: 'ft-meddpicc', pov: 'ft-pov', stakeholder: 'ft-stakeholder', gap: 'ft-gap', action: 'ft-action' }[f.type] || 'ft-action';
           const typeLabel = { meddpicc: 'Qualification', pov: 'POV update', stakeholder: 'Stakeholder', gap: 'Gap', action: 'Next action' }[f.type] || f.type;
           const cardClass = f.status === 'accepted' ? ' accepted' : f.status === 'rejected' ? ' rejected' : '';
