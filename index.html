@@ -1547,7 +1547,7 @@ function renderOppTree(targetEl, onPick, onAdd) {
 
     const children = document.createElement('div');
     children.className = 'branch-children' + (collapsed ? ' collapsed' : '');
-    groups[type].forEach(({ a, i }) => {
+    groups[type].slice().sort((x, y) => (x.a.name || '').localeCompare(y.a.name || '', undefined, { sensitivity: 'base' })).forEach(({ a, i }) => {
       const btn = document.createElement('button');
       btn.className = 'opp-btn' + (!showDashboard && !showPipeline && i === currentOpp ? ' active' : '');
       btn.textContent = a.name;
@@ -1882,6 +1882,14 @@ function maybeRefreshCoaching() {
   if (!opp().coaching || (stale && opp().coaching !== 'loading')) {
     generateCoaching();
   }
+}
+
+// Mark the cached coaching recommendations as stale after a plan edit,
+// so they regenerate from current field values on the next render
+// rather than echoing text the user has since changed/removed.
+function markCoachingStale() {
+  if (!opp()) return;
+  opp().coachingGeneratedAt = 0;
 }
 
 function refreshCoaching() {
@@ -2777,18 +2785,20 @@ function attachListeners() {
     el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => {
       setDeep(el.getAttribute('data-f'), el.value);
       renderHeaderScore();
+      markCoachingStale();
     });
   });
   document.querySelectorAll('[data-stk]').forEach(el => {
     el.addEventListener('input', () => {
       const [i, field] = el.getAttribute('data-stk').split('.');
       if (d().stakeholders[+i]) d().stakeholders[+i][field] = el.value;
+      markCoachingStale();
     });
   });
   document.querySelectorAll('[data-stkrole]').forEach(el => {
     el.addEventListener('change', () => {
       const i = +el.getAttribute('data-stkrole');
-      if (d().stakeholders[i]) { d().stakeholders[i].role = el.value; render(); }
+      if (d().stakeholders[i]) { d().stakeholders[i].role = el.value; markCoachingStale(); render(); }
     });
   });
   document.querySelectorAll('[data-stkinf]').forEach(el => {
@@ -2807,6 +2817,7 @@ function attachListeners() {
       const [i, field] = el.getAttribute('data-map').split('.');
       if (!d().map.rows[+i]) d().map.rows[+i] = {};
       d().map.rows[+i][field] = el.value;
+      markCoachingStale();
     });
   });
   document.querySelectorAll('[data-gap]').forEach(el => {
@@ -2844,6 +2855,7 @@ function setMeddAnswer(sid, qi, val) {
   const key = sid + '_' + qi;
   const a = d().meddpicc.meddAnswers;
   if (a[key] === val) delete a[key]; else a[key] = val;
+  markCoachingStale();
   renderCurrentSlide();
   renderHeaderScore();
 }
@@ -2861,7 +2873,7 @@ function toggleMeddNote(sid) {
   }, 50);
 }
 
-function setMeddNote(sid, val) { d().meddpicc.meddNotes[sid] = val; }
+function setMeddNote(sid, val) { d().meddpicc.meddNotes[sid] = val; markCoachingStale(); }
 function addStakeholder(role) { d().stakeholders.push({ role, name: '', title: '', sentiment: 'Neutral', win: '', influence: 3 }); render(); }
 function removeStakeholder(i) {
   d().stakeholders.splice(i, 1);
