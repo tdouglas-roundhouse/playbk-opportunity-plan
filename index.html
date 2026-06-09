@@ -970,12 +970,68 @@ const MEDD = [
   }
 ];
 
-const AUM_RANGES = ['<$100M', '$100M–$500M', '$500M–$1B', '$1B–$5B', '$5B–$10B', '$10B+'];
+// Module pricing tiers — volume bands map to a base annual price per module.
+const MODULE_TIERS = {
+  financial: {
+    label: 'Financial',
+    tiers: [
+      { tier: 'Tier 1', min: 1,   max: 50,   price: 25000 },
+      { tier: 'Tier 2', min: 51,  max: 100,  price: 40000 },
+      { tier: 'Tier 3', min: 101, max: 200,  price: 70000 },
+      { tier: 'Tier 4', min: 201, max: 400,  price: 100000 },
+      { tier: 'Tier 5', min: 401, max: null, price: 140000 }
+    ]
+  },
+  property: {
+    label: 'Property',
+    tiers: [
+      { tier: 'Tier 1', min: 1,  max: 3,    price: 15000 },
+      { tier: 'Tier 2', min: 4,  max: 10,   price: 30000 },
+      { tier: 'Tier 3', min: 11, max: 20,   price: 45000 },
+      { tier: 'Tier 4', min: 21, max: 40,   price: 60000 },
+      { tier: 'Tier 5', min: 41, max: null, price: 80000 }
+    ]
+  },
+  family: {
+    label: 'Family',
+    tiers: [
+      { tier: 'Tier 1', min: 1,  max: 4,    price: 12000 },
+      { tier: 'Tier 2', min: 5,  max: 8,    price: 15000 },
+      { tier: 'Tier 3', min: 9,  max: 12,   price: 20000 },
+      { tier: 'Tier 4', min: 13, max: 20,   price: 35000 },
+      { tier: 'Tier 5', min: 21, max: null, price: 50000 }
+    ]
+  }
+};
+
+function moduleTierLabel(t) {
+  const v = t.max === null ? `${t.min}+` : `${t.min}–${t.max}`;
+  return `${t.tier} (${v}) · $${(t.price / 1000)}K`;
+}
+function modulesTotal(modules) {
+  const m = modules || {};
+  let total = 0;
+  Object.keys(MODULE_TIERS).forEach(k => {
+    const sel = m[k];
+    if (!sel) return;
+    const t = MODULE_TIERS[k].tiers.find(x => x.tier === sel);
+    if (t) total += t.price;
+  });
+  return total;
+}
+function modulesSummary(modules) {
+  const m = modules || {};
+  const parts = Object.keys(MODULE_TIERS)
+    .filter(k => m[k])
+    .map(k => `${MODULE_TIERS[k].label} ${m[k]}`);
+  if (!parts.length) return '';
+  return `${parts.join(' · ')} — $${(modulesTotal(m) / 1000)}K`;
+}
 
 function freshData() {
   // updatedAt tracked separately on the opp object, not inside data
   return {
-    snapshot:     { firmName: '', firmType: '', aum: '', contactCount: '', healthStatus: '', journey: '', currentArr: '', targetArr: '', renewalQ: '', notes: '', stakeholderGaps: '' },
+    snapshot:     { firmName: '', firmType: '', modules: { financial: '', property: '', family: '' }, contactCount: '', healthStatus: '', journey: '', currentArr: '', targetArr: '', renewalQ: '', notes: '', stakeholderGaps: '' },
     stakeholders: [],
     edges: [],
     accountpov:   { whyChange: '', whyNow: '', whyUs: '', whatSolution: '', objective1: '', obj1date: '', objective2: '', obj2date: '', objective3: '', obj3date: '' },
@@ -1295,7 +1351,7 @@ async function publishDeck() {
     sl.addText(o.name || 'Opportunity', { x: 0.7, y: 2.95, w: 12, h: 1.1, fontFace: FONT, fontSize: 42, color: 'FFFFFF', bold: true });
     // metadata strip
     const meta = [
-      ['FIRM TYPE', s.firmType || '—'], ['AUM', s.aum || '—'], ['TARGET ARR', s.targetArr || '—'],
+      ['FIRM TYPE', s.firmType || '—'], ['MODULES', modulesTotal(s.modules) ? '$' + (modulesTotal(s.modules) / 1000) + 'K' : '—'], ['TARGET ARR', s.targetArr || '—'],
       ['JOURNEY', s.journey || 'Land'], ['CLOSE', s.renewalQ || '—']
     ];
     meta.forEach((m, i) => {
@@ -2254,7 +2310,7 @@ function buildDashboard() {
   <div class="opp-card-top">
     <div style="flex:1;min-width:0">
       <div class="opp-card-name">${esc(a.name)}</div>
-      <div class="opp-card-type">${esc(s.firmType || 'Prospect')}${s.aum ? ' · ' + esc(s.aum) : ''}</div>
+      <div class="opp-card-type">${esc(s.firmType || 'Prospect')}${modulesTotal(s.modules) ? ' · $' + (modulesTotal(s.modules) / 1000) + 'K' : ''}</div>
     </div>
     ${ring}
   </div>
@@ -2539,14 +2595,7 @@ function buildSnapshot() {
     </select>
   </div>
 </div>
-<div class="field-grid-3">
-  <div>
-    <div class="field-label">Est. AUM</div>
-    <select class="field-input" data-f="snapshot.aum">
-      <option value="">Select range…</option>
-      ${AUM_RANGES.map(v => `<option ${s.aum === v ? 'selected' : ''}>${v}</option>`).join('')}
-    </select>
-  </div>
+<div class="field-grid">
   <div>
     <div class="field-label">Key contacts <span class="fmt-hint">from Stakeholders</span></div>
     <div class="field-input" style="background:var(--bg-tertiary);color:var(--text-secondary);cursor:default">${d().stakeholders.length || '0'}</div>
@@ -2555,6 +2604,22 @@ function buildSnapshot() {
     <div class="field-label">Opportunity close date</div>
     <input class="field-input" data-f="snapshot.renewalQ" placeholder="09/30/25" value="${esc(s.renewalQ)}">
   </div>
+</div>
+<div class="field-grid-3">
+  ${Object.keys(MODULE_TIERS).map(k => {
+    const sel = (s.modules || {})[k] || '';
+    return `<div>
+    <div class="field-label">${MODULE_TIERS[k].label} module</div>
+    <select class="field-input" data-f="snapshot.modules.${k}">
+      <option value="">Not included</option>
+      ${MODULE_TIERS[k].tiers.map(t => `<option value="${t.tier}" ${sel === t.tier ? 'selected' : ''}>${moduleTierLabel(t)}</option>`).join('')}
+    </select>
+  </div>`;
+  }).join('')}
+</div>
+<div class="field-full" style="margin-top:8px">
+  <div class="field-label" style="margin-bottom:4px">Est. base annual price <span class="fmt-hint">sum of selected module tiers</span></div>
+  <div class="field-input" style="background:var(--bg-tertiary);color:var(--text-primary);font-weight:600;cursor:default">${modulesTotal(s.modules) ? '$' + modulesTotal(s.modules).toLocaleString() : '—'}${modulesSummary(s.modules) ? `<span style="font-weight:400;color:var(--text-secondary)"> · ${esc(modulesSummary(s.modules))}</span>` : ''}</div>
 </div>
 <div class="sec-div">Pipeline & health</div>
 <div class="field-grid">
@@ -2783,9 +2848,11 @@ ${(m.rows && m.rows.length) ? `<button class="add-row-btn map-clear-all" onclick
 function attachListeners() {
   document.querySelectorAll('[data-f]').forEach(el => {
     el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => {
-      setDeep(el.getAttribute('data-f'), el.value);
+      const path = el.getAttribute('data-f');
+      setDeep(path, el.value);
       renderHeaderScore();
       markCoachingStale();
+      if (path.startsWith('snapshot.modules.')) renderCurrentSlide();
     });
   });
   document.querySelectorAll('[data-stk]').forEach(el => {
@@ -2842,7 +2909,10 @@ function attachListeners() {
 function setDeep(path, val) {
   const parts = path.split('.');
   let obj = d();
-  for (let i = 0; i < parts.length - 1; i++) obj = obj[parts[i]];
+  for (let i = 0; i < parts.length - 1; i++) {
+    if (obj[parts[i]] == null || typeof obj[parts[i]] !== 'object') obj[parts[i]] = {};
+    obj = obj[parts[i]];
+  }
   obj[parts[parts.length - 1]] = val;
 }
 function toggleMedd(id) {
@@ -3224,7 +3294,7 @@ function exportPlan() {
   csv += csvRow(['ELEVEN SYSTEMS — OPPORTUNITY PLAN EXPORT', 'Generated: ' + new Date().toLocaleDateString()]);
   csv += '\r\n';
   csv += csvRow([
-    'Opportunity', 'Type', 'AUM', 'Journey', 'Health',
+    'Opportunity', 'Type', 'Financial Tier', 'Property Tier', 'Family Tier', 'Base Annual Price', 'Journey', 'Health',
     'Current ARR', 'Target ARR', 'Renewal / Close',
     'Forecast', 'MEDDPICC Score', 'MEDDPICC %', 'Weak Blockers',
     'Why Change', 'Why Now', 'Why Eleven', 'Solution / Value',
@@ -3265,7 +3335,10 @@ function exportPlan() {
     const eb       = a.data.stakeholders.find(st => st.role === 'Economic buyer');
 
     csv += csvRow([
-      a.name, s.firmType, s.aum, s.journey, s.healthStatus,
+      a.name, s.firmType,
+      (s.modules || {}).financial || '', (s.modules || {}).property || '', (s.modules || {}).family || '',
+      modulesTotal(s.modules) ? '$' + modulesTotal(s.modules) : '',
+      s.journey, s.healthStatus,
       s.currentArr, s.targetArr, s.renewalQ,
       fc, yes + '/' + total, Math.round(pct * 100) + '%', weakBlockers || 'None',
       p.whyChange, p.whyNow, p.whyUs, p.whatSolution,
@@ -3376,7 +3449,7 @@ function buildLogEntry(a) {
     id:          a.id || (a.id = Date.now() + '_' + Math.random().toString(36).slice(2)),
     name:        a.name,
     firmType:    s.firmType    || '',
-    aum:         s.aum         || '',
+    aum:         modulesTotal(s.modules) ? '$' + (modulesTotal(s.modules) / 1000) + 'K' : '',
     currentArr:  s.currentArr  || '',
     targetArr:   s.targetArr   || '',
     healthStatus:s.healthStatus|| '',
@@ -4036,7 +4109,7 @@ async function runCallAnalysis(transcript) {
 
   const planContext = `OPPORTUNITY: ${opp().name}
 FIRM TYPE: ${s.firmType || 'unknown'}
-AUM: ${s.aum || 'unknown'}
+MODULES & BASE PRICE: ${modulesSummary(s.modules) || 'none selected'}
 
 CURRENT MEDDPICC STATE:
 ${meddContext}
@@ -4244,7 +4317,7 @@ async function draftSnapshotBrief() {
   const btn = document.querySelector('[onclick="draftSnapshotBrief()"]');
   if (btn) { btn.disabled = true; btn.textContent = '…'; }
   const prompt = `You are a B2B sales analyst. Write a 2-3 sentence situation brief for an opportunity.
-Firm: ${s.firmName} | Type: ${s.firmType || 'unknown'} | AUM: ${s.aum || 'unknown'}
+Firm: ${s.firmName} | Type: ${s.firmType || 'unknown'} | Modules: ${modulesSummary(s.modules) || 'none'}
 Current ARR: ${s.currentArr || '$0'} | Target: ${s.targetArr || 'unknown'} | Stage: ${s.journey || 'Land'} | Health: ${s.healthStatus || 'unknown'}
 Return ONLY JSON: { "brief": "2-3 sentence brief covering situation, key risk, and top opportunity" }`;
   const result = await callClaude(prompt, null, '…');
@@ -4263,7 +4336,7 @@ async function draftAccountPov() {
   if (btn) { btn.disabled = true; btn.textContent = '…'; }
   const stk = d().stakeholders.map(st => `${st.role}: ${st.name || 'unnamed'}`).join(', ');
   const prompt = `You are a B2B sales coach. Draft account POV answers for a sales opportunity.
-Firm: ${s.firmName} | Type: ${s.firmType || 'unknown'} | AUM: ${s.aum || 'unknown'} | Stage: ${s.journey || 'Land'}
+Firm: ${s.firmName} | Type: ${s.firmType || 'unknown'} | Modules: ${modulesSummary(s.modules) || 'none'} | Stage: ${s.journey || 'Land'}
 Notes: ${s.notes || 'none'} | Stakeholders: ${stk || 'none yet'}
 Return ONLY JSON:
 { "whyChange": "1-2 sentences on cost of doing nothing",
@@ -4589,7 +4662,7 @@ function buildExampleOpp() {
   data.snapshot = {
     firmName: 'Meridian Capital Partners',
     firmType: 'Institutional WM',
-    aum: '$2B–$5B',
+    modules: { financial: 'Tier 4', property: 'Tier 3', family: 'Tier 2' },
     contactCount: '4',
     healthStatus: 'Amber',
     journey: 'Land',
