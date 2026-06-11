@@ -2887,7 +2887,7 @@ function attachListeners() {
       setDeep(path, el.value);
       renderHeaderScore();
       markCoachingStale();
-      if (path.startsWith('snapshot.modules.')) renderCurrentSlide();
+      if (path.startsWith('snapshot.modules.') || path === 'snapshot.platformDiscount') renderCurrentSlide();
     });
   });
   document.querySelectorAll('[data-stk]').forEach(el => {
