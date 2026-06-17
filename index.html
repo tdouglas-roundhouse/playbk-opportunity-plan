@@ -259,6 +259,23 @@ select.field-input{cursor:pointer}
 .coach-action-why{font-size:12px;color:var(--text-secondary);line-height:1.45;margin-top:3px}
 .coach-action-tag{display:inline-block;font-size:10px;font-weight:500;color:var(--text-tertiary);background:var(--bg-tertiary);border:0.5px solid var(--border-light);border-radius:4px;padding:1px 7px;margin-top:6px}
 .coach-action-arrow{flex-shrink:0;font-size:18px;color:var(--text-tertiary);line-height:1}
+/* ── Coaching action edit/dismiss controls ── */
+.coach-action-wrap{display:flex;align-items:stretch;gap:6px}
+.coach-action-wrap .coach-action-row{flex:1}
+.coach-action-ctrls{display:flex;flex-direction:column;gap:4px;flex-shrink:0;justify-content:center}
+.coach-ctrl-btn{width:24px;height:24px;border-radius:5px;border:0.5px solid var(--border-light);background:var(--bg-secondary);color:var(--text-tertiary);cursor:pointer;font-family:var(--font);font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;transition:all 0.12s}
+.coach-ctrl-btn:hover{border-color:var(--border-mid);background:var(--bg-tertiary);color:var(--text-secondary)}
+.coach-ctrl-btn.danger:hover{border-color:var(--border-danger);background:var(--bg-danger);color:var(--text-danger)}
+.coach-edit-form{background:var(--bg-secondary);border:0.5px solid var(--border-mid);border-radius:var(--radius-md);padding:11px 12px}
+.coach-edit-form label{display:block;font-size:10px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:3px}
+.coach-edit-form textarea{width:100%;font-family:var(--font);font-size:13px;color:var(--text-primary);background:var(--bg-primary);border:0.5px solid var(--border-light);border-radius:var(--radius-md);padding:7px 9px;resize:vertical;line-height:1.4;margin-bottom:8px;box-sizing:border-box}
+.coach-edit-form textarea:focus{outline:none;border-color:var(--text-info)}
+.coach-edit-actions{display:flex;gap:6px;justify-content:flex-end}
+.coach-edit-actions button{font-family:var(--font);font-size:12px;font-weight:500;padding:5px 12px;border-radius:5px;cursor:pointer;border:0.5px solid var(--border-light);background:var(--bg-primary);color:var(--text-secondary)}
+.coach-edit-actions button.primary{background:var(--text-info);border-color:var(--text-info);color:#fff}
+/* dismiss × on the dark Snapshot banner action items */
+.coaching-action-dismiss{flex-shrink:0;width:18px;height:18px;border-radius:4px;border:none;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.4);cursor:pointer;font-family:var(--font);font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;margin-top:1px;transition:all 0.12s}
+.coaching-action-dismiss:hover{background:rgba(214,69,69,0.25);color:rgba(255,255,255,0.85)}
 .coach-loading-row{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-tertiary);padding:12px 0}
 .gaps-add-btn:hover{color:var(--text-secondary)}
 .gap-rm{font-size:11px;color:var(--text-tertiary);background:none;border:none;cursor:pointer;font-family:var(--font)}
@@ -1010,6 +1027,7 @@ function freshData() {
 
 let opps = [];
 let currentOpp = 0;
+let _lastRenderedOpp = 0;
 function opp() { return opps[currentOpp] || opps[0] || null; }
 function d() { return opp() ? opp().data : freshData(); }
 function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
@@ -1088,6 +1106,10 @@ function timeSince(ts) {
 }
 
 function render() {
+  // If the active opp changed, drop any in-progress coaching edit so it
+  // doesn't bleed onto a different deal's action list.
+  if (typeof coachEditIdx === 'number' && _lastRenderedOpp !== currentOpp) coachEditIdx = null;
+  _lastRenderedOpp = currentOpp;
   if (opp() && !showDashboard && !showPipeline && !showThemes) opp().updatedAt = Date.now();
   renderOppBar();
   renderSidebar();
@@ -1763,7 +1785,20 @@ function buildCoachingSlide() {
       actionsHTML = actions.map((a, i) => {
         const navIdx = SLIDE_NAV_IDX[a.section] || 1;
         const tag = a.section ? ({'snapshot':'Snapshot','stakeholders':'Stakeholders','accountpov':'Opportunity','opppov':'Opportunity','meddpicc':'Qualification','map':'Mutual Action Plan','calls':'Comms Analysis'}[a.section] || a.section) : '';
-        return `<button class="coach-action-row" onclick="navigateToSection(${navIdx})">
+        if (coachEditIdx === i) {
+          return `<div class="coach-edit-form">
+  <label>Action</label>
+  <textarea id="coachEditAction" rows="2">${esc(a.action)}</textarea>
+  <label>Why</label>
+  <textarea id="coachEditWhy" rows="2">${esc(a.why)}</textarea>
+  <div class="coach-edit-actions">
+    <button onclick="cancelCoachEdit()">Cancel</button>
+    <button class="primary" onclick="saveCoachEdit(${i})">Save</button>
+  </div>
+</div>`;
+        }
+        return `<div class="coach-action-wrap">
+  <button class="coach-action-row" onclick="navigateToSection(${navIdx})">
   <div class="coach-action-num">${i + 1}</div>
   <div class="coach-action-body">
     <div class="coach-action-text">${esc(a.action)}</div>
@@ -1771,7 +1806,12 @@ function buildCoachingSlide() {
     ${tag ? `<span class="coach-action-tag">${esc(tag)}</span>` : ''}
   </div>
   <div class="coach-action-arrow">›</div>
-</button>`;
+</button>
+  <div class="coach-action-ctrls">
+    <button class="coach-ctrl-btn" title="Edit this action" onclick="startCoachEdit(${i})">✎</button>
+    <button class="coach-ctrl-btn danger" title="Dismiss this action" onclick="dismissCoachingAction(${i})">✕</button>
+  </div>
+</div>`;
       }).join('');
     }
   }
@@ -1871,15 +1911,15 @@ function buildCoachingBanner() {
   const stageLabel = { early: 'Early stage', mid: 'Mid stage', late: 'Late stage' }[stage] || '';
   const actionsHTML = actions.map((a, i) => {
     const navIdx = SLIDE_NAV_IDX[a.section] || 1;
-    return `<button class="coaching-action-item" onclick="navigateToSection(${navIdx})">
+    return `<div class="coaching-action-item" style="cursor:default">
   <div class="coaching-action-num">${i + 1}</div>
-  <div class="coaching-action-body">
+  <div class="coaching-action-body" onclick="navigateToSection(${navIdx})" style="cursor:pointer">
     <div class="coaching-action-text">${esc(a.action)}</div>
     <div class="coaching-action-why">${esc(a.why)}</div>
     ${a.section ? `<span class="coaching-action-tag">${esc(({'snapshot':'Snapshot','stakeholders':'Stakeholders','accountpov':'Opportunity','opppov':'Opportunity','meddpicc':'Qualification','map':'Mutual Action Plan','calls':'Calls & Coaching'}[a.section] || a.section).replace('_',' '))}</span>` : ''}
   </div>
-  <div class="coaching-action-arrow">›</div>
-</button>`;
+  <button class="coaching-action-dismiss" title="Dismiss this action" onclick="dismissCoachingAction(${i})">✕</button>
+</div>`;
   }).join('');
   return `<div class="coaching-banner">
   <div class="coaching-banner-header">
@@ -1892,6 +1932,46 @@ function buildCoachingBanner() {
 
 function navigateToSection(idx) {
   opp().currentSlide = idx;
+  render();
+}
+
+// ── Edit / dismiss coaching actions (correct hallucinations directly) ──
+let coachEditIdx = null;
+
+function startCoachEdit(i) {
+  coachEditIdx = i;
+  renderCurrentSlide();
+}
+function cancelCoachEdit() {
+  coachEditIdx = null;
+  renderCurrentSlide();
+}
+function saveCoachEdit(i) {
+  const o = opp();
+  if (!o || !o.coaching || !Array.isArray(o.coaching.actions) || !o.coaching.actions[i]) { coachEditIdx = null; return; }
+  const aEl = document.getElementById('coachEditAction');
+  const wEl = document.getElementById('coachEditWhy');
+  const action = (aEl ? aEl.value : '').trim();
+  const why    = (wEl ? wEl.value : '').trim();
+  if (action) o.coaching.actions[i].action = action;
+  o.coaching.actions[i].why = why;
+  o.coaching.actions[i].edited = true;   // mark human-edited; spared from auto-resurrect logic
+  coachEditIdx = null;
+  saveState();
+  render();
+}
+function dismissCoachingAction(i) {
+  const o = opp();
+  if (!o || !o.coaching || !Array.isArray(o.coaching.actions)) return;
+  const removed = o.coaching.actions[i];
+  if (!removed) return;
+  o.coaching.actions.splice(i, 1);
+  // Remember dismissed text so a Refresh doesn't immediately regenerate the same item.
+  if (!Array.isArray(o.dismissedActions)) o.dismissedActions = [];
+  const key = (removed.action || '').trim().toLowerCase();
+  if (key && !o.dismissedActions.includes(key)) o.dismissedActions.push(key);
+  if (coachEditIdx === i) coachEditIdx = null;
+  saveState();
   render();
 }
 
@@ -2029,7 +2109,10 @@ Rules:
 - If last engagement is >14 days ago, flag staleness
 - If MAP has no next touch scheduled, flag it
 - Section must be one of the exact values listed above
-- gaps: one entry for EACH section listed under WEAK SECTIONS, using its exact id. Diagnose the specific missing piece from the unconfirmed items and notes — reference real names/facts from this deal, never boilerplate. If no weak sections, return an empty gaps array.`;
+- gaps: one entry for EACH section listed under WEAK SECTIONS, using its exact id. Diagnose the specific missing piece from the unconfirmed items and notes — reference real names/facts from this deal, never boilerplate. If no weak sections, return an empty gaps array.`
+  + ((Array.isArray(opp().dismissedActions) && opp().dismissedActions.length)
+      ? `\n\nThe AE has previously DISMISSED these suggested actions as wrong or irrelevant — do NOT repeat them or close variants:\n${opp().dismissedActions.map(t => '- ' + t).join('\n')}`
+      : '');
 
   try {
     const resp = await fetch('/api/claude', {
@@ -2045,6 +2128,14 @@ Rules:
     if (data2.error) throw new Error(data2.error.message);
     const raw    = data2.content.filter(b => b.type === 'text').map(b => b.text).join('');
     const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    // Honor previously-dismissed actions: drop any regenerated item whose text
+    // matches one the AE already removed, so refresh doesn't resurrect hallucinations.
+    const dismissed = Array.isArray(opp().dismissedActions) ? opp().dismissedActions : [];
+    if (dismissed.length && Array.isArray(parsed.actions)) {
+      parsed.actions = parsed.actions.filter(a =>
+        !dismissed.includes((a && a.action ? a.action : '').trim().toLowerCase()));
+    }
+    coachEditIdx = null;
     opp().coaching = parsed;
     opp().coachingGeneratedAt = Date.now();
 
