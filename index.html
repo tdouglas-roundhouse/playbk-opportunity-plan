@@ -2266,10 +2266,25 @@ function fmtARR(n) {
   return n > 0 ? '$' + n : '—';
 }
 
-// ARR is derived from selected module tiers (gross) net of any platform discount.
-// Implementation is a one-time fee and is excluded from ARR.
+// Parse a free-text Target ARR ("$48K", "120,000", "$1.2M", "48000") into a number.
+// Blank or unparseable → 0.
+function parseTargetArr(raw) {
+  if (raw == null) return 0;
+  let s = String(raw).trim().toLowerCase().replace(/[$,\s]/g, '');
+  if (!s) return 0;
+  let mult = 1;
+  if (s.endsWith('k')) { mult = 1e3; s = s.slice(0, -1); }
+  else if (s.endsWith('m')) { mult = 1e6; s = s.slice(0, -1); }
+  else if (s.endsWith('b')) { mult = 1e9; s = s.slice(0, -1); }
+  const n = parseFloat(s);
+  return isFinite(n) ? Math.round(n * mult) : 0;
+}
+
+// Dashboard & Pipeline ARR is the manually-entered Target ARR on the Snapshot.
+// Blank/unparseable counts as $0. (Scope/module pricing still drives the Snapshot
+// pricing breakdown via pricingBreakdown — that is intentionally separate.)
 function oppARR(a) {
-  return pricingBreakdown(a && a.data && a.data.snapshot ? a.data.snapshot : null).net;
+  return parseTargetArr(a && a.data && a.data.snapshot ? a.data.snapshot.targetArr : '');
 }
 
 function oppForecast(a) {
@@ -2380,7 +2395,7 @@ function buildDashboard() {
     <div class="opp-card-stat">
       <div class="stat-label">ARR</div>
       <div class="stat-val">${oppARR(a) ? fmtARR(oppARR(a)) : '—'}</div>
-      <div class="stat-sub">${oppARR(a) ? modulesSummary(s.modules).split(' — ')[0] : 'No modules'}</div>
+      <div class="stat-sub">${modulesTotal(s.modules) ? modulesSummary(s.modules).split(' — ')[0] : 'No modules'}</div>
     </div>
     <div class="opp-card-stat">
       <div class="stat-label">Next touch</div>
@@ -2758,17 +2773,18 @@ function buildStakeholders() {
   const sentDot = { Advocate: 'var(--green-pip)', Neutral: 'var(--amber-pip)', Risk: '#a32d2d' };
 
   const cards = stk.map((s, i) => {
-    const sent = s.sentiment || 'Neutral';
+    const sentCycle = { Advocate: 'Neutral', Neutral: 'Risk', Risk: 'Advocate' };
+    const sent = sentCycle[s.sentiment] ? s.sentiment : 'Neutral';
     const bg   = sentBg[sent]     || sentBg.Neutral;
     const bc   = sentBorder[sent] || sentBorder.Neutral;
     const fc   = sentColor[sent]  || sentColor.Neutral;
     const dot  = sentDot[sent]    || sentDot.Neutral;
     // Cycle order: Advocate → Neutral → Risk → Advocate
-    const nextSent = { Advocate: 'Neutral', Neutral: 'Risk', Risk: 'Advocate' }[sent];
+    const nextSent = sentCycle[sent];
     const inf = s.influence == null ? 3 : s.influence;
     const selCls = (mapState.selected === i) ? ' map-sel' : '';
 
-    const roleOpts = ['Economic buyer', 'Executive Sponsor', 'Champion', 'Coach', 'Blocker', 'Neutral']
+    const roleOpts = ['Economic buyer', 'Evaluator', 'Champion', 'Coach', 'Blocker', 'Neutral']
       .map(r => `<option value="${r}"${s.role === r ? ' selected' : ''}>${r}</option>`).join('');
 
     return `<div class="stk-card${selCls}" id="stkcard_${i}">
@@ -2809,7 +2825,7 @@ function buildStakeholders() {
   return `${oppNameBadge()}<div class="slide-title">Stakeholders</div>
 ${buildCoverageStrip()}
 <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
-  ${['Economic buyer', 'Executive Sponsor', 'Champion', 'Coach', 'Blocker', 'Neutral'].map(r => `<button class="action-btn" style="font-size:12px;padding:5px 12px" onclick="addStakeholder('${r}')">+ ${r}</button>`).join('')}
+  ${['Economic buyer', 'Evaluator', 'Champion', 'Coach', 'Blocker', 'Neutral'].map(r => `<button class="action-btn" style="font-size:12px;padding:5px 12px" onclick="addStakeholder('${r}')">+ ${r}</button>`).join('')}
   <div class="stk-view-toggle">
     <button class="${isMap ? '' : 'active'}" onclick="setStkView('cards')">Cards</button>
     <button class="${isMap ? 'active' : ''}" onclick="setStkView('map')">Map</button>
@@ -3790,11 +3806,11 @@ function buildPipelinePage() {
   const active   = log.filter(e => !e.archived);
   const archived = log.filter(e => e.archived);
 
-  // ARR per log entry — prefer the live opp's current module total, fall back to stored value.
+  // ARR per log entry — prefer the live opp's Target ARR, fall back to stored Target ARR.
   const entryARR = e => {
     const lo = opps.find(o => o.id === e.id);
     if (lo) return oppARR(lo);
-    return typeof e.arr === 'number' ? e.arr : modulesTotal(e.modules);
+    return parseTargetArr(e.targetArr);
   };
 
   // Summary stats — active only
@@ -4087,7 +4103,7 @@ function buildCalls() {
   <div class="call-entry-header" onclick="toggleCall(${ci})">
     <div class="call-entry-meta">
       <span class="call-date">${esc(c.date || 'Undated call')}</span>
-      <span class="call-participants">${esc(c.participants || '')}</span>
+      <span class="call-participants">${esc(c.participants || '')}${c.ourTeam ? ` · <span style="opacity:0.7">our: ${esc(c.ourTeam)}</span>` : ''}</span>
       ${c.findings && c.findings.length ? `<span class="call-finding-count">${accepted} applied · ${pending} pending</span>` : ''}
     </div>
     <div style="display:flex;align-items:center;gap:8px">
@@ -4113,14 +4129,18 @@ function buildCalls() {
 ${callsHTML}
 <div class="call-form">
   <div class="call-form-title">Add a comms update</div>
-  <div class="field-grid">
+  <div class="field-grid" style="grid-template-columns:1fr 1fr 1fr">
     <div>
       <div class="field-label">Date</div>
       <input class="field-input" id="callDate" placeholder="e.g. 21 May 2026">
     </div>
     <div>
-      <div class="field-label">Participants</div>
-      <input class="field-input" id="callParticipants" placeholder="e.g. Beth, Marcus Webb (CIO)">
+      <div class="field-label">Customer participants</div>
+      <input class="field-input" id="callParticipants" placeholder="e.g. Marcus Webb (CIO), Dana Liu">
+    </div>
+    <div>
+      <div class="field-label">Our team <span class="fmt-hint">excluded from insights</span></div>
+      <input class="field-input" id="callOurTeam" placeholder="e.g. Austin, Beth, me">
     </div>
   </div>
   <div class="field-full">
@@ -4183,7 +4203,9 @@ async function analyseCall() {
 
 async function runCallAnalysis(transcript) {
   const date         = document.getElementById('callDate').value.trim();
-  const participants = document.getElementById('callParticipants').value.trim();
+  const participants  = document.getElementById('callParticipants').value.trim();
+  const ourTeamEl    = document.getElementById('callOurTeam');
+  const ourTeam      = ourTeamEl ? ourTeamEl.value.trim() : '';
 
   setAnalysing(true);
 
@@ -4228,10 +4250,18 @@ INCUMBENTS / REAL COMPETITION: ${o.incumbents || 'not set'}
 COMPETITIVE STRATEGY: ${o.competitiveStrategy || 'not set'}
 HOW WE WIN: ${o.competitive || 'not set'}`;
 
+  const ourTeamBlock = ourTeam
+    ? `\nOUR TEAM (internal sellers — NOT customer stakeholders): ${ourTeam}\nThese people are on our side of the deal. NEVER create stakeholder findings for them, never add them to the stakeholder map, and never attribute customer intent, sentiment, or buying signals to them. Treat anything they say as the rep's own side. Customer insights must come only from the customer participants below.`
+    : '';
+  const custBlock = participants
+    ? `\nCUSTOMER PARTICIPANTS: ${participants}`
+    : '';
+
   const prompt = `You are a B2B sales analyst reviewing a call transcript against an opportunity plan for Eleven Systems, an AI platform for UHNW wealth management and family office life management.
 
 CURRENT PLAN STATE:
 ${planContext}
+${ourTeamBlock}${custBlock}
 
 CALL TRANSCRIPT:
 ${transcript}
@@ -4305,6 +4335,7 @@ Return this exact structure — all three keys required:
     d().calls.unshift({
       date: date || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       participants,
+      ourTeam,
       transcript,
       summary: parsed.summary || '',
       findings,
