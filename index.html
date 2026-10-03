@@ -758,6 +758,12 @@ select.field-input{cursor:pointer}
 .finding-missed{font-size:11px;font-weight:600;color:var(--text-warning);margin-top:5px}
 .call-finding-count.missed{background:var(--bg-warning);color:var(--text-warning);border-color:var(--border-warning)}
 .call-toggle:disabled{opacity:.5;cursor:default}
+.disc-line{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:4px 0}
+.disc-label{flex:1;min-width:0;font-size:13px;font-family:var(--font);color:var(--text-secondary);background:transparent;border:none;border-bottom:0.5px dashed var(--border-mid);padding:3px 0}
+.disc-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.disc-amt{width:92px;font-size:13px;font-family:var(--font);text-align:right;color:var(--text-primary);background:var(--bg-primary);border:0.5px solid var(--border-mid);border-radius:6px;padding:3px 7px}
+.disc-label:focus,.disc-amt:focus{outline:2px solid var(--text-info);outline-offset:1px}
+.disc-val{min-width:70px;text-align:right;font-weight:600;color:var(--scarlet,#cc2200);font-size:13px}
 .pipe-next{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:200px}
 @media(max-width:760px){
   .stage-track{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -939,9 +945,12 @@ function attachFormatter(el, type) {
 }
 
 function attachFormatters() {
-  ['snapshot.currentArr', 'snapshot.targetArr'].forEach(path => {
-    attachFormatter(document.querySelector(`[data-f="${path}"]`), 'currency');
-  });
+  // Discount/credit: totals refresh when the field is committed (blur / Enter), not per keystroke
+  const disc = document.querySelector('[data-f="snapshot.discountCredit"]');
+  if (disc) {
+    disc.addEventListener('change', () => { delete d().snapshot.platformDiscount; renderCurrentSlide(); });
+    disc.addEventListener('keydown', e => { if (e.key === 'Enter') disc.blur(); });
+  }
   // Renewal/close date — mm/dd/yy
   attachFormatter(document.querySelector('[data-f="snapshot.renewalQ"]'), 'date');
   trackCloseSlip(document.querySelector('[data-f="snapshot.renewalQ"]'));
@@ -1098,21 +1107,36 @@ function modulesSummary(modules) {
   if (!parts.length) return '';
   return `${parts.join(' · ')} — $${(modulesTotal(m) / 1000)}K`;
 }
-// Pricing breakdown: gross platform fees → discount → net platform fees → implementation fee (20% of net).
+// Pricing breakdown: gross platform fees → discount/credit → net platform fees (= ARR)
+// → implementation fee (20% of net, one-time). The discount/credit is free text per deal:
+// "10%" takes a percentage off gross; "$5K" / "5000" takes a fixed amount off. Capped at gross.
+function parseDiscount(raw, gross) {
+  const t = String(raw == null ? '' : raw).trim();
+  if (!t) return { amount: 0, pct: 0 };
+  if (/%\s*$/.test(t)) {
+    const pct = Math.max(0, Math.min(100, parseFloat(t) || 0));
+    return { amount: Math.round(gross * pct / 100), pct };
+  }
+  return { amount: Math.min(gross, Math.max(0, parseTargetArr(t))), pct: 0 };
+}
 function pricingBreakdown(snapshot) {
   const s = snapshot || {};
   const gross = modulesTotal(s.modules);
-  const discPct = Number(s.platformDiscount) || 0;
-  const discount = Math.round(gross * discPct / 100);
+  // Legacy: the old fixed % dropdown, if a deal hasn't been migrated yet
+  const raw = (s.discountCredit != null && String(s.discountCredit).trim() !== '')
+    ? s.discountCredit
+    : (Number(s.platformDiscount) ? s.platformDiscount + '%' : '');
+  const { amount: discount, pct: discPct } = parseDiscount(raw, gross);
   const net = gross - discount;
   const implementation = Math.round(net * 0.20);
-  return { gross, discPct, discount, net, implementation, total: net + implementation };
+  return { gross, discPct, discount, net, implementation, total: net + implementation,
+           discountLabel: (s.discountLabel || '').trim() };
 }
 
 function freshData() {
   // updatedAt tracked separately on the opp object, not inside data
   return {
-    snapshot:     { firmName: '', firmType: '', modules: { financial: '', property: '', family: '' }, contactCount: '', healthStatus: '', journey: '', currentArr: '', targetArr: '', renewalQ: '', notes: '', stakeholderGaps: '' },
+    snapshot:     { firmName: '', firmType: '', modules: { financial: '', property: '', family: '' }, contactCount: '', healthStatus: '', journey: '', discountCredit: '', discountLabel: '', renewalQ: '', notes: '', stakeholderGaps: '' },
     stakeholders: [],
     edges: [],
     accountpov:   { whyChange: '', whyNow: '', whyUs: '', whatSolution: '', objective1: '', obj1date: '', objective2: '', obj2date: '', objective3: '', obj3date: '' },
@@ -1408,7 +1432,7 @@ async function publishDeck() {
     sl.addText(o.name || 'Opportunity', { x: 0.7, y: 2.95, w: 12, h: 1.1, fontFace: FONT, fontSize: 42, color: 'FFFFFF', bold: true });
     // metadata strip
     const meta = [
-      ['FIRM TYPE', s.firmType || '—'], ['ARR', modulesTotal(s.modules) ? '$' + (modulesTotal(s.modules) / 1000) + 'K' : '—'], ['CURRENT ARR', s.currentArr || '—'],
+      ['FIRM TYPE', s.firmType || '—'], ['ARR', oppARR(o) ? fmtARR(oppARR(o)) : '—'], ['IMPLEMENTATION', oppImpl(o) ? fmtARR(oppImpl(o)) : '—'],
       ['STAGE', stageName(dealOf(o).stage) || '—'], ['CLOSE', s.renewalQ || '—']
     ];
     meta.forEach((m, i) => {
@@ -2140,7 +2164,7 @@ async function generateCoaching() {
   const prompt = `You are an expert B2B sales coach. Analyse this opportunity plan and return the top 3 most important next actions for the AE right now.
 
 OPPORTUNITY: ${opp().name}
-Firm: ${data.snapshot.firmName || 'unknown'} | Type: ${data.snapshot.firmType || 'unknown'} | ARR target: ${data.snapshot.targetArr || 'unknown'}
+Firm: ${data.snapshot.firmName || 'unknown'} | Type: ${data.snapshot.firmType || 'unknown'} | ARR (net platform fees): ${fmtARR(pricingBreakdown(data.snapshot).net)} | Implementation: ${fmtARR(pricingBreakdown(data.snapshot).implementation)}
 Deal type: ${data.snapshot.journey || 'not set'} | Health score: ${hs}/100
 
 STAGE GATE:
@@ -2373,11 +2397,13 @@ function parseTargetArr(raw) {
   return isFinite(n) ? Math.round(n * mult) : 0;
 }
 
-// Dashboard & Pipeline ARR is the manually-entered Target ARR on the Snapshot.
-// Blank/unparseable counts as $0. (Scope/module pricing still drives the Snapshot
-// pricing breakdown via pricingBreakdown — that is intentionally separate.)
+// Pipeline ARR = net annual platform fees from the Snapshot pricing (modules − discount/credit).
+// Implementation is one-time, tracked separately and never counted as ARR.
 function oppARR(a) {
-  return parseTargetArr(a && a.data && a.data.snapshot ? a.data.snapshot.targetArr : '');
+  return pricingBreakdown(a && a.data ? a.data.snapshot : null).net;
+}
+function oppImpl(a) {
+  return pricingBreakdown(a && a.data ? a.data.snapshot : null).implementation;
 }
 
 /* ================================================================
@@ -2924,10 +2950,10 @@ function buildPipelinePage() {
 
   // Forecast strip — open deals only; Top of Funnel sits outside the forecast
   const buckets = {}; FC_CATS.forEach(c => buckets[c] = { arr: 0, count: 0 });
-  let tofCount = 0, tofArr = 0;
+  let tofCount = 0, tofArr = 0, implTotal = 0;
   open.forEach(({ a }) => {
     const f = forecastStatus(a).cat;
-    if (buckets[f]) { buckets[f].arr += oppARR(a); buckets[f].count++; }
+    if (buckets[f]) { buckets[f].arr += oppARR(a); buckets[f].count++; if (f !== 'Omit') implTotal += oppImpl(a); }
     else { tofCount++; tofArr += oppARR(a); }
   });
   const maxB = Math.max(1, ...FC_CATS.map(c => buckets[c].arr));
@@ -2942,7 +2968,8 @@ function buildPipelinePage() {
   <div class="pipe-cell pipe-cell-total">
     <div class="pc-label">Forecast ARR <span class="pc-hint">Commit + Upside + Pipeline</span></div>
     <div class="pc-arr">${forecastTotal ? fmtARR(forecastTotal) : '—'}</div>
-    <div class="pc-sub">${tofCount ? `${tofCount} at Top of Funnel${tofArr ? ' · ' + fmtARR(tofArr) : ''}, not forecast` : `${open.length} open deal${open.length === 1 ? '' : 's'}`}</div>
+    <div class="pc-sub">${implTotal ? `+ ${fmtARR(implTotal)} implementation (one-time)` : 'No implementation fees'}</div>
+    <div class="pc-sub" style="margin-top:2px">${tofCount ? `${tofCount} at Top of Funnel${tofArr ? ' · ' + fmtARR(tofArr) : ''}, not forecast` : `${open.length} open deal${open.length === 1 ? '' : 's'}`}</div>
   </div>
 </div>`;
 
@@ -2976,6 +3003,7 @@ function buildPipelinePage() {
       case 'opportunity': return (a.name || '').toLowerCase();
       case 'stage':       return stageIndex(dealOf(a).stage);
       case 'arr':         return oppARR(a);
+      case 'impl':        return oppImpl(a);
       case 'close':       return parseLooseDate(a.data.snapshot.renewalQ) || 0;
       case 'qualify':     { const m = meddYesFor(a.data); return m.total ? m.yes / m.total : 0; }
       case 'health':      return calcHealthScore(a.data);
@@ -3013,7 +3041,8 @@ function buildPipelinePage() {
     return `<tr onclick="openOpp(${i})">
   <td><div class="log-name">${esc(a.name)}</div><div class="log-sub">${esc(s.firmType || '—')}${s.journey ? ' · ' + esc(s.journey) : ''}</div></td>
   <td>${stageSelectHTML(a, i)}${dl.stage && inDays !== null ? `<div class="days-in">${inDays}d in stage</div>` : ''}</td>
-  <td><div class="log-arr">${oppARR(a) ? fmtARR(oppARR(a)) : '—'}</div></td>
+  <td><div class="log-arr">${oppARR(a) ? fmtARR(oppARR(a)) : '—'}</div>${pricingBreakdown(s).discount ? `<div class="log-sub" title="${esc(pricingBreakdown(s).discountLabel || 'Discount / credit')}">after ${fmtARR(pricingBreakdown(s).discount)} off</div>` : ''}</td>
+  <td><div class="log-arr">${oppImpl(a) ? fmtARR(oppImpl(a)) : '—'}</div></td>
   <td><span class="log-next">${esc(s.renewalQ || '—')}</span>${slips ? `<span class="slip-tag" title="Close date pushed ${slips} time${slips > 1 ? 's' : ''}">↻${slips}</span>` : ''}</td>
   <td><div class="log-medd">${m.yes}/${m.total}</div><div class="log-medd-bar"><div class="log-medd-fill" style="width:${pct}%"></div></div></td>
   <td style="text-align:center"><span class="hs-dot" style="background:${hsCol}">${hs}</span></td>
@@ -3026,7 +3055,7 @@ function buildPipelinePage() {
 
   const table = `<div class="table-scroll"><table class="log-table">
 <thead><tr>
-  ${th('opportunity', 'Opportunity', 170)}${th('stage', 'Stage', 128)}${th('arr', 'ARR', 80)}${th('close', 'Close', 88)}
+  ${th('opportunity', 'Opportunity', 170)}${th('stage', 'Stage', 128)}${th('arr', 'ARR', 80)}${th('impl', 'Impl.', 72)}${th('close', 'Close', 88)}
   ${th('qualify', 'Qualify', 80)}${th('health', 'Health', 60)}${th('forecast', 'Forecast', 110)}${th('nexttouch', 'Next touch', 130)}
   ${th('changes', 'Changes', 120)}<th style="width:64px"></th>
 </tr></thead>
@@ -3107,7 +3136,7 @@ function oppCardHTML(a, idx, review) {
     ${ring}
   </div>
   <div class="opp-card-mid" style="grid-template-columns:1fr 1fr 1fr">
-    <div class="opp-card-stat"><div class="stat-label">ARR</div><div class="stat-val">${oppARR(a) ? fmtARR(oppARR(a)) : '—'}</div><div class="stat-sub">Close ${esc(s.renewalQ || '—')}${(dl.slips || []).length ? ' ↻' + dl.slips.length : ''}</div></div>
+    <div class="opp-card-stat"><div class="stat-label">ARR</div><div class="stat-val">${oppARR(a) ? fmtARR(oppARR(a)) : '—'}</div><div class="stat-sub">${oppImpl(a) ? '+ ' + fmtARR(oppImpl(a)) + ' impl. · ' : ''}Close ${esc(s.renewalQ || '—')}${(dl.slips || []).length ? ' ↻' + dl.slips.length : ''}</div></div>
     <div class="opp-card-stat"><div class="stat-label">Next touch</div><div class="stat-val" style="font-size:12px;font-weight:500;line-height:1.4">${esc(nextTouch)}</div><div class="stat-sub">${champion && champion.name ? 'Champ: ' + esc(champion.name) : 'No champion'}</div></div>
     <div class="opp-card-stat"><div class="stat-label">Last updated</div><div class="stat-val" style="font-size:11px;font-weight:500">${a.updatedAt ? new Date(a.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—'}</div><div class="stat-sub">${a.updatedAt ? timeSince(a.updatedAt) : 'Never opened'}</div></div>
   </div>
@@ -3372,12 +3401,6 @@ ${buildStagePanel()}
   </div>`;
   }).join('')}
 </div>
-<div class="field-full" style="margin-top:8px">
-  <div class="field-label" style="margin-bottom:4px">Platform discount <span class="fmt-hint">discretionary, off annual platform fees</span></div>
-  <select class="field-input" data-f="snapshot.platformDiscount">
-    ${[['0','None'],['10','10%'],['20','20%'],['30','30%']].map(([v,lbl]) => `<option value="${v}" ${String(s.platformDiscount || '0') === v ? 'selected' : ''}>${lbl}</option>`).join('')}
-  </select>
-</div>
 ${(() => {
   const b = pricingBreakdown(s);
   const row = (lbl, val, opts = {}) => `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0${opts.border ? ';border-top:1px solid var(--border)' : ''}${opts.bold ? ';font-weight:700' : ''}">
@@ -3388,24 +3411,20 @@ ${(() => {
   <div class="field-label" style="margin-bottom:4px">Pricing <span class="fmt-hint">${modulesSummary(s.modules) ? esc(modulesSummary(s.modules).split(' — ')[0]) : 'no modules selected'}</span></div>
   <div class="field-input" style="background:var(--bg-tertiary);cursor:default;height:auto;padding:8px 12px">
     ${row('Platform fees (gross)', b.gross)}
-    ${b.discPct ? row(`Discount (${b.discPct}%)`, b.discount, { neg: true }) : ''}
-    ${row('Platform fees (net)', b.net, { border: true })}
-    ${row('Implementation fee (20%)', b.implementation)}
-    ${row('Total contract value', b.total, { border: true, bold: true })}
+    <div class="disc-line">
+      <input class="disc-label" data-f="snapshot.discountLabel" value="${esc(s.discountLabel || '')}" placeholder="Discount / credit" aria-label="Discount or credit description">
+      <span class="disc-right">
+        <input class="disc-amt" data-f="snapshot.discountCredit" value="${esc(s.discountCredit != null && String(s.discountCredit).trim() !== '' ? s.discountCredit : (Number(s.platformDiscount) ? s.platformDiscount + '%' : ''))}" placeholder="10% or $5K" aria-label="Discount or credit amount">
+        <span class="disc-val">${b.discount ? '–$' + b.discount.toLocaleString() : '—'}</span>
+      </span>
+    </div>
+    ${row('ARR (net platform fees)', b.net, { border: true, bold: true })}
+    ${row('Implementation fee (20%, one-time)', b.implementation)}
+    ${row('Year-one contract value', b.total, { border: true })}
   </div>
 </div>`;
 })()}
 <div class="sec-div">Pipeline & health</div>
-<div class="field-grid">
-  <div>
-    <div class="field-label">Current ARR</div>
-    <input class="field-input" data-f="snapshot.currentArr" placeholder="$0 (prospect)" value="${esc(s.currentArr)}">
-  </div>
-  <div>
-    <div class="field-label">Target ARR</div>
-    <input class="field-input" data-f="snapshot.targetArr" placeholder="e.g. $48K" value="${esc(s.targetArr)}">
-  </div>
-</div>
 <div class="field-grid">
   <div>
     <div class="field-label">Deal type</div>
@@ -4074,7 +4093,7 @@ function exportPlan() {
   csv += '\r\n';
   csv += csvRow([
     'Opportunity', 'Type', 'Financial Tier', 'Property Tier', 'Family Tier', 'Base Annual Price', 'Stage', 'Deal Type', 'Health',
-    'Current ARR', 'Target ARR', 'Renewal / Close',
+    'Discount / Credit', 'ARR (Net)', 'Implementation Fee', 'Renewal / Close',
     'Forecast', 'MEDDPICC Evidence', 'Forecast Reason', 'Close Pushes', 'MEDDPICC Score', 'MEDDPICC %', 'Weak Blockers',
     'Why Change', 'Why Now', 'Why Eleven', 'Solution / Value',
     'Incumbents', 'Competitive Strategy',
@@ -4118,7 +4137,7 @@ function exportPlan() {
       (s.modules || {}).financial || '', (s.modules || {}).property || '', (s.modules || {}).family || '',
       modulesTotal(s.modules) ? '$' + modulesTotal(s.modules) : '',
       stageName(dealOf(a).stage), s.journey, s.healthStatus,
-      s.currentArr, s.targetArr, s.renewalQ,
+      pricingBreakdown(s).discount ? ((s.discountLabel ? s.discountLabel + ': ' : '') + '$' + pricingBreakdown(s).discount) : '', '$' + oppARR(a), '$' + oppImpl(a), s.renewalQ,
       forecastStatus(a).cat, fc, dealOf(a).fcReason || '', (dealOf(a).slips || []).length, yes + '/' + total, Math.round(pct * 100) + '%', weakBlockers || 'None',
       p.whyChange, p.whyNow, p.whyUs, p.whatSolution,
       o.incumbents, o.competitiveStrategy,
@@ -4299,7 +4318,7 @@ function themesBuildRecords() {
     return {
       idx, id: o.id, name: o.name, data,
       firmType: (data.snapshot && data.snapshot.firmType) || '',
-      arr: modulesTotal(data.snapshot && data.snapshot.modules),
+      arr: oppARR(o),
       forecast: oppForecast(o),
       meddYes, stkCount: stk.length, callCount: calls.length,
       findings, redFlags, gaps, fText,
@@ -4979,6 +4998,12 @@ function migrateOpps() {
   opps.forEach(a => {
     if (!a || !a.data) return;
     // Anything already in Playbk is at least in Discovery
+    const sn = a.data.snapshot || {};
+    if (Number(sn.platformDiscount) && !(sn.discountCredit && String(sn.discountCredit).trim())) {
+      sn.discountCredit = sn.platformDiscount + '%';
+      if (!sn.discountLabel) sn.discountLabel = 'Discount';
+    }
+    delete sn.platformDiscount;
     const dl = dealOf(a);
     if (!dl.stage) { dl.stage = 'discovery'; dl.stageAt = 0; dl.history.push({ type: 'default', from: '', to: 'discovery', at: Date.now() }); }
     (a.data.calls || []).forEach(c => (c.findings || []).forEach(f => {
@@ -5192,7 +5217,7 @@ async function draftSnapshotBrief() {
   if (btn) { btn.disabled = true; btn.textContent = '…'; }
   const prompt = `You are a B2B sales analyst. Write a 2-3 sentence situation brief for an opportunity.
 Firm: ${s.firmName} | Type: ${s.firmType || 'unknown'} | Modules: ${modulesSummary(s.modules) || 'none'}
-Current ARR: ${s.currentArr || '$0'} | Target: ${s.targetArr || 'unknown'} | Stage: ${s.journey || 'Land'} | Health: ${s.healthStatus || 'unknown'}
+ARR (net platform fees): ${fmtARR(pricingBreakdown(s).net)} | Implementation: ${fmtARR(pricingBreakdown(s).implementation)} | Stage: ${s.journey || 'Land'} | Health: ${s.healthStatus || 'unknown'}
 Return ONLY JSON: { "brief": "2-3 sentence brief covering situation, key risk, and top opportunity" }`;
   const result = await callClaude(prompt, null, '…');
   if (result && result.brief) {
@@ -5540,8 +5565,6 @@ function buildExampleOpp() {
     contactCount: '4',
     healthStatus: 'Amber',
     journey: 'Land',
-    currentArr: '$0',
-    targetArr: '$120K',
     renewalQ: '09/30/25',
     notes: 'Meridian manages 14 UHNW family relationships and a growing RIA practice. Core pain is fragmented reporting — principals see data from 3 custodians plus estate docs monthly, reconciled by hand in Excel. CFO flagged a data discrepancy in front of a principal last quarter. That incident created urgency. Key risk is trust — they have never put operational data in a cloud platform. Top opportunity is the reporting consolidation use case, which is fully contained and low-risk as a land.',
     stakeholderGaps: 'Have not met the principal directly — all access through Marcus. Need to confirm whether compliance officer has a view on cloud data policy before we go deeper.'
