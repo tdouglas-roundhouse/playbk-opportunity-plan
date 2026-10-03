@@ -1168,7 +1168,7 @@ function pricingBreakdown(snapshot) {
 function freshData() {
   // updatedAt tracked separately on the opp object, not inside data
   return {
-    snapshot:     { firmName: '', firmType: '', modules: { financial: '', property: '', family: '' }, contactCount: '', healthStatus: '', journey: '', discountCredit: '', discountLabel: '', renewalQ: '', notes: '', stakeholderGaps: '' },
+    snapshot:     { firmName: '', firmType: '', modules: { financial: '', property: '', family: '' }, contactCount: '', healthStatus: '', journey: '', source: '', referrer: '', discountCredit: '', discountLabel: '', renewalQ: '', notes: '', stakeholderGaps: '' },
     stakeholders: [],
     edges: [],
     accountpov:   { whyChange: '', whyNow: '', whyUs: '', whatSolution: '', objective1: '', obj1date: '', objective2: '', obj2date: '', objective3: '', obj3date: '' },
@@ -2196,7 +2196,7 @@ async function generateCoaching() {
   const prompt = `You are an expert B2B sales coach. Analyse this opportunity plan and return the top 3 most important next actions for the AE right now.
 
 OPPORTUNITY: ${opp().name}
-Firm: ${data.snapshot.firmName || 'unknown'} | Type: ${data.snapshot.firmType || 'unknown'} | ARR (net platform fees): ${fmtARR(pricingBreakdown(data.snapshot).net)} | Implementation: ${fmtARR(pricingBreakdown(data.snapshot).implementation)}
+Firm: ${data.snapshot.firmName || 'unknown'} | Type: ${data.snapshot.firmType || 'unknown'} | Source: ${data.snapshot.source ? data.snapshot.source + (data.snapshot.referrer ? ' (referred by ' + data.snapshot.referrer + ')' : '') : 'not set'} | ARR (net platform fees): ${fmtARR(pricingBreakdown(data.snapshot).net)} | Implementation: ${fmtARR(pricingBreakdown(data.snapshot).implementation)}
 Deal type: ${data.snapshot.journey || 'not set'} | Health score: ${hs}/100
 
 STAGE GATE:
@@ -3071,7 +3071,7 @@ function buildPipelinePage() {
     const slips = (dl.slips || []).length;
     const fcTitle = fs.source === 'ae' ? `Your call${dl.fcReason ? ': ' + dl.fcReason : ' (no reason given)'}` : fs.source === 'stage' ? 'Stage default' : 'From MEDDPICC (no stage set)';
     return `<tr onclick="openOpp(${i})">
-  <td><div class="log-name">${esc(a.name)}</div><div class="log-sub">${esc(s.firmType || '—')}${s.journey ? ' · ' + esc(s.journey) : ''}</div></td>
+  <td><div class="log-name">${esc(a.name)}</div><div class="log-sub">${esc(s.firmType || '—')}${s.journey ? ' · ' + esc(s.journey) : ''}${sourceLabel(s) ? ' · ' + esc(sourceLabel(s)) : ''}</div></td>
   <td>${stageSelectHTML(a, i)}${dl.stage && inDays !== null ? `<div class="days-in">${inDays}d in stage</div>` : ''}</td>
   <td><div class="log-arr">${oppARR(a) ? fmtARR(oppARR(a)) : '—'}</div>${pricingBreakdown(s).discount ? `<div class="log-sub" title="${esc(pricingBreakdown(s).discountLabel || 'Discount / credit')}">after ${fmtARR(pricingBreakdown(s).discount)} off</div>` : ''}</td>
   <td><div class="log-arr">${oppImpl(a) ? fmtARR(oppImpl(a)) : '—'}</div></td>
@@ -3437,6 +3437,18 @@ ${buildStagePanel()}
 </div>
 <div class="field-grid">
   <div>
+    <div class="field-label">Source</div>
+    <div class="chip-group">
+      ${['Inbound', 'Outbound', 'Referral'].map(v => `<button class="chip${s.source === v ? ' sel-blue' : ''}" onclick="setSource('${v}')">${v}</button>`).join('')}
+    </div>
+  </div>
+  <div>
+    <div class="field-label">Referred by ${s.source === 'Referral' ? '' : '<span class="fmt-hint">for referrals</span>'}</div>
+    <input class="field-input" data-f="snapshot.referrer" placeholder="e.g. Jeff Erdman, Merrill Lynch" value="${esc(s.referrer || '')}"${s.source === 'Referral' ? '' : ' disabled'}>
+  </div>
+</div>
+<div class="field-grid">
+  <div>
     <div class="field-label">Key contacts <span class="fmt-hint">from Stakeholders</span></div>
     <div class="field-input" style="background:var(--bg-tertiary);color:var(--text-secondary);cursor:default">${(d().stakeholders || []).filter(st => (st.name || '').trim()).length}</div>
   </div>
@@ -3729,6 +3741,17 @@ function keyContactsHTML() {
     ? `<button class="contacts-add" onclick="addContactsFromComms()">+ Add ${extra.length} from comms: ${extra.slice(0, 3).map(p => esc(p.name)).join(', ')}${extra.length > 3 ? '…' : ''}</button>`
     : '';
   return box + add;
+}
+
+function setSource(v) {
+  const sn = d().snapshot;
+  sn.source = sn.source === v ? '' : v;   // tap again to clear
+  markCoachingStale();
+  render();
+}
+function sourceLabel(s) {
+  if (!s || !s.source) return '';
+  return s.source === 'Referral' && (s.referrer || '').trim() ? 'via ' + s.referrer.trim() : s.source;
 }
 
 function attachListeners() {
@@ -4193,7 +4216,7 @@ function exportPlan() {
   csv += csvRow(['ELEVEN SYSTEMS — OPPORTUNITY PLAN EXPORT', 'Generated: ' + new Date().toLocaleDateString()]);
   csv += '\r\n';
   csv += csvRow([
-    'Opportunity', 'Type', 'Financial Tier', 'Property Tier', 'Family Tier', 'Base Annual Price', 'Stage', 'Deal Type', 'Health',
+    'Opportunity', 'Type', 'Source', 'Referred By', 'Financial Tier', 'Property Tier', 'Family Tier', 'Base Annual Price', 'Stage', 'Deal Type', 'Health',
     'Discount / Credit', 'ARR (Net)', 'Implementation Fee', 'Renewal / Close',
     'Forecast', 'MEDDPICC Evidence', 'Forecast Reason', 'Close Pushes', 'MEDDPICC Score', 'MEDDPICC %', 'Weak Blockers',
     'Why Change', 'Why Now', 'Why Eleven', 'Solution / Value',
@@ -4234,7 +4257,7 @@ function exportPlan() {
     const eb       = a.data.stakeholders.find(st => st.role === 'Economic buyer');
 
     csv += csvRow([
-      a.name, s.firmType,
+      a.name, s.firmType, s.source || '', s.referrer || '',
       (s.modules || {}).financial || '', (s.modules || {}).property || '', (s.modules || {}).family || '',
       modulesTotal(s.modules) ? '$' + modulesTotal(s.modules) : '',
       stageName(dealOf(a).stage), s.journey, s.healthStatus,
@@ -4419,6 +4442,9 @@ function themesBuildRecords() {
     return {
       idx, id: o.id, name: o.name, data,
       firmType: (data.snapshot && data.snapshot.firmType) || '',
+      source: (data.snapshot && data.snapshot.source) || '',
+      referrer: ((data.snapshot && data.snapshot.referrer) || '').trim(),
+      ebAccess: medd['economic_buyer_1'] === 'yes',
       arr: oppARR(o),
       forecast: oppForecast(o),
       meddYes, stkCount: stk.length, callCount: calls.length,
@@ -4441,95 +4467,88 @@ function themesBuildRecords() {
 
 // Synthesize themes across records. Each theme: id, title, severity,
 // meddElement, evidence, dealIdxs[], and a per-lens action map.
+// Rule: evidence states only what the data shows — counts and deal names
+// computed live. No causal stories and no deal names written into the code.
 function themesSynthesize(recs) {
   const byIdx = i => recs.find(r => r.idx === i);
   const names = idxs => idxs.map(i => byIdx(i) ? byIdx(i).name : '').filter(Boolean);
+  const list = arr => { const n = arr.filter(Boolean); return n.length <= 1 ? (n[0] || '') : n.slice(0, -1).join(', ') + ' and ' + n[n.length - 1]; };
+  const lenses = (play) => ({ revenue: play, product: play, funnel: play, board: play });
   const themes = [];
 
-  // 1. White-label channel motion
+  // 1. White-label / resell language
   const wl = recs.filter(r => r.sig.whitelabel);
   if (wl.length >= 2) {
     themes.push({
       id: 'channel_play', severity: 'high', meddElement: 'Strategy / Motion',
-      title: 'White-label channel motion emerging — Eleven as the platform institutions offer their own clients',
-      evidence: `The same vision recurs independently across ${names(wl.map(r=>r.idx)).join(', ')}: Eleven as a white-labeled family-office solution the institution resells to its clients, bundling services they don't natively provide. Where an EB has engaged (JP Morgan), the white-label vision landed directly.`,
+      title: 'Partner resell interest is showing up on more than one deal',
+      evidence: `White-label or resell language appears in the calls or notes for ${list(names(wl.map(r => r.idx)))}.`,
       dealIdxs: wl.map(r => r.idx),
-      lenses: {
-        revenue: 'A different sale than direct-to-family-office — partner-led and longer, but each is a channel of many clients, not one logo. Track on a separate channel pipeline with its own stage model so it doesn\'t dilute direct forecasting. JP Morgan is the lead horse: EB engaged, only scale concern outstanding.',
-        product: 'The single biggest signal in the book: tier-1 institutions want to resell Eleven, including services Eleven doesn\'t offer natively. That implies a partner/white-label surface, multi-tenant isolation, and service-bundling on the roadmap. The market may be pulling toward B2B2C, not just direct.',
-        funnel: 'These are partner channels, not single accounts — qualify the partner\'s willingness to introduce their client base, not just their own buying intent. Different playbook from direct family-office outreach.',
-        board: 'A white-label motion through institutions like JPM, Goldman and Jefferies is a materially larger TAM story than direct family-office sales, and JPM already has an engaged economic buyer. Worth framing as a second, higher-leverage GTM thesis.'
-      }
+      lenses: lenses('Treat these as partner deals with their own qualification: will the partner commit to introducing its client base, not just buy for itself? Keep them visibly separate so they don\'t blur the direct forecast.')
     });
   }
 
-  // 2. InfoSec / security gate
+  // 2. Security / InfoSec review
   const sec = recs.filter(r => r.sig.infosec);
   if (sec.length >= 2) {
     const stalled = sec.filter(r => r.redFlags.some(f => /infosec|audit|security/i.test(f.title || '')));
     themes.push({
       id: 'infosec_gate', severity: 'high', meddElement: 'Paper Process',
-      title: 'Security / InfoSec review is the recurring gate on every institutional deal',
-      evidence: `Security review is the named next step or active blocker at ${names(sec.map(r=>r.idx)).join(', ')}.${stalled.length ? ` On ${names(stalled.map(r=>r.idx)).join(', ')} an unfinished audit is actively stalling progress and gating the champion's next move.` : ''}`,
+      title: 'Security review is a recurring step',
+      evidence: `Security review comes up as a next step or blocker on ${list(names(sec.map(r => r.idx)))}.${stalled.length ? ` It's flagged as stalling ${list(names(stalled.map(r => r.idx)))}.` : ''}`,
       dealIdxs: sec.map(r => r.idx),
-      lenses: {
-        revenue: 'InfoSec is a predictable, repeatable gate — get ahead of it. A standing security packet (SOC2 / data-handling brief) plus a named timeline turns a multi-week stall into a checkbox. Finishing the Jefferies audit unblocks the champion\'s advisor intros.',
-        product: 'Security / data-sovereignty review is the universal precondition to institutional adoption. The private-data-store story is the right wedge — but it must be demonstrably real and packaged for a security team, not just positioned in a pitch. This is the trust question made operational.',
-        funnel: 'Security review is a stage gate to bake into the channel/institutional playbook. Surface it early so it doesn\'t surprise the deal late.',
-        board: 'Every institutional deal routes through security review. A repeatable security-clearance motion is a leading indicator of institutional readiness — the core PMF question for this market.'
-      }
+      lenses: lenses('Raise security early, with a standing security packet and a named owner and date on each deal\'s Mutual Action Plan, so it doesn\'t surface late.')
     });
   }
 
-  // 3. Economic buyer access
-  const ebWeak = recs.filter(r => (r.stkCount > 0 || r.callCount > 0) && !r.sig.ebEngaged && (r.sig.ebGap || r.sig.ebIdentified));  if (ebWeak.length >= 2) {
+  // 3. Economic buyer access — measured, with the source breakdown computed from the Snapshot
+  const ebReached = r => r.sig.ebEngaged || r.ebAccess;
+  const ebWeak = recs.filter(r => (r.stkCount > 0 || r.callCount > 0) && !ebReached(r) && (r.sig.ebGap || r.sig.ebIdentified));
+  if (ebWeak.length >= 2) {
+    const worked = recs.filter(r => r.stkCount > 0 || r.callCount > 0);
+    const groups = {};
+    worked.forEach(r => { const k = r.source || 'No source set'; (groups[k] = groups[k] || { n: 0, reached: 0 }); groups[k].n++; if (ebReached(r)) groups[k].reached++; });
+    const order = ['Referral', 'Inbound', 'Outbound', 'No source set'];
+    const breakdown = order.filter(k => groups[k]).map(k => `${k}: ${groups[k].reached} of ${groups[k].n}`).join(' · ');
+    const refWeak = ebWeak.filter(r => r.source === 'Referral');
+    let readout = '';
+    const ref = groups.Referral, other = Object.keys(groups).filter(k => k !== 'Referral' && k !== 'No source set').reduce((a, k) => ({ n: a.n + groups[k].n, reached: a.reached + groups[k].reached }), { n: 0, reached: 0 });
+    if (refWeak.length) readout = ` A referral on its own hasn't been enough: ${refWeak.length} of ${ref.n} referred deal${ref.n === 1 ? '' : 's'} still lack${refWeak.length === 1 ? 's' : ''} Economic Buyer access.`;
+    else if (ref && ref.n >= 2 && other.n >= 2 && ref.reached / ref.n - other.reached / other.n >= 0.5) readout = ' Referred deals are reaching the Economic Buyer more often so far (small sample).';
+    const unset = groups['No source set'] ? ` Set Source on the Snapshot for ${groups['No source set'].n} deal${groups['No source set'].n === 1 ? '' : 's'} to complete this view.` : '';
+    const referrerAsks = refWeak.filter(r => r.referrer).map(r => `${r.name} → ${r.referrer}`);
     themes.push({
       id: 'eb_access', severity: 'high', meddElement: 'Economic Buyer',
-      title: 'Economic Buyer is structurally shielded — except where a warm intro cracked it',
-      evidence: `EB is missing, unreachable, or identified-but-cold across ${names(ebWeak.map(r=>r.idx)).join(', ')}. The instructive exception: at JP Morgan a referral routed Eleven straight to the EB, who then attended a full demo. Warm institutional intros beat the ops-layer shield.`,
+      title: 'Economic Buyer access is the most common gap',
+      evidence: `No confirmed Economic Buyer access on ${list(names(ebWeak.map(r => r.idx)))}. Reached the Economic Buyer, by source: ${breakdown}.${readout}${unset}`,
       dealIdxs: ebWeak.map(r => r.idx),
-      lenses: {
-        revenue: 'The JPM pattern is the play: a credible referral source routes straight to the EB. Lean on referral channels for buyer access rather than grinding up through ops intermediaries. On Meridian, convert the identified-but-cold principal via the principal-facing demo the champion already said would accelerate.',
-        product: 'Where Eleven reaches the buyer directly, it engages — the barrier is access, not the pitch. Reinforces the case for a principal-facing surface a champion can carry upward without us in the room.',
-        funnel: 'A deal without a named, reachable economic buyer is not yet real pipeline regardless of demo enthusiasm. Weight EB access heavily at qualification before it consumes demo time.',
-        board: 'Buyer access is the recurring constraint, and the data shows warm institutional referrals are what crack it — a repeatable, ownable motion, and the operational form of the trust barrier this market is defined by.'
-      }
+      lenses: lenses(`On each deal, name the Economic Buyer and ask whoever is closest to them to broker a short meeting framed around the principal's outcome, not a demo.${referrerAsks.length ? ` For referred deals, make the ask of the referrer directly: ${referrerAsks.join('; ')}.` : ''}`)
     });
   }
 
-  // 4. No compelling event / build-vs-buy inertia (direct FO)
+  // 4. No urgency / internal-build alternative
   const inertia = recs.filter(r => r.sig.noUrgency || r.sig.buildVsBuy);
   const forcing = recs.filter(r => r.sig.forcingEvent);
-  if (inertia.length >= 1 && forcing.length >= 1) {
+  if (inertia.length >= 2 || (inertia.length >= 1 && forcing.length >= 1)) {
     themes.push({
       id: 'no_compelling_event', severity: 'medium', meddElement: 'Competition / Why Now',
-      title: 'Direct family-office deals stall without a compelling event — and face build-vs-buy inertia',
-      evidence: `${names(forcing.map(r=>r.idx))[0] || 'The advancing deal'} moved on a real forcing event. The counter-case (${names(inertia.map(r=>r.idx)).join(', ')}): polite interest, no urgency, and at least one prospect actively building internal AI tools — a live build-vs-buy alternative.`,
-      dealIdxs: Array.from(new Set([...forcing.map(r=>r.idx), ...inertia.map(r=>r.idx)])),
-      lenses: {
-        revenue: 'Qualify hard for a compelling event before investing demo time in direct FO deals. No forcing function plus an internal-build alternative = de-prioritize. Replicate the Meridian pattern: surface the operational incident that makes status quo untenable.',
-        product: 'Build-vs-buy is a live competitor — sophisticated offices are building internal AI. The defensible edge has to be UHNW-specific operational depth they can\'t cheaply replicate, not generic AI features.',
-        funnel: 'Screen for a compelling event at qualification. Without one, a direct FO opportunity is a long-shot regardless of how the demo lands.',
-        board: 'The direct FO motion converts on a forcing event; absent that, inertia and internal-build win. Part of why the channel/white-label motion may be the higher-leverage thesis.'
-      }
+      title: 'Some deals show no compelling event',
+      evidence: `No urgency or an internal-build alternative shows up on ${list(names(inertia.map(r => r.idx)))}.${forcing.length ? ` A forcing event shows up on ${list(names(forcing.map(r => r.idx)))}.` : ''}`,
+      dealIdxs: Array.from(new Set([...inertia.map(r => r.idx), ...forcing.map(r => r.idx)])),
+      lenses: lenses('Before investing more demo time, find the event that makes the status quo costly now. If there isn\'t one, say so in the forecast call.')
     });
   }
 
-  // 5. Coverage / count-vs-signal
+  // 5. Coverage: deals with no logged calls or qualification
   const worked = recs.filter(r => r.callCount > 0 || r.meddYes > 0);
   const untouched = recs.filter(r => r.callCount === 0 && r.meddYes === 0);
   if (untouched.length >= 2) {
     themes.push({
       id: 'thin_book', severity: 'medium', meddElement: 'Coverage',
-      title: 'Headline pipeline overstates worked deals — count vs. signal',
-      evidence: `Of ${recs.length} active logos, ${worked.length} have logged calls or qualification data; ${untouched.length} are untouched (${names(untouched.map(r=>r.idx)).slice(0,6).join(', ')}). Referral sources are mixed into the deal count.`,
+      title: 'Several open deals have no calls or qualification logged',
+      evidence: `Of ${recs.length} open deals, ${worked.length} have logged calls or qualification; ${untouched.length} have neither (${list(names(untouched.map(r => r.idx)).slice(0, 6))}${untouched.length > 6 ? ', …' : ''}).`,
       dealIdxs: untouched.map(r => r.idx),
-      lenses: {
-        revenue: 'Reclassify the book: direct vs. channel vs. referral source. Referral engines aren\'t pipeline. Force a first qualification call on the untouched logos before they earn demo time.',
-        product: 'Low roadmap signal from the untouched tier — the priority is protecting demo time: nothing here earns a demo until qualified.',
-        funnel: 'This is the funnel-health view: untouched logos are a follow-up/sequencing gap, not dead pipeline. Next-best-action is first-call scheduling.',
-        board: `Active, worked pipeline is ~${worked.length} deals, not ${recs.length}. Forecast on the qualified subset; treat the rest as top-of-funnel coverage.`
-      }
+      lenses: lenses('Book a first qualification call on these, or move them to Top of Funnel so they stop counting as forecast pipeline.')
     });
   }
 
@@ -4600,7 +4619,7 @@ function buildThemesPage() {
 ${summaryHTML}
 <div class="theme-section-label">Cross-deal themes</div>
 ${cards}${empty}
-<div class="theme-footnote">Synthesized live from ${totalCalls} logged call${totalCalls === 1 ? '' : 's'} and current qualification data across the book. Click any deal to drill in.</div>`;
+<div class="theme-footnote">Synthesized live from ${totalCalls} logged call${totalCalls === 1 ? '' : 's'} and current qualification data across the book. Themes describe patterns in your data, not their causes. Click any deal to drill in.</div>`;
 }
 
 let pipeClosedSort = { key: 'closed', dir: 'desc' };
