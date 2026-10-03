@@ -887,6 +887,31 @@ function formatQuarter(raw) {
   return raw;
 }
 
+// Comms dates are always stored as mm/dd/yy. Accepts "10/3", "10-3-26", "Oct 3", "3 Oct 2026"…
+// A date typed without a year is taken as this year. Unrecognisable text is left as typed.
+function mmddyy(dt) {
+  return String(dt.getMonth() + 1).padStart(2, '0') + '/' + String(dt.getDate()).padStart(2, '0') + '/' + String(dt.getFullYear()).slice(2);
+}
+function todayMMDDYY() { return mmddyy(new Date()); }
+function normalizeCommsDate(raw) {
+  const s = String(raw || '').trim();
+  if (!s) return '';
+  const iso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (iso) return mmddyy(new Date(+iso[1], +iso[2] - 1, +iso[3]));
+  const m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})(?:[\/\-.](\d{2}|\d{4}))?$/);
+  if (m) {
+    const mo = +m[1], dy = +m[2];
+    if (mo < 1 || mo > 12 || dy < 1 || dy > 31) return s;
+    let y = m[3] ? +m[3] : new Date().getFullYear();
+    if (y < 100) y += 2000;
+    return mmddyy(new Date(y, mo - 1, dy));
+  }
+  // Text dates must name a month and a day, so phrases like "Undated call" are left alone
+  if (!/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\b/i.test(s) || !/\b\d{1,2}(st|nd|rd|th)?\b/i.test(s)) return s;
+  const dt = new Date(/\b\d{4}\b/.test(s) ? s.replace(/(\d)(st|nd|rd|th)\b/i, '$1') : s.replace(/(\d)(st|nd|rd|th)\b/i, '$1') + ' ' + new Date().getFullYear());
+  return isNaN(dt.getTime()) ? s : mmddyy(dt);
+}
+
 function formatDate(raw) {
   if (!raw || !raw.trim()) return '';
   const s = raw.trim();
@@ -953,6 +978,8 @@ function attachFormatters() {
   }
   // Renewal/close date — mm/dd/yy
   attachFormatter(document.querySelector('[data-f="snapshot.renewalQ"]'), 'date');
+  const callDateEl = document.getElementById('callDate');
+  if (callDateEl) callDateEl.addEventListener('blur', () => { callDateEl.value = normalizeCommsDate(callDateEl.value); });
   trackCloseSlip(document.querySelector('[data-f="snapshot.renewalQ"]'));
   // Objective target dates — keep as quarter format
   ['accountpov.obj1date', 'accountpov.obj2date', 'accountpov.obj3date'].forEach(path => {
@@ -1822,7 +1849,7 @@ function renderCurrentSlide() {
   _lastViewKey = viewKey;
   _lastRenderedOppId = opp() ? opp().id : null;
   if (_commsDraft && opp() && _commsDraft.oppId === opp().id) {
-    Object.keys(_commsDraft.vals).forEach(id => { const el = document.getElementById(id); if (el && !el.value) el.value = _commsDraft.vals[id]; });
+    Object.keys(_commsDraft.vals).forEach(id => { const el = document.getElementById(id); if (el && (_commsDraft.vals[id] || !el.value)) el.value = _commsDraft.vals[id]; });
   }
   if (host) host.scrollTop = sameView ? prevTop : 0;
   saveState();
@@ -3084,6 +3111,31 @@ ${open.length === 0 ? '<div class="log-empty">No open deals in this segment.</di
       : (dl.stage === 'won' ? '' : `<button class="row-action restore" onclick="event.stopPropagation();openReopenModal(${i})">Reopen</button>`)}</td>
 </tr>`;
   };
+  // Closed table has its own sort, independent of the open-deals table
+  const outcomeRank = a => a.archived ? 0 : ({ won: 3, deferred: 2, lost: 1 }[dealOf(a).stage] || 0);
+  const cval = (o, key) => {
+    const a = o.a, dl = dealOf(a);
+    switch (key) {
+      case 'opportunity': return (a.name || '').toLowerCase();
+      case 'outcome':     return outcomeRank(a);
+      case 'reason':      return (dl.closedReason || '').toLowerCase();
+      case 'arr':         return oppARR(a);
+      case 'closed':      return dl.closedAt || 0;
+      default:            return 0;
+    }
+  };
+  const closedSorted = closed.concat(archived).sort((x, y) => {
+    const va = cval(x, pipeClosedSort.key), vb = cval(y, pipeClosedSort.key);
+    let cmp = typeof va === 'string' ? va.localeCompare(vb) : va - vb;
+    if (!cmp) cmp = (x.a.name || '').localeCompare(y.a.name || '');
+    return pipeClosedSort.dir === 'asc' ? cmp : -cmp;
+  });
+  const cth = (key, label, w) => {
+    const on = pipeClosedSort.key === key;
+    return `<th${w ? ` style="width:${w}px"` : ''} class="sortable-th${on ? ' sorted' : ''}" aria-sort="${on ? (pipeClosedSort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}">
+      <span class="th-inner"><span class="th-label" onclick="setClosedSort('${key}','toggle')">${label}</span>
+      <span class="th-arrows"><span class="th-arrow${on && pipeClosedSort.dir === 'asc' ? ' on' : ''}" onclick="event.stopPropagation();setClosedSort('${key}','asc')">▲</span><span class="th-arrow${on && pipeClosedSort.dir === 'desc' ? ' on' : ''}" onclick="event.stopPropagation();setClosedSort('${key}','desc')">▼</span></span></span></th>`;
+  };
   const closedCount = closed.length + archived.length;
   const won = closed.filter(o => dealOf(o.a).stage === 'won');
   const wonArr = won.reduce((s, o) => s + oppARR(o.a), 0);
@@ -3092,8 +3144,8 @@ ${open.length === 0 ? '<div class="log-empty">No open deals in this segment.</di
   <span>${pipeClosedOpen ? '▾' : '▸'}</span> Closed, deferred &amp; archived (${closedCount})${won.length ? ` <span style="text-transform:none;letter-spacing:0;font-weight:500;color:var(--text-success)">· ${won.length} won${wonArr ? ' · ' + fmtARR(wonArr) : ''}</span>` : ''}
 </button>
 ${pipeClosedOpen ? `<div class="table-scroll"><table class="log-table">
-<thead><tr><th style="width:170px">Opportunity</th><th style="width:120px">Outcome</th><th>Reason</th><th style="width:80px">ARR</th><th style="width:70px">Closed</th><th style="width:70px"></th></tr></thead>
-<tbody>${closed.map(o => closedRow(o, false)).join('')}${archived.map(o => closedRow(o, true)).join('')}</tbody></table></div>` : ''}` : '';
+<thead><tr>${cth('opportunity', 'Opportunity', 170)}${cth('outcome', 'Outcome', 120)}${cth('reason', 'Reason', 0)}${cth('arr', 'ARR', 80)}${cth('closed', 'Closed', 80)}<th style="width:70px"></th></tr></thead>
+<tbody>${closedSorted.map(o => closedRow(o, !!o.a.archived)).join('')}</tbody></table></div>` : ''}` : '';
 
   return `<div class="slide-title">Pipeline</div>
 <div class="dash-subtitle" style="font-size:13px;color:var(--text-tertiary);margin-top:-10px;margin-bottom:16px">${open.length} open deal${open.length === 1 ? '' : 's'}${dashFirmType !== 'all' ? ' in ' + esc(dashFirmType) : ''} · ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
@@ -4502,6 +4554,14 @@ ${cards}${empty}
 <div class="theme-footnote">Synthesized live from ${totalCalls} logged call${totalCalls === 1 ? '' : 's'} and current qualification data across the book. Click any deal to drill in.</div>`;
 }
 
+let pipeClosedSort = { key: 'closed', dir: 'desc' };
+function setClosedSort(key, dir) {
+  if (dir === 'asc' || dir === 'desc') { pipeClosedSort.key = key; pipeClosedSort.dir = dir; }
+  else if (pipeClosedSort.key === key) pipeClosedSort.dir = pipeClosedSort.dir === 'asc' ? 'desc' : 'asc';
+  else { pipeClosedSort.key = key; pipeClosedSort.dir = (key === 'opportunity' || key === 'reason') ? 'asc' : 'desc'; }
+  renderCurrentSlide();
+}
+
 function setPipeSort(key, dir) {
   if (dir === 'asc' || dir === 'desc') {
     pipeSort.key = key;
@@ -4668,7 +4728,7 @@ ${callsHTML}
   <div class="field-grid" style="grid-template-columns:1fr 1fr 1fr">
     <div>
       <div class="field-label">Date</div>
-      <input class="field-input" id="callDate" placeholder="e.g. 21 May 2026">
+      <input class="field-input" id="callDate" placeholder="mm/dd/yy" value="${todayMMDDYY()}">
     </div>
     <div>
       <div class="field-label">Customer participants</div>
@@ -4886,7 +4946,7 @@ Return this exact structure — all three keys required:
     const tdata = _target.data;
     if (!tdata.calls) tdata.calls = [];
     tdata.calls.unshift({
-      date: date || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      date: normalizeCommsDate(date) || todayMMDDYY(),
       participants,
       ourTeam,
       transcript,
@@ -5006,6 +5066,16 @@ function migrateOpps() {
     delete sn.platformDiscount;
     const dl = dealOf(a);
     if (!dl.stage) { dl.stage = 'discovery'; dl.stageAt = 0; dl.history.push({ type: 'default', from: '', to: 'discovery', at: Date.now() }); }
+    (a.data.calls || []).forEach(c => {
+      if (c.date && !/^\d{2}\/\d{2}\/\d{2}$/.test(c.date)) {
+        const nd = normalizeCommsDate(c.date);
+        if (/^\d{2}\/\d{2}\/\d{2}$/.test(nd)) {
+          const old = c.date; c.date = nd;
+          const meta = (a.data.meddpicc && a.data.meddpicc.meta) || {};
+          Object.values(meta).forEach(mt => { if (mt && mt.call === old) mt.call = nd; });
+        }
+      }
+    });
     (a.data.calls || []).forEach(c => (c.findings || []).forEach(f => {
       if (f._checked) return;
       f._checked = 1;
