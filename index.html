@@ -764,6 +764,11 @@ select.field-input{cursor:pointer}
 .disc-amt{width:92px;font-size:13px;font-family:var(--font);text-align:right;color:var(--text-primary);background:var(--bg-primary);border:0.5px solid var(--border-mid);border-radius:6px;padding:3px 7px}
 .disc-label:focus,.disc-amt:focus{outline:2px solid var(--text-info);outline-offset:1px}
 .disc-val{min-width:70px;text-align:right;font-weight:600;color:var(--scarlet,#cc2200);font-size:13px}
+.contacts-box{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:var(--bg-tertiary);color:var(--text-secondary);cursor:pointer;font-family:var(--font);overflow:hidden}
+.contacts-box:hover{border-color:var(--border-strong)}
+.contacts-names{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.contacts-add{font-size:11px;font-family:var(--font);color:var(--text-info);background:none;border:none;padding:4px 0 0;cursor:pointer;text-align:left}
+.contacts-add:hover{text-decoration:underline}
 .pipe-next{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:200px}
 @media(max-width:760px){
   .stage-track{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -1718,7 +1723,7 @@ function renderOppTree(targetEl, onPick, onAdd) {
       btn.title = a.name;
       btn.draggable = true;
       btn.onclick = () => onPick(i);
-      btn.ondblclick = () => showModal({ title: 'Rename opportunity', input: true, placeholder: 'New name', defaultVal: a.name, confirmLabel: 'Rename', onConfirm: (n) => { if (n) { opps[i].name = n; render(); } } });
+      btn.ondblclick = () => showModal({ title: 'Rename opportunity', input: true, placeholder: 'New name', defaultVal: a.name, confirmLabel: 'Rename', onConfirm: (n) => { if (n) { const sn = opps[i].data.snapshot; if (!(sn.firmName || '').trim() || sn.firmName === opps[i].name) sn.firmName = n; opps[i].name = n; render(); } } });
       btn.ondragstart = e => { e.dataTransfer.setData('text/plain', i); e.dataTransfer.effectAllowed = 'move'; btn.classList.add('dragging'); };
       btn.ondragend = () => btn.classList.remove('dragging');
       children.appendChild(btn);
@@ -3433,7 +3438,7 @@ ${buildStagePanel()}
 <div class="field-grid">
   <div>
     <div class="field-label">Key contacts <span class="fmt-hint">from Stakeholders</span></div>
-    <div class="field-input" style="background:var(--bg-tertiary);color:var(--text-secondary);cursor:default">${d().stakeholders.length || '0'}</div>
+    ${keyContactsHTML()}
   </div>
   <div>
     <div class="field-label">Opportunity close date</div>
@@ -3691,7 +3696,50 @@ ${(m.rows && m.rows.length) ? `<button class="add-row-btn map-clear-all" onclick
    EVENT LISTENERS
    ================================================================ */
 
+// Customer participants named in logged comms who aren't on the stakeholder map yet.
+// "Marcus Webb (CIO), Dana Liu" → [{name:'Marcus Webb', title:'CIO'}, {name:'Dana Liu', title:''}]
+function commsContacts(data) {
+  const have = new Set((data.stakeholders || []).map(st => (st.name || '').trim().toLowerCase()).filter(Boolean));
+  const ours = new Set();
+  (data.calls || []).forEach(c => String(c.ourTeam || '').split(/,|;|\band\b/i).forEach(n => { const k = n.replace(/\(.*?\)/g, '').trim().toLowerCase(); if (k) ours.add(k); }));
+  const out = [], seen = new Set();
+  (data.calls || []).forEach(c => String(c.participants || '').split(/,(?![^(]*\))|;|\band\b/i).forEach(part => {
+    const name = part.replace(/\(.*?\)/g, '').trim();
+    const tm = part.match(/\(([^)]*)\)/);
+    const k = name.toLowerCase();
+    if (!name || name.length < 2 || /^(me|us|team|the team|unknown)$/i.test(name) || have.has(k) || ours.has(k) || seen.has(k)) return;
+    seen.add(k);
+    out.push({ name, title: tm ? tm[1].trim() : '' });
+  }));
+  return out;
+}
+function addContactsFromComms() {
+  commsContacts(d()).forEach(p => d().stakeholders.push({ role: 'Neutral', name: p.name, title: p.title, sentiment: 'Neutral', win: '', influence: 3 }));
+  markCoachingStale();
+  render();
+}
+function keyContactsHTML() {
+  const stk = (d().stakeholders || []).filter(st => (st.name || '').trim());
+  const extra = commsContacts(d());
+  const names = stk.slice(0, 3).map(st => esc(st.name) + (st.role && st.role !== 'Neutral' ? ` <span style="color:var(--text-tertiary)">(${esc(st.role)})</span>` : '')).join(', ');
+  const box = stk.length
+    ? `<button class="field-input contacts-box" onclick="navigateToSection(2)" title="Open Stakeholders"><strong>${stk.length}</strong><span class="contacts-names">${names}${stk.length > 3 ? ` +${stk.length - 3}` : ''}</span></button>`
+    : `<button class="field-input contacts-box" onclick="navigateToSection(2)" title="Open Stakeholders"><span class="contacts-names" style="color:var(--text-tertiary)">None mapped yet</span></button>`;
+  const add = extra.length
+    ? `<button class="contacts-add" onclick="addContactsFromComms()">+ Add ${extra.length} from comms: ${extra.slice(0, 3).map(p => esc(p.name)).join(', ')}${extra.length > 3 ? '…' : ''}</button>`
+    : '';
+  return box + add;
+}
+
 function attachListeners() {
+  const fn = document.querySelector('[data-f="snapshot.firmName"]');
+  if (fn) {
+    fn.addEventListener('focus', () => { fn.dataset.prev = fn.value; });
+    fn.addEventListener('change', () => {
+      const v = fn.value.trim(), prev = (fn.dataset.prev || '').trim();
+      if (v && opp() && (opp().name === prev || !prev)) { opp().name = v; render(); }
+    });
+  }
   document.querySelectorAll('[data-f]').forEach(el => {
     el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => {
       const path = el.getAttribute('data-f');
@@ -4116,6 +4164,7 @@ function addOpp() {
       if (!name) return;
       opps.push({ id: newOppId(), name, currentSlide: 1, openMedd: new Set(['economic_buyer']), data: freshData(), updatedAt: Date.now() });
       applyStage(opps[opps.length - 1], 'discovery');
+      opps[opps.length - 1].data.snapshot.firmName = name;
       currentOpp = opps.length - 1;
       showDashboard = false;
       showPipeline = false;
@@ -5058,7 +5107,8 @@ function migrateOpps() {
   opps.forEach(a => {
     if (!a || !a.data) return;
     // Anything already in Playbk is at least in Discovery
-    const sn = a.data.snapshot || {};
+    const sn = a.data.snapshot || (a.data.snapshot = {});
+    if (!(sn.firmName || '').trim() && a.name) sn.firmName = a.name;
     if (Number(sn.platformDiscount) && !(sn.discountCredit && String(sn.discountCredit).trim())) {
       sn.discountCredit = sn.platformDiscount + '%';
       if (!sn.discountLabel) sn.discountLabel = 'Discount';
