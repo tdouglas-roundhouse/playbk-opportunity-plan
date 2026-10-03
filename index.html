@@ -673,6 +673,102 @@ select.field-input{cursor:pointer}
 .sidebar-conviction{display:flex;align-items:center;gap:7px;margin-top:6px;padding:0 2px}
 .sidebar-conviction-label{font-size:10px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:0.04em}
 
+
+/* ── Stages, forecast call, live pipeline (v-next) ── */
+.sidebar-top-nav{padding:12px 14px 4px;display:flex;flex-direction:column;gap:2px;border-bottom:0.5px solid rgba(255,255,255,0.08)}
+.stage-track{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;margin-bottom:8px}
+.stage-step{display:flex;flex-direction:column;align-items:flex-start;gap:1px;border:0.5px solid var(--border-mid);background:var(--bg-secondary);border-radius:6px;padding:7px 9px;cursor:pointer;font-family:var(--font);text-align:left;transition:background .12s,border-color .12s}
+.stage-step:hover{border-color:var(--border-strong)}
+.stage-step:focus-visible,.focus-chip:focus-visible,.chip:focus-visible,.stage-select:focus-visible{outline:2px solid var(--text-info);outline-offset:1px}
+.stage-step .st-name{font-size:12px;font-weight:600;color:var(--text-secondary);line-height:1.25}
+.stage-step .st-fc{font-size:10px;color:var(--text-tertiary)}
+.stage-step.done{background:var(--bg-tertiary)}
+.stage-step.done .st-name{color:var(--text-primary)}
+.stage-step.current{background:var(--bg-info);border-color:var(--border-info)}
+.stage-step.current .st-name,.stage-step.current .st-fc{color:var(--text-info)}
+.stage-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;font-size:11px;color:var(--text-tertiary);margin-bottom:12px;min-height:22px}
+.stage-close-row{display:flex;align-items:center;gap:4px;margin-left:auto}
+.gate-card{display:grid;grid-template-columns:1fr 1fr;border:0.5px solid var(--border-light);border-radius:var(--radius-md);overflow:hidden;margin-bottom:10px}
+.gate-col{padding:10px 12px;min-width:0}
+.gate-col+.gate-col{border-left:0.5px solid var(--border-light);background:var(--bg-secondary)}
+.gate-h{font-size:11px;font-weight:600;color:var(--text-secondary);margin-bottom:4px}
+.gate-txt{font-size:12.5px;color:var(--text-primary);line-height:1.5;margin-bottom:8px}
+.gate-warn{font-size:11.5px;color:var(--text-warning);margin:-2px 0 12px}
+.focus-chips{display:flex;flex-wrap:wrap;gap:4px}
+.focus-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-family:var(--font);padding:2px 9px 2px 7px;border-radius:10px;border:0.5px solid var(--border-mid);background:var(--bg-primary);color:var(--text-secondary);cursor:pointer}
+.focus-chip:hover{border-color:var(--border-strong);color:var(--text-primary)}
+.focus-chip i{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0}
+.f-full i{background:#1D9E75}.f-partial i{background:#EF9F27}.f-low i{background:#c0392b}
+.fc-row{display:grid;grid-template-columns:auto auto 1fr;gap:20px;align-items:start;margin-bottom:6px}
+.fc-note{font-size:11px;color:var(--text-tertiary);margin-top:5px}
+.fc-ahead{font-size:11.5px;color:var(--text-warning);margin:6px 0 2px;line-height:1.5}
+.chip.sel-default{background:var(--bg-tertiary);color:var(--text-primary);border-color:var(--border-strong)}
+.fc-won{background:var(--bg-success);color:var(--text-success);border:0.5px solid var(--border-success)}
+.fc-lost{background:var(--bg-tertiary);color:var(--text-secondary);border:0.5px solid var(--border-mid)}
+.fc-deferred{background:var(--bg-warning);color:var(--text-warning);border:0.5px solid var(--border-warning)}
+.fc-nf{background:transparent;color:var(--text-tertiary);border:0.5px dashed var(--border-mid)}
+.closed-banner{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 14px;border-radius:var(--radius-md);margin-bottom:14px}
+.closed-banner-title{font-size:13px;font-weight:600}
+.closed-banner-sub{font-size:12px;margin-top:2px;opacity:.85;line-height:1.45}
+.slip-note{font-size:11px;color:var(--text-warning);margin-top:4px;min-height:0}
+.slip-note:empty{display:none}
+.slip-tag{font-size:10px;font-weight:600;color:var(--text-warning);margin-left:5px}
+.ahead-note{font-size:10px;color:var(--text-warning);margin-top:3px;white-space:nowrap}
+.days-in{font-size:10px;color:var(--text-tertiary);margin-top:3px}
+.stage-select{font-size:11.5px;font-family:var(--font);padding:3px 6px;border-radius:6px;border:0.5px solid var(--border-mid);background:var(--bg-primary);color:var(--text-primary);max-width:124px;cursor:pointer}
+.stage-select.unset{color:var(--text-warning);border-color:var(--border-warning)}
+.pipe-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) minmax(0,1.25fr);gap:8px;margin-bottom:14px}
+.pipe-cell{background:var(--bg-secondary);border:0.5px solid var(--border-light);border-radius:var(--radius-md);padding:10px 12px;min-width:0}
+.pipe-cell .pc-label{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:11px;color:var(--text-tertiary);font-weight:500}
+.pipe-cell .pc-count{font-size:11px;color:var(--text-tertiary)}
+.pipe-cell .pc-hint{font-size:10px;font-weight:400;opacity:.8}
+.pipe-cell .pc-arr{font-size:19px;font-weight:600;letter-spacing:-0.02em;color:var(--text-primary);margin-top:8px;line-height:1}
+.pipe-cell .pc-sub{font-size:11px;color:var(--text-tertiary);margin-top:6px}
+.pipe-cell .pc-bar{height:4px;border-radius:2px;background:var(--border-light);margin-top:9px;overflow:hidden}
+.pipe-cell .pc-bar div{height:100%;border-radius:2px}
+.pipe-cell-total{background:var(--bg-primary);border-color:var(--border-mid)}
+.pipe-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.view-toggle{display:inline-flex;gap:4px}
+.review-line{font-size:11.5px;color:var(--text-tertiary)}
+.revisit-banner{font-size:12.5px;color:var(--text-warning);background:var(--bg-warning);border:0.5px solid var(--border-warning);border-radius:var(--radius-md);padding:9px 12px;margin-bottom:12px;line-height:1.6}
+.link-btn{font:inherit;font-weight:600;color:inherit;background:none;border:none;padding:0;margin-left:6px;text-decoration:underline;cursor:pointer}
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.table-scroll .log-table{min-width:860px}
+.chg{display:inline-block;font-size:10px;font-weight:600;padding:1px 6px;border-radius:8px;margin:0 3px 3px 0;white-space:nowrap}
+.chg.up{background:var(--bg-success);color:var(--text-success)}
+.chg.down{background:var(--bg-danger);color:var(--text-danger)}
+.chg.neutral{background:var(--bg-tertiary);color:var(--text-secondary)}
+.form-modal-ov{position:fixed;inset:0;z-index:320;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;padding:20px}
+.form-modal{background:var(--bg-primary);border-radius:16px;padding:22px 24px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.form-modal-title{font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:6px}
+.form-modal-desc{font-size:13px;color:var(--text-secondary);margin-bottom:6px;line-height:1.5}
+.form-modal-body .field-label{margin-top:12px}
+.form-modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+.finding-target{font-size:11px;color:var(--text-info);margin-top:5px}
+.finding-target.none{color:var(--text-tertiary)}
+.finding-status{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;padding:0 12px 8px}
+.finding-undo{font-size:11px;font-family:var(--font);background:none;border:none;color:var(--text-tertiary);text-decoration:underline;cursor:pointer;padding:0}
+.pip-row{align-items:center}
+.medd-fresh{font-size:10px;color:var(--text-tertiary);margin-left:6px;font-weight:500}
+.medd-fresh.stale{color:var(--text-warning)}
+.focus-tag{font-size:10px;font-weight:500;color:var(--text-info);background:var(--bg-info);padding:2px 5px;border-radius:3px;border:0.5px solid var(--border-info)}
+.focus-tag.next{color:var(--text-secondary);background:var(--bg-tertiary);border-color:var(--border-mid)}
+.q-src{font-size:10px;color:var(--text-tertiary);margin-top:2px}
+.q-src.stale{color:var(--text-warning)}
+.finding-missed{font-size:11px;font-weight:600;color:var(--text-warning);margin-top:5px}
+.call-finding-count.missed{background:var(--bg-warning);color:var(--text-warning);border-color:var(--border-warning)}
+.call-toggle:disabled{opacity:.5;cursor:default}
+.pipe-next{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:200px}
+@media(max-width:760px){
+  .stage-track{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .stage-close-row{margin-left:0}
+  .gate-card{grid-template-columns:1fr}
+  .gate-col+.gate-col{border-left:none;border-top:0.5px solid var(--border-light)}
+  .fc-row{grid-template-columns:1fr 1fr}
+  .fc-row .fc-wide{grid-column:1/-1}
+  .pipe-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pipe-cell-total{grid-column:1/-1}
+}
 </style>
 </head>
 <body>
@@ -697,6 +793,7 @@ select.field-input{cursor:pointer}
       <p style="margin-top:8px;font-size:16px;font-weight:500;font-family:system-ui,-apple-system,sans-serif;color:#ffffff;letter-spacing:0.01em">Opportunity Planning</p>
       <div class="sidebar-score" id="drawerScore"></div>
     </div>
+    <div class="sidebar-top-nav" id="drawerTopNav"></div>
     <div class="sidebar-opp">
       <div class="opp-bar" id="drawerOppBar"></div>
     </div>
@@ -714,6 +811,7 @@ select.field-input{cursor:pointer}
         <span class="save-indicator" id="saveIndicator">&#10003; Saved</span>
       </div>
     </div>
+    <div class="sidebar-top-nav" id="sidebarTopNav"></div>
     <div class="sidebar-opp">
       <div class="opp-bar" id="oppBar"></div>
     </div>
@@ -846,6 +944,7 @@ function attachFormatters() {
   });
   // Renewal/close date — mm/dd/yy
   attachFormatter(document.querySelector('[data-f="snapshot.renewalQ"]'), 'date');
+  trackCloseSlip(document.querySelector('[data-f="snapshot.renewalQ"]'));
   // Objective target dates — keep as quarter format
   ['accountpov.obj1date', 'accountpov.obj2date', 'accountpov.obj3date'].forEach(path => {
     attachFormatter(document.querySelector(`[data-f="${path}"]`), 'quarter');
@@ -869,12 +968,12 @@ const SLIDES = [
 ];
 
 // View state
-let showDashboard = true;
-let showPipeline = false;
+let showDashboard = false;   // legacy alias: Dashboard was merged into Pipeline
+let showPipeline = true;
 let showThemes = false;
 let dashSort = 'qual-desc';   // qual-desc | qual-asc | arr-desc | health-desc | recent
 let dashFirmType = 'all';     // all | <firmType value>
-let pipeSort = { key: 'qualify', dir: 'desc' };  // sortable pipeline columns
+let pipeSort = { key: 'forecast', dir: 'desc' };  // sortable pipeline columns
 
 const MEDD = [
   { id: 'economic_buyer', title: 'Economic buyer', desc: 'Is the principal or CIO reachable?', blocker: true,
@@ -1018,10 +1117,11 @@ function freshData() {
     edges: [],
     accountpov:   { whyChange: '', whyNow: '', whyUs: '', whatSolution: '', objective1: '', obj1date: '', objective2: '', obj2date: '', objective3: '', obj3date: '' },
     opppov:       { whitespace: '', businessProblem: '', successMetric: '', alternative: '', incumbents: '', competitiveStrategy: '', competitive: '' },
-    meddpicc:     { meddAnswers: {}, meddNotes: {}, gapOverrides: { __manual: [] } },
+    meddpicc:     { meddAnswers: {}, meddNotes: {}, meta: {}, gapOverrides: { __manual: [] } },
     map:          { rows: [], topAsk: '', lastEngagement: '', nextTouch: '' },
     accountpovteam: { execSponsor: '', ae: '', se: '', csm: '' },
-    calls:        []
+    calls:        [],
+    deal:         freshDeal()
   };
 }
 
@@ -1106,6 +1206,8 @@ function timeSince(ts) {
 }
 
 function render() {
+  // Dashboard was merged into the live Pipeline — any 'home' request lands there
+  if (showDashboard) { showDashboard = false; if (!showThemes) showPipeline = true; }
   // If the active opp changed, drop any in-progress coaching edit so it
   // doesn't bleed onto a different deal's action list.
   if (typeof coachEditIdx === 'number' && _lastRenderedOpp !== currentOpp) coachEditIdx = null;
@@ -1147,60 +1249,29 @@ function renderMobile() {
     );
   }
 
-  // Sync drawer nav
+  // Sync drawer nav — Pipeline/Themes at the top, deal sections below
+  renderTopNav(document.getElementById('drawerTopNav'), closeDrawer);
   const drawerNav = document.getElementById('drawerNav');
   if (drawerNav) {
     drawerNav.innerHTML = '';
-    const topStyle = 'font-size:11px;letter-spacing:0.06em;text-transform:uppercase;font-weight:600;border-radius:8px';
-
-    const dashBtn = document.createElement('button');
-    dashBtn.className = 'nav-pill' + (showDashboard && !showPipeline && !showThemes ? ' active' : '');
-    dashBtn.style.cssText = topStyle;
-    dashBtn.textContent = 'DASHBOARD';
-    dashBtn.onclick = () => { showDashboard = true; showPipeline = false; showThemes = false; closeDrawer(); render(); };
-    drawerNav.appendChild(dashBtn);
-
     if (!showDashboard && !showPipeline && !showThemes && opp()) {
+      drawerNav.style.display = '';
       const divLabel = document.createElement('div');
       divLabel.style.cssText = 'font-size:10px;letter-spacing:0.07em;text-transform:uppercase;color:rgba(255,255,255,0.25);padding:10px 10px 4px;font-weight:500';
       divLabel.textContent = opp().name.length > 22 ? opp().name.slice(0, 20) + '…' : opp().name;
       drawerNav.appendChild(divLabel);
-
       SLIDES.filter(s => s.id !== 'dashboard' && s.id !== 'pipeline').forEach((s, i) => {
         const actualIdx = i + 1;
         const btn = document.createElement('button');
         const filled = isSlideFilled(s.id);
-        const isActive = opp().currentSlide === actualIdx;
-        btn.className = 'nav-pill' + (isActive ? ' active' : '');
+        btn.className = 'nav-pill' + (opp().currentSlide === actualIdx ? ' active' : '');
         btn.innerHTML = s.title + `<span class="nav-pip${filled ? ' filled' : ''}"></span>`;
         btn.onclick = () => { opp().currentSlide = actualIdx; closeDrawer(); render(); };
         drawerNav.appendChild(btn);
       });
+    } else {
+      drawerNav.style.display = 'none';
     }
-
-    // Spacer + Pipeline
-    const spacer = document.createElement('div');
-    spacer.style.cssText = 'flex:1';
-    drawerNav.appendChild(spacer);
-
-    const divider = document.createElement('div');
-    divider.style.cssText = 'height:0.5px;background:rgba(255,255,255,0.08);margin:0 0 14px';
-    drawerNav.appendChild(divider);
-
-    const pipeBtn = document.createElement('button');
-    pipeBtn.className = 'nav-pill' + (showPipeline ? ' active' : '');
-    pipeBtn.style.cssText = topStyle + ';margin-bottom:8px';
-    const lc = getLog().length;
-    pipeBtn.innerHTML = `PIPELINE${lc > 0 ? ` <span style="font-size:10px;font-weight:600;background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);border-radius:10px;padding:1px 7px;margin-left:4px;letter-spacing:0">${lc}</span>` : ''}`;
-    pipeBtn.onclick = () => { showPipeline = true; showDashboard = false; showThemes = false; closeDrawer(); render(); };
-    drawerNav.appendChild(pipeBtn);
-
-    const themesBtn = document.createElement('button');
-    themesBtn.className = 'nav-pill' + (showThemes ? ' active' : '');
-    themesBtn.style.cssText = topStyle + ';margin-bottom:22px';
-    themesBtn.textContent = 'THEMES';
-    themesBtn.onclick = () => { showThemes = true; showPipeline = false; showDashboard = false; closeDrawer(); render(); };
-    drawerNav.appendChild(themesBtn);
   }
 
   // Sync mobile subtitle to current section
@@ -1247,7 +1318,6 @@ function renderBottomBar() {
     bar.innerHTML = `<button class="action-btn primary" onclick="exportPlan()">Export Summary</button>${backupGroup}`;
   } else {
     bar.innerHTML = `
-      <button class="action-btn" onclick="saveToLog()">Save to Log</button>
       <button class="action-btn primary" onclick="exportPlan()">Export Summary</button>
       <button class="action-btn" onclick="publishDeck()" style="background:var(--bg-info);color:var(--text-info);border-color:var(--border-info)">▶ Publish Deal Review</button>
       ${backupGroup}
@@ -1294,7 +1364,7 @@ async function publishDeck() {
     const conviction = data.conviction || {};
     const coaching = (o.coaching && o.coaching !== 'loading') ? o.coaching : null;
     const hs = calcHealthScore();
-    const fc = calcForecast();
+    const fc = oppForecast(o);
 
     // ── App palette (light, editorial) ──
     const INK = '1A1A18', SUB = '5F5E5A', MUTE = '888780';
@@ -1339,7 +1409,7 @@ async function publishDeck() {
     // metadata strip
     const meta = [
       ['FIRM TYPE', s.firmType || '—'], ['ARR', modulesTotal(s.modules) ? '$' + (modulesTotal(s.modules) / 1000) + 'K' : '—'], ['CURRENT ARR', s.currentArr || '—'],
-      ['JOURNEY', s.journey || 'Land'], ['CLOSE', s.renewalQ || '—']
+      ['STAGE', stageName(dealOf(o).stage) || '—'], ['CLOSE', s.renewalQ || '—']
     ];
     meta.forEach((m, i) => {
       const x = 0.7 + i * 2.45;
@@ -1538,7 +1608,7 @@ function saveCollapsed() {
 
 function renderOppTree(targetEl, onPick, onAdd) {
   targetEl.innerHTML = '';
-  const visible = opps.map((a, i) => ({ a, i })).filter(o => !o.a.archived);
+  const visible = opps.map((a, i) => ({ a, i })).filter(o => !o.a.archived && !isClosed(o.a));
 
   // Skyview label
   const sky = document.createElement('div');
@@ -1592,7 +1662,7 @@ function renderOppTree(targetEl, onPick, onAdd) {
     children.className = 'branch-children' + (collapsed ? ' collapsed' : '');
     groups[type].slice().sort((x, y) => (x.a.name || '').localeCompare(y.a.name || '', undefined, { sensitivity: 'base' })).forEach(({ a, i }) => {
       const btn = document.createElement('button');
-      btn.className = 'opp-btn' + (!showDashboard && !showPipeline && i === currentOpp ? ' active' : '');
+      btn.className = 'opp-btn' + (!showDashboard && !showPipeline && !showThemes && i === currentOpp ? ' active' : '');
       btn.textContent = a.name;
       btn.title = a.name;
       btn.draggable = true;
@@ -1617,90 +1687,68 @@ function renderOppBar() {
   if (!bar) return;
   renderOppTree(
     bar,
-    (i) => { showDashboard = false; showPipeline = false; currentOpp = i; opp().currentSlide = 1; render(); },
+    (i) => { showDashboard = false; showPipeline = false; showThemes = false; currentOpp = i; opp().currentSlide = 1; render(); },
     addOpp
   );
 }
 
+// Top-of-sidebar nav: Pipeline first (the landing view), then Themes
+function renderTopNav(el, beforeNav) {
+  if (!el) return;
+  el.innerHTML = '';
+  const topPillStyle = 'font-size:11px;letter-spacing:0.06em;text-transform:uppercase;font-weight:600;border-radius:8px';
+  const openCount = opps.filter(a => isOpenDeal(a)).length;
+  const pipeBtn = document.createElement('button');
+  pipeBtn.className = 'nav-pill' + ((showPipeline || showDashboard) && !showThemes ? ' active' : '');
+  pipeBtn.style.cssText = topPillStyle;
+  pipeBtn.innerHTML = `PIPELINE${openCount ? ` <span style="font-size:10px;font-weight:600;background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);border-radius:10px;padding:1px 7px;margin-left:4px;letter-spacing:0">${openCount}</span>` : ''}`;
+  pipeBtn.onclick = () => { showPipeline = true; showDashboard = false; showThemes = false; if (beforeNav) beforeNav(); render(); };
+  el.appendChild(pipeBtn);
+  const themesBtn = document.createElement('button');
+  themesBtn.className = 'nav-pill' + (showThemes ? ' active' : '');
+  themesBtn.style.cssText = topPillStyle;
+  themesBtn.textContent = 'THEMES';
+  themesBtn.onclick = () => { showThemes = true; showPipeline = false; showDashboard = false; if (beforeNav) beforeNav(); render(); };
+  el.appendChild(themesBtn);
+}
+
 function renderSidebar() {
+  renderTopNav(document.getElementById('sidebarTopNav'));
   const nav = document.getElementById('sidebarNav');
   if (!nav) return;
   nav.innerHTML = '';
+  const inOpp = !showDashboard && !showPipeline && !showThemes && opp();
+  if (!inOpp) { nav.style.display = 'none'; return; }
+  nav.style.display = '';
 
-  // Shared pill style builder for top-level items (OVERVIEW / PIPELINE)
-  const topPillStyle = 'font-size:11px;letter-spacing:0.06em;text-transform:uppercase;font-weight:600;border-radius:8px';
+  const divLabel = document.createElement('div');
+  divLabel.style.cssText = 'font-size:10px;letter-spacing:0.07em;text-transform:uppercase;color:rgba(255,255,255,0.25);padding:2px 10px 4px;font-weight:500';
+  divLabel.textContent = opp().name.length > 18 ? opp().name.slice(0, 16) + '…' : opp().name;
+  nav.appendChild(divLabel);
 
-  // OVERVIEW pill
-  const dashBtn = document.createElement('button');
-  dashBtn.className = 'nav-pill' + (showDashboard && !showPipeline && !showThemes ? ' active' : '');
-  dashBtn.style.cssText = topPillStyle;
-  dashBtn.textContent = 'DASHBOARD';
-  dashBtn.onclick = () => { showDashboard = true; showPipeline = false; showThemes = false; render(); };
-  nav.appendChild(dashBtn);
+  SLIDES.filter(s => s.id !== 'dashboard' && s.id !== 'pipeline').forEach((s, i) => {
+    const actualIdx = i + 1;
+    const btn = document.createElement('button');
+    const filled = isSlideFilled(s.id);
+    btn.className = 'nav-pill' + (opp().currentSlide === actualIdx ? ' active' : '');
+    btn.innerHTML = s.title + `<span class="nav-pip${filled ? ' filled' : ''}"></span>`;
+    btn.onclick = () => { opp().currentSlide = actualIdx; render(); };
+    nav.appendChild(btn);
+  });
 
-  // Opportunity section pills — only visible when inside an opp
-  if (!showDashboard && !showPipeline && !showThemes) {
-    const divLabel = document.createElement('div');
-    divLabel.style.cssText = 'font-size:10px;letter-spacing:0.07em;text-transform:uppercase;color:rgba(255,255,255,0.25);padding:10px 10px 4px;font-weight:500';
-    divLabel.textContent = opp().name.length > 18 ? opp().name.slice(0, 16) + '…' : opp().name;
-    nav.appendChild(divLabel);
-
-    SLIDES.filter(s => s.id !== 'dashboard' && s.id !== 'pipeline').forEach((s, i) => {
-      const actualIdx = i + 1;
-      const btn = document.createElement('button');
-      const filled = isSlideFilled(s.id);
-      const isActive = opp().currentSlide === actualIdx;
-      btn.className = 'nav-pill' + (isActive ? ' active' : '');
-      btn.innerHTML = s.title + `<span class="nav-pip${filled ? ' filled' : ''}"></span>`;
-      btn.onclick = () => { opp().currentSlide = actualIdx; render(); };
-      nav.appendChild(btn);
-    });
-  }
-
-  // Deal health — only when in an opp AND health score is meaningful (>0)
-  // Render inline in nav (above the pipeline divider)
-  const healthDiv = document.createElement('div');
-  healthDiv.id = 'sidebarHealthInline';
-  if (!showDashboard && !showPipeline && !showThemes) {
-    const hs = calcHealthScore();
-    if (hs > 0) {
-      const hsColor = hs >= 70 ? '#5DCAA5' : hs >= 40 ? '#EF9F27' : '#f09595';
-      healthDiv.className = 'sidebar-health';
-      healthDiv.innerHTML = `
+  const hs = calcHealthScore();
+  if (hs > 0) {
+    const healthDiv = document.createElement('div');
+    healthDiv.id = 'sidebarHealthInline';
+    const hsColor = hs >= 70 ? '#5DCAA5' : hs >= 40 ? '#EF9F27' : '#f09595';
+    healthDiv.className = 'sidebar-health';
+    healthDiv.innerHTML = `
         <div><div class="sidebar-health-label">Deal health</div></div>
         <div class="sidebar-health-score" style="color:${hsColor}">${hs}</div>
         ${healthRingSVG(hs, 28, 3)}`;
-    }
+    nav.appendChild(healthDiv);
   }
-  nav.appendChild(healthDiv);
 
-
-
-  // PIPELINE pill — inside nav, pushed to bottom with margin-top:auto spacer
-  const pipelineSpacer = document.createElement('div');
-  pipelineSpacer.style.cssText = 'flex:1';
-  nav.appendChild(pipelineSpacer);
-
-  const pipelineDivider = document.createElement('div');
-  pipelineDivider.style.cssText = 'height:0.5px;background:rgba(255,255,255,0.08);margin:0 0 14px';
-  nav.appendChild(pipelineDivider);
-
-  const pipelineBtn = document.createElement('button');
-  pipelineBtn.className = 'nav-pill' + (showPipeline ? ' active' : '');
-  pipelineBtn.style.cssText = topPillStyle + ';margin-bottom:8px';
-  const logCount = getLog().length;
-  pipelineBtn.innerHTML = `PIPELINE${logCount > 0 ? ` <span style="font-size:10px;font-weight:600;background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);border-radius:10px;padding:1px 7px;margin-left:4px;letter-spacing:0">${logCount}</span>` : ''}`;
-  pipelineBtn.onclick = () => { showPipeline = true; showDashboard = false; showThemes = false; render(); };
-  nav.appendChild(pipelineBtn);
-
-  const themesBtn = document.createElement('button');
-  themesBtn.className = 'nav-pill' + (showThemes ? ' active' : '');
-  themesBtn.style.cssText = topPillStyle + ';margin-bottom:22px';
-  themesBtn.textContent = 'THEMES';
-  themesBtn.onclick = () => { showThemes = true; showPipeline = false; showDashboard = false; render(); };
-  nav.appendChild(themesBtn);
-
-  // Remove any old standalone pipeline button appended to sidebar
   const old = document.getElementById('pipelineNavBtn');
   if (old) old.remove();
 }
@@ -1715,9 +1763,48 @@ function isSlideFilled(id) {
   return false;
 }
 
+// Unsent comms text and scroll position survive re-renders of the same view
+let _commsDraft = null;
+let _lastViewKey = '';
+let _lastRenderedOppId = null;
+function currentViewKey() {
+  if (showThemes) return 'themes';
+  if (showPipeline || showDashboard) return 'pipeline';
+  return 'opp:' + (opp() ? (opp().id || currentOpp) : '') + ':' + (opp() ? opp().currentSlide : '');
+}
+function findScrollHost(el) {
+  let n = el && el.parentElement;
+  while (n && n !== document.body && n !== document.documentElement) {
+    const oy = getComputedStyle(n).overflowY;
+    if ((oy === 'auto' || oy === 'scroll') && n.scrollHeight > n.clientHeight) return n;
+    n = n.parentElement;
+  }
+  return document.scrollingElement || document.documentElement;
+}
 function renderCurrentSlide() {
   const c = document.getElementById('slidesContainer');
+  if (!c) return;
+  const viewKey = currentViewKey();
+  const sameView = viewKey === _lastViewKey;
+  const host = findScrollHost(c);
+  const prevTop = host ? host.scrollTop : 0;
+  if (document.getElementById('callTranscript') && _lastRenderedOppId) {
+    const vals = {};
+    ['callDate', 'callParticipants', 'callOurTeam', 'callTranscript'].forEach(id => { const el = document.getElementById(id); if (el) vals[id] = el.value; });
+    _commsDraft = { oppId: _lastRenderedOppId, vals };
+  }
   c.innerHTML = '';
+  _renderSlideBody(c);
+  _lastViewKey = viewKey;
+  _lastRenderedOppId = opp() ? opp().id : null;
+  if (_commsDraft && opp() && _commsDraft.oppId === opp().id) {
+    Object.keys(_commsDraft.vals).forEach(id => { const el = document.getElementById(id); if (el && !el.value) el.value = _commsDraft.vals[id]; });
+  }
+  if (host) host.scrollTop = sameView ? prevTop : 0;
+  saveState();
+}
+
+function _renderSlideBody(c) {
   if (showThemes) {
     const slide = document.createElement('div');
     slide.className = 'slide visible';
@@ -1735,7 +1822,7 @@ function renderCurrentSlide() {
   if (showDashboard) {
     const slide = document.createElement('div');
     slide.className = 'slide visible';
-    slide.innerHTML = buildDashboard();
+    slide.innerHTML = buildPipelinePage();
     c.appendChild(slide);
     return;
   }
@@ -1816,7 +1903,7 @@ function buildCoachingSlide() {
     }
   }
   const stage = coaching && coaching !== 'loading' ? coaching.stage : '';
-  const stageLabel = { early: 'Early stage', mid: 'Mid stage', late: 'Late stage' }[stage] || '';
+  const stageLabel = currentStageLabel(stage);
 
   return `${oppNameBadge()}<div class="slide-title">Coaching</div>
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
@@ -1908,7 +1995,7 @@ function buildCoachingBanner() {
   }
   const actions = coaching.actions || [];
   const stage   = coaching.stage || '';
-  const stageLabel = { early: 'Early stage', mid: 'Mid stage', late: 'Late stage' }[stage] || '';
+  const stageLabel = currentStageLabel(stage);
   const actionsHTML = actions.map((a, i) => {
     const navIdx = SLIDE_NAV_IDX[a.section] || 1;
     return `<div class="coaching-action-item" style="cursor:default">
@@ -2003,6 +2090,7 @@ async function generateCoaching() {
   if (!opp()) return;
   const claudeKey = getClaudeKey();
   if (!claudeKey) return;
+  const _target = opp();   // the deal this run belongs to, even if the AE switches deals mid-request
   opp().coaching = 'loading';
   // Re-render banner in loading state without full render
   const banner = document.querySelector('.coaching-banner');
@@ -2053,7 +2141,10 @@ async function generateCoaching() {
 
 OPPORTUNITY: ${opp().name}
 Firm: ${data.snapshot.firmName || 'unknown'} | Type: ${data.snapshot.firmType || 'unknown'} | ARR target: ${data.snapshot.targetArr || 'unknown'}
-Journey stage: ${data.snapshot.journey || 'Land'} | Health score: ${hs}/100 | Forecast: ${fc}
+Deal type: ${data.snapshot.journey || 'not set'} | Health score: ${hs}/100
+
+STAGE GATE:
+${stageGateContext(_target)}
 MEDDPICC: ${yes}/${total}
 
 BLOCKER SECTIONS (most important):
@@ -2077,10 +2168,8 @@ Open MAP actions: ${openMapRows}
 Last engagement: ${data.map.lastEngagement || 'not recorded'}
 Next touch: ${data.map.nextTouch || 'not scheduled'}
 
-Determine the deal stage (early/mid/late) based on the data above:
-- Early: champion not identified, EB unknown, most MEDDPICC empty, <3 stakeholders
-- Mid: champion known, EB identified but not fully engaged, some blockers weak, plan partially filled
-- Late: champion strong, EB engaged, most sections filled, paper process in motion
+The AE has set the sales stage above. Coach to it: close any earlier gates still open first, then make action #1 the thing that best moves the deal toward the next stage's entry gate. Do not push late-stage work (paper process, signatures) on an early-stage deal unless a red flag demands it. If the AE's forecast call is ahead of the MEDDPICC evidence, one action should test the assumption behind the call.
+For the "stage" field: tof/discovery/qualification = early, alignment/scope = mid, commitment = late.
 
 Return ONLY valid JSON:
 {
@@ -2130,35 +2219,39 @@ Rules:
     const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
     // Honor previously-dismissed actions: drop any regenerated item whose text
     // matches one the AE already removed, so refresh doesn't resurrect hallucinations.
-    const dismissed = Array.isArray(opp().dismissedActions) ? opp().dismissedActions : [];
+    const dismissed = Array.isArray(_target.dismissedActions) ? _target.dismissedActions : [];
     if (dismissed.length && Array.isArray(parsed.actions)) {
       parsed.actions = parsed.actions.filter(a =>
         !dismissed.includes((a && a.action ? a.action : '').trim().toLowerCase()));
     }
     coachEditIdx = null;
-    opp().coaching = parsed;
-    opp().coachingGeneratedAt = Date.now();
+    _target.coaching = parsed;
+    _target.coachingGeneratedAt = Date.now();
 
     // Write AI-diagnosed gaps into a parallel map. Human-entered overrides always win,
     // so we only store the AI text; the table prefers human edits at render time.
     if (Array.isArray(parsed.gaps)) {
-      if (!d().meddpicc) d().meddpicc = { meddAnswers: {}, meddNotes: {}, gapOverrides: { __manual: [] } };
+      if (!_target.data.meddpicc) _target.data.meddpicc = { meddAnswers: {}, meddNotes: {}, gapOverrides: { __manual: [] } };
       const aiGaps = {};
       parsed.gaps.forEach(g => {
         if (!g || !g.id) return;
         aiGaps[g.id] = { gap: g.gap || '', action: g.action || '' };
       });
-      d().meddpicc.aiGaps = aiGaps;
-      d().meddpicc.aiGapsGeneratedAt = Date.now();
+      _target.data.meddpicc.aiGaps = aiGaps;
+      _target.data.meddpicc.aiGapsGeneratedAt = Date.now();
     }
   } catch(e) {
-    opp().coaching = { stage: 'mid', actions: [
+    _target.coaching = { stage: 'mid', actions: [
       { action: 'Coaching unavailable — check connection', why: e.message, section: 'snapshot' }
     ]};
+    // Mark as generated so a failed call doesn't immediately retrigger itself on re-render
+    // (previously this looped on any page without the Snapshot banner when the API errored)
+    _target.coachingGeneratedAt = Date.now();
   }
+  if (_target !== opp()) { saveState(); return; }   // AE moved on — results are stored on the right deal
   // Re-render: if we're on the Coaching slide, redraw the whole slide so the
   // gaps table picks up fresh AI text; otherwise just swap the banner.
-  const onCoachingSlide = opp() && SLIDES[opp().currentSlide] && SLIDES[opp().currentSlide].id === 'coaching';
+  const onCoachingSlide = _target && SLIDES[_target.currentSlide] && SLIDES[_target.currentSlide].id === 'coaching';
   const bannerEl = document.querySelector('.coaching-banner');
   if (onCoachingSlide) {
     renderCurrentSlide();
@@ -2287,165 +2380,744 @@ function oppARR(a) {
   return parseTargetArr(a && a.data && a.data.snapshot ? a.data.snapshot.targetArr : '');
 }
 
-function oppForecast(a) {
-  const ma = (a.data.meddpicc && a.data.meddpicc.meddAnswers) || {};
-  const bl = MEDD.filter(s => s.blocker);
-  let bY = 0, bT = 0, tY = 0, tQ = 0;
-  bl.forEach(s => s.questions.forEach((_, i) => { bT++; if (ma[s.id + '_' + i] === 'yes') bY++; }));
-  MEDD.forEach(s => s.questions.forEach((_, i) => { tQ++; if (ma[s.id + '_' + i] === 'yes') tY++; }));
-  const p = tY / tQ, bp = bY / bT;
-  if (bp >= 0.75 && p >= 0.70) return 'Commit';
-  if (bp >= 0.55 && p >= 0.50) return 'Upside';
-  if (p >= 0.25 || tY >= 5) return 'Pipeline';
-  return 'Omit';
+/* ================================================================
+   SALES STAGES — buyer-verified gates.
+   Stage sets the default forecast category. The AE can override it
+   with a reason. MEDDPICC evidence is shown alongside as a check —
+   divergence between the call and the evidence is the coaching signal.
+   ================================================================ */
+const STAGES = [
+  { id: 'tof', name: 'Top of Funnel', fc: null,
+    gate: 'Inbound leads and outbound outreach.',
+    work: 'Schedule time with Tom.',
+    focus: ['account'] },
+  { id: 'discovery', name: 'Discovery', fc: 'Pipeline',
+    gate: 'First meeting set. We understand their world and a real pain is surfacing.',
+    work: 'Run discovery. Learn how they operate today, where it breaks, and what good looks like. No demo yet.',
+    focus: ['pain', 'metrics'] },
+  { id: 'qualification', name: 'Qualification', fc: 'Pipeline',
+    gate: 'A champion confirms the pain is worth solving. Initial metrics understood.',
+    work: 'Develop the champion. Confirm the problem has a cost and someone inside wants it fixed.',
+    focus: ['champion', 'metrics'] },
+  { id: 'alignment', name: 'Alignment', fc: 'Upside',
+    gate: 'Decision criteria and the buying group are mapped. Champion is active.',
+    work: 'Map stakeholders and criteria. A targeted demo lands here, once discovery supports it, never as a generic pitch up front.',
+    focus: ['decision_criteria', 'champion'] },
+  { id: 'scope', name: 'Scope', fc: 'Upside',
+    gate: 'Under the hood on their data. What is onboarded now vs. later is agreed against outcomes.',
+    work: 'Size the deal (X property, Y financial, Z family) and get into the real data. Turn the estimate into a true number. Start paper process. This doubles as the onboarding spec.',
+    focus: ['economic_buyer', 'decision_process', 'paper_process', 'data_integration'] },
+  { id: 'commitment', name: 'Commitment', fc: 'Commit',
+    gate: 'Commercials and detailed scope both agreed. Only approvals and signatures remain.',
+    work: 'Drive approvals, redlines, signature. Hold the close date. Hand the scoped plan to onboarding.',
+    focus: ['blockers'] }
+];
+const CLOSED_STAGES = {
+  won:      { name: 'Closed Won',  cls: 'fc-won' },
+  lost:     { name: 'Closed Lost', cls: 'fc-lost' },
+  deferred: { name: 'Deferred',    cls: 'fc-deferred' }
+};
+const LOST_REASONS  = ['No compelling event', 'Lost to competitor', 'Building in-house', 'No budget', 'Champion left or went dark', 'Not a fit', 'Other'];
+const DEFER_REASONS = ['Timing: revisit later', 'Budget cycle', 'Reorg or leadership change', 'Waiting on a dependency', 'Other'];
+const FOCUS_LABELS  = { account: 'Account profile', pain: 'Pain', metrics: 'Metrics', blockers: 'All blockers cleared' };
+const FC_RANK = { Commit: 3, Upside: 2, Pipeline: 1, Omit: 0 };
+const FC_CATS = ['Commit', 'Upside', 'Pipeline', 'Omit'];
+const STALE_DAYS = 30;
+const DAY_MS = 86400000;
+
+function freshDeal() {
+  return { stage: '', stageAt: 0, history: [], slips: [], fcCall: '', fcReason: '', fcAt: 0,
+           closedReason: '', closedNote: '', revisitDate: '', closedAt: 0 };
+}
+function newOppId() { return Date.now() + '_' + Math.random().toString(36).slice(2); }
+function ensureOppId(a) { if (a && !a.id) a.id = newOppId(); return a && a.id; }
+function dealOf(a) {
+  const x = a && a.data;
+  if (!x) return freshDeal();
+  if (!x.deal) x.deal = freshDeal();
+  return x.deal;
+}
+function stageDef(id) { return STAGES.find(s => s.id === id) || null; }
+function stageIndex(id) { return STAGES.findIndex(s => s.id === id); }
+function stageName(id) {
+  if (CLOSED_STAGES[id]) return CLOSED_STAGES[id].name;
+  const s = stageDef(id);
+  return s ? s.name : '';
+}
+function isClosed(a) { return !!CLOSED_STAGES[dealOf(a).stage]; }
+function isOpenDeal(a) { return !a.archived && !isClosed(a); }
+function daysSince(ts) { return ts ? Math.max(0, Math.floor((Date.now() - ts) / DAY_MS)) : null; }
+
+// Lenient date parser for close / revisit dates: mm/dd/yy, mm/dd/yyyy, ISO, "Q3 2026"
+function parseLooseDate(str) {
+  const s = (str || '').trim();
+  if (!s) return null;
+  let m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/);
+  if (m) { let y = +m[3]; if (y < 100) y += 2000; return new Date(y, +m[1] - 1, +m[2]).getTime(); }
+  m = s.match(/^Q([1-4])\s*(?:FY)?\s*'?(\d{2}|\d{4})$/i);
+  if (m) { let y = +m[2]; if (y < 100) y += 2000; return new Date(y, +m[1] * 3, 0).getTime(); }
+  m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m) return new Date(+m[1], +m[2] - 1, +m[3]).getTime();
+  const t = Date.parse(s);
+  return isNaN(t) ? null : t;
+}
+function fmtShortDate(ts) { return ts ? new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''; }
+
+/* ── Focus elements: how each stage's MEDDPICC focus is scored ── */
+function focusStatus(data, key) {
+  const ma = (data && data.meddpicc && data.meddpicc.meddAnswers) || {};
+  const band = (y, t) => (t && y === t) ? 'full' : (y >= Math.ceil(t / 2) ? 'partial' : 'low');
+  const secBand = sid => {
+    const s = MEDD.find(m => m.id === sid);
+    if (!s) return 'low';
+    let y = 0; s.questions.forEach((_, i) => { if (ma[sid + '_' + i] === 'yes') y++; });
+    return band(y, s.questions.length);
+  };
+  const filled = v => !!(v && String(v).trim());
+  if (key === 'account') {
+    const s = (data && data.snapshot) || {};
+    const n = [s.firmName, s.firmType].filter(filled).length;
+    return n === 2 ? 'full' : n === 1 ? 'partial' : 'low';
+  }
+  if (key === 'pain') {
+    const o = (data && data.opppov) || {}, p = (data && data.accountpov) || {};
+    const n = [o.businessProblem, p.whyChange].filter(filled).length;
+    return n === 2 ? 'full' : n === 1 ? 'partial' : 'low';
+  }
+  if (key === 'metrics') return filled(((data && data.opppov) || {}).successMetric) ? 'full' : 'low';
+  if (key === 'blockers') {
+    const bands = MEDD.filter(s => s.blocker).map(s => secBand(s.id));
+    return bands.every(b => b === 'full') ? 'full' : bands.every(b => b !== 'low') ? 'partial' : 'low';
+  }
+  return secBand(key);
+}
+function focusLabel(key) {
+  if (FOCUS_LABELS[key]) return FOCUS_LABELS[key];
+  const s = MEDD.find(m => m.id === key);
+  return s ? s.title : key;
+}
+function focusNavIdx(key) { return key === 'account' ? 1 : (key === 'pain' || key === 'metrics') ? 3 : 4; }
+function focusChip(data, key) {
+  const st = focusStatus(data, key);
+  const word = { full: 'confirmed', partial: 'partly confirmed', low: 'not yet confirmed' }[st];
+  return `<button class="focus-chip f-${st}" onclick="navigateToSection(${focusNavIdx(key)})" title="${esc(focusLabel(key))}: ${word}"><i></i>${esc(focusLabel(key))}</button>`;
+}
+// Focus items from stages at or before the current one that are still low
+function openEarlierGates(a) {
+  const idx = stageIndex(dealOf(a).stage);
+  if (idx < 1) return [];
+  const seen = new Set(), out = [];
+  STAGES.slice(1, idx).forEach(s => s.focus.forEach(k => {
+    if (seen.has(k)) return; seen.add(k);
+    if (focusStatus(a.data, k) === 'low') out.push({ key: k, stage: s.name });
+  }));
+  return out;
 }
 
-/* ================================================================
-   DASHBOARD BUILDER
-   ================================================================ */
+/* ── Forecast: closed > AE call > stage default > MEDDPICC evidence (legacy) ── */
+function evidenceForecast(a) { return calcForecastForData(a.data); }
+function stageForecast(a) {
+  const s = stageDef(dealOf(a).stage);
+  return s ? s.fc : undefined; // null = Top of Funnel (not forecast); undefined = no stage set
+}
+function forecastStatus(a) {
+  const dl = dealOf(a);
+  if (CLOSED_STAGES[dl.stage]) return { cat: CLOSED_STAGES[dl.stage].name, source: 'closed' };
+  if (dl.fcCall) return { cat: dl.fcCall, source: 'ae' };
+  const sf = stageForecast(a);
+  if (sf === null) return { cat: 'Not forecast', source: 'stage' };
+  if (sf) return { cat: sf, source: 'stage' };
+  return { cat: evidenceForecast(a), source: 'evidence' };
+}
+// Legacy consumers expect one of the four categories
+function oppForecast(a) {
+  const f = forecastStatus(a).cat;
+  return FC_RANK[f] !== undefined ? f : 'Omit';
+}
+// How many categories the call sits above what MEDDPICC evidence supports (0 if not above)
+function forecastAhead(a) {
+  const f = forecastStatus(a).cat;
+  if (FC_RANK[f] === undefined) return 0;
+  return Math.max(0, FC_RANK[f] - FC_RANK[evidenceForecast(a)]);
+}
+// Flag only when it's worth a look: any AE call above the evidence, or a stage default 2+ steps above it
+function showAhead(a) {
+  const f = forecastStatus(a), n = forecastAhead(a);
+  return f.source === 'ae' ? n >= 1 : (f.source === 'stage' && n >= 2);
+}
+function forecastBadgeClass(cat) {
+  if (FC_CLASS[cat]) return FC_CLASS[cat];
+  const c = Object.values(CLOSED_STAGES).find(x => x.name === cat);
+  return c ? c.cls : 'fc-nf';
+}
+function currentStageLabel(aiStage) {
+  const n = opp() ? stageName(dealOf(opp()).stage) : '';
+  return n || ({ early: 'Early stage', mid: 'Mid stage', late: 'Late stage' }[aiStage] || '');
+}
 
-function buildDashboard() {
-  if (opps.length === 0) return buildOnboarding();
+/* ── Stage changes ── */
+function applyStage(a, id, extra) {
+  const dl = dealOf(a);
+  const from = dl.stage || '';
+  const entry = { type: (extra && extra.type) || 'stage', from, to: id, at: Date.now() };
+  if (extra && extra.note) entry.note = extra.note;
+  dl.history.push(entry);
+  dl.stage = id;
+  dl.stageAt = Date.now();
+  // A stage move resets the AE call to the new stage's default
+  dl.fcCall = ''; dl.fcReason = ''; dl.fcAt = 0;
+  if (!CLOSED_STAGES[id]) { dl.closedReason = ''; dl.closedNote = ''; dl.revisitDate = ''; dl.closedAt = 0; }
+  a.updatedAt = Date.now();
+  a.coachingGeneratedAt = 0;
+}
+function setStage(id) {
+  if (!opp()) return;
+  const dl = dealOf(opp());
+  if (!id || dl.stage === id) return;
+  if (CLOSED_STAGES[id]) { openCloseModal(currentOpp, id); return; }
+  applyStage(opp(), id);
+  render();
+}
+function pipeSetStage(idx, id) {
+  const a = opps[idx];
+  if (!a || !id || dealOf(a).stage === id) return;
+  if (CLOSED_STAGES[id]) { openCloseModal(idx, id); return; }
+  applyStage(a, id);
+  render();
+}
+function setForecastCall(cat) {
+  if (!opp()) return;
+  const dl = dealOf(opp());
+  const sf = stageForecast(opp());
+  if (!cat || dl.fcCall === cat || (!dl.fcCall && sf === cat)) {
+    dl.fcCall = ''; dl.fcReason = ''; dl.fcAt = 0;
+  } else if (sf === cat) {
+    dl.fcCall = ''; dl.fcReason = ''; dl.fcAt = 0;   // picking the stage default = no override
+  } else {
+    dl.fcCall = cat; dl.fcAt = Date.now();
+  }
+  markCoachingStale();
+  render();
+}
 
-  // Firm-type filter applies to the whole dashboard (waterfall + counts + cards)
-  const matchesFirm = a => dashFirmType === 'all' || (a.data?.snapshot?.firmType || '') === dashFirmType;
-  const baseOpps = opps.filter(a => !a.archived && matchesFirm(a));
-
-  // Waterfall data
-  const buckets = { Commit: { arr: 0, count: 0 }, Upside: { arr: 0, count: 0 }, Pipeline: { arr: 0, count: 0 }, Omit: { arr: 0, count: 0 } };
-  baseOpps.forEach(a => {
-    const fc = oppForecast(a);
-    const arr = oppARR(a);
-    buckets[fc].arr += arr;
-    buckets[fc].count++;
+/* ── Close date slips ── */
+function trackCloseSlip(el) {
+  if (!el) return;
+  el.addEventListener('focus', () => { el.dataset.prev = el.value; });
+  el.addEventListener('blur', () => {
+    const prev = el.dataset.prev || '', next = el.value || '';
+    const a = parseLooseDate(prev), b = parseLooseDate(next);
+    if (a && b && b - a >= DAY_MS) {
+      const dl = dealOf(opp());
+      dl.slips.push({ from: prev, to: next, at: Date.now() });
+      dl.history.push({ type: 'slip', from: prev, to: next, at: Date.now() });
+      saveState();
+      const note = document.getElementById('slipNote');
+      if (note) note.innerHTML = slipNoteText(opp());
+    }
+    el.dataset.prev = el.value;
   });
-  const totalARR = Object.values(buckets).reduce((s, b) => s + b.arr, 0);
-  const maxBucket = Math.max(...Object.values(buckets).map(b => b.arr), 1);
+}
+function slipNoteText(a) {
+  const sl = dealOf(a).slips || [];
+  if (!sl.length) return '';
+  const last = sl[sl.length - 1];
+  return `Pushed ${sl.length}× · last ${esc(last.from)} → ${esc(last.to)}`;
+}
 
-  const wfColors = {
-    Commit:   { fill: '#1D9E75', track: 'rgba(29,158,117,0.15)' },
-    Upside:   { fill: '#185fa5', track: 'rgba(24,95,165,0.12)'  },
-    Pipeline: { fill: '#EF9F27', track: 'rgba(239,159,39,0.15)' },
-    Omit:     { fill: 'var(--border-strong)', track: 'var(--border-light)' }
-  };
-
-  const wfBars = ['Commit', 'Upside', 'Pipeline', 'Omit'].map(fc => {
-    const b = buckets[fc];
-    const pct = Math.max(Math.round((b.arr / maxBucket) * 100), b.count > 0 ? 6 : 0);
-    const c = wfColors[fc];
-    return `<div class="wf-bar">
-  <div class="wf-bar-label">${fc}</div>
-  <div class="wf-bar-track" style="background:${c.track}">
-    <div class="wf-bar-fill" style="width:${pct}%;background:${c.fill}"></div>
+/* ── Close out / reopen ── */
+let _fmCancel = null;
+function _fmKey(e) { if (e.key === 'Escape' && _fmCancel) _fmCancel(); }
+function closeFormModal() {
+  const m = document.getElementById('formModal');
+  if (m) m.remove();
+  document.removeEventListener('keydown', _fmKey);
+  _fmCancel = null;
+}
+function showFormModal({ title, desc = '', body = '', confirmLabel = 'Save', onConfirm, onCancel }) {
+  closeFormModal();
+  const ov = document.createElement('div');
+  ov.id = 'formModal';
+  ov.className = 'form-modal-ov';
+  ov.innerHTML = `<div class="form-modal" role="dialog" aria-modal="true" aria-label="${esc(title)}">
+  <div class="form-modal-title">${esc(title)}</div>
+  ${desc ? `<div class="form-modal-desc">${esc(desc)}</div>` : ''}
+  <div class="form-modal-body">${body}</div>
+  <div class="form-modal-actions">
+    <button class="action-btn" id="fmCancel" style="font-size:13px">Cancel</button>
+    <button class="action-btn primary" id="fmConfirm" style="font-size:13px">${esc(confirmLabel)}</button>
   </div>
-  <div class="wf-bar-arr">${b.arr > 0 ? fmtARR(b.arr) : '<span style="color:var(--text-tertiary);font-size:14px">—</span>'}</div>
-  <div class="wf-bar-count">${b.count} opp${b.count !== 1 ? 's' : ''}</div>
 </div>`;
-  }).join('');
-
-  const sortedOpps = baseOpps.slice().sort((a, b) => {
-    const qa = (() => { const m = (a.data.meddpicc && a.data.meddpicc.meddAnswers) || {}; let y = 0, t = 0; MEDD.forEach(s => s.questions.forEach((_, i) => { t++; if (m[s.id + '_' + i] === 'yes') y++; })); return t ? y / t : 0; })();
-    const qb = (() => { const m = (b.data.meddpicc && b.data.meddpicc.meddAnswers) || {}; let y = 0, t = 0; MEDD.forEach(s => s.questions.forEach((_, i) => { t++; if (m[s.id + '_' + i] === 'yes') y++; })); return t ? y / t : 0; })();
-    switch (dashSort) {
-      case 'qual-asc':    return qa - qb;
-      case 'arr-desc':    return oppARR(b) - oppARR(a);
-      case 'health-desc': return calcHealthScore(b.data) - calcHealthScore(a.data);
-      case 'recent':      return (b.updatedAt || 0) - (a.updatedAt || 0);
-      case 'qual-desc':
-      default:            return qb - qa;
+  document.body.appendChild(ov);
+  _fmCancel = () => { closeFormModal(); if (onCancel) onCancel(); };
+  ov.addEventListener('click', e => { if (e.target === ov) _fmCancel(); });
+  ov.querySelector('#fmCancel').onclick = () => _fmCancel();
+  ov.querySelector('#fmConfirm').onclick = () => {
+    if (onConfirm && onConfirm() === false) return;
+    closeFormModal();
+  };
+  document.addEventListener('keydown', _fmKey);
+  setTimeout(() => { const f = ov.querySelector('select, input, textarea'); if (f) f.focus(); }, 60);
+}
+function isoDate(ts) {
+  const d0 = new Date(ts);
+  return d0.getFullYear() + '-' + String(d0.getMonth() + 1).padStart(2, '0') + '-' + String(d0.getDate()).padStart(2, '0');
+}
+function openCloseModal(idx, outcome) {
+  const a = opps[idx];
+  if (!a || !CLOSED_STAGES[outcome]) return;
+  const reasons = outcome === 'lost' ? LOST_REASONS : outcome === 'deferred' ? DEFER_REASONS : null;
+  const body = `
+${reasons ? `<div class="field-label">Reason</div>
+<select class="field-input" id="fmReason">${reasons.map(r => `<option>${esc(r)}</option>`).join('')}</select>` : ''}
+${outcome === 'deferred' ? `<div class="field-label">Revisit on</div>
+<input class="field-input" id="fmRevisit" type="date" value="${isoDate(Date.now() + 90 * DAY_MS)}">` : ''}
+<div class="field-label">${outcome === 'won' ? 'What won it?' : outcome === 'lost' ? 'What would have changed the outcome?' : 'What needs to be true to pick this back up?'} <span class="fmt-hint">optional</span></div>
+<textarea class="field-input" id="fmNote" rows="3"></textarea>`;
+  const desc = outcome === 'won'
+    ? 'Moves the deal to Closed Won. Everything stays on the plan.'
+    : 'The plan, calls and qualification are kept. You can reopen it from Pipeline if it resurfaces.';
+  showFormModal({
+    title: `${CLOSED_STAGES[outcome].name}: ${a.name}`,
+    desc, body, confirmLabel: outcome === 'deferred' ? 'Defer deal' : 'Mark ' + CLOSED_STAGES[outcome].name,
+    onConfirm: () => {
+      const reason  = (document.getElementById('fmReason')  || {}).value || '';
+      const revisit = (document.getElementById('fmRevisit') || {}).value || '';
+      const note    = (document.getElementById('fmNote')    || {}).value || '';
+      applyStage(a, outcome, { type: 'close', note: [reason, note].filter(Boolean).join(' · ') });
+      const dl = dealOf(a);
+      dl.closedReason = reason; dl.closedNote = note.trim(); dl.revisitDate = revisit; dl.closedAt = Date.now();
+      render();
+    },
+    onCancel: () => render()
+  });
+}
+function lastOpenStage(a) {
+  const h = dealOf(a).history || [];
+  for (let i = h.length - 1; i >= 0; i--) {
+    if (stageDef(h[i].from)) return h[i].from;
+    if (stageDef(h[i].to) && i < h.length - 1) return h[i].to;
+  }
+  return 'discovery';
+}
+function openReopenModal(idx) {
+  const a = opps[idx];
+  if (!a) return;
+  const def = lastOpenStage(a);
+  const body = `
+<div class="field-label">Reopen into</div>
+<select class="field-input" id="fmStage">${STAGES.map(s => `<option value="${s.id}"${s.id === def ? ' selected' : ''}>${esc(s.name)}</option>`).join('')}</select>
+<div class="field-label">What changed? <span class="fmt-hint">optional</span></div>
+<textarea class="field-input" id="fmNote" rows="3" placeholder="e.g. New CIO started, budget reopened for Q1"></textarea>`;
+  showFormModal({
+    title: `Reopen ${a.name}`,
+    desc: `Currently ${stageName(dealOf(a).stage) || 'archived'}. History, calls and qualification all come back with it.`,
+    body, confirmLabel: 'Reopen deal',
+    onConfirm: () => {
+      const st = document.getElementById('fmStage').value;
+      const note = (document.getElementById('fmNote').value || '').trim();
+      applyStage(a, st, { type: 'reopen', note });
+      a.archived = false;
+      const log = getLog(); const li = log.findIndex(e => e.id === a.id);
+      if (li >= 0) { log[li].archived = false; setLog(log); }
+      render();
     }
   });
+}
+function reviveLabel(a) {
+  const dl = dealOf(a);
+  if (dl.stage !== 'deferred' || !dl.revisitDate) return '';
+  const t = parseLooseDate(dl.revisitDate);
+  if (!t) return '';
+  return t <= Date.now() ? 'Revisit due' : 'Revisit ' + fmtShortDate(t);
+}
 
-  const cards = sortedOpps.map((a) => {
-    const idx = opps.indexOf(a);
+/* ── Snapshot: Stage & forecast panel ── */
+function buildStagePanel() {
+  const a = opp();
+  const dl = dealOf(a);
+  const cur = dl.stage;
+  const ci = stageIndex(cur);
+  const closed = CLOSED_STAGES[cur];
+
+  const track = STAGES.map((s, i) => {
+    const cls = i === ci ? ' current' : (ci >= 0 && i < ci ? ' done' : '');
+    return `<button class="stage-step${cls}" onclick="setStage('${s.id}')" aria-pressed="${i === ci}">
+  <span class="st-name">${esc(s.name)}</span><span class="st-fc">${s.fc || 'Not forecast'}</span></button>`;
+  }).join('');
+
+  const inStage = daysSince(dl.stageAt);
+  const metaBits = [];
+  if (cur && !closed && inStage !== null) metaBits.push(`${inStage === 0 ? 'Moved here today' : `In ${esc(stageName(cur))} ${inStage} day${inStage === 1 ? '' : 's'}`}`);
+  if (!cur) metaBits.push('<span style="color:var(--text-warning)">No stage set. Pick where this deal really is.</span>');
+  const sl = (dl.slips || []).length;
+  if (sl) metaBits.push(`<span class="slip-tag" style="margin:0">Close date pushed ${sl}×</span>`);
+
+  const closeRow = `<span class="stage-close-row">
+  <button class="chip" onclick="setStage('won')">Closed Won</button>
+  <button class="chip" onclick="setStage('lost')">Closed Lost</button>
+  <button class="chip" onclick="setStage('deferred')">Defer</button>
+</span>`;
+
+  if (closed) {
+    const revive = reviveLabel(a);
+    return `<div class="closed-banner ${closed.cls}">
+  <div>
+    <div class="closed-banner-title">${esc(closed.name)}${dl.closedAt ? ' · ' + fmtShortDate(dl.closedAt) : ''}${revive ? ` · <strong>${esc(revive)}</strong>` : ''}</div>
+    ${dl.closedReason ? `<div class="closed-banner-sub">${esc(dl.closedReason)}</div>` : ''}
+    ${dl.closedNote ? `<div class="closed-banner-sub">${esc(dl.closedNote)}</div>` : ''}
+  </div>
+  <button class="action-btn" style="font-size:12px" onclick="openReopenModal(${currentOpp})">Reopen</button>
+</div>`;
+  }
+
+  // Gate card
+  let gate = '';
+  const sDef = stageDef(cur);
+  const next = ci >= 0 ? STAGES[ci + 1] : STAGES[1];
+  if (sDef || next) {
+    const left = sDef
+      ? `<div class="gate-col"><div class="gate-h">Work in ${esc(sDef.name)}</div><div class="gate-txt">${esc(sDef.work)}</div><div class="focus-chips">${sDef.focus.map(k => focusChip(a.data, k)).join('')}</div></div>`
+      : `<div class="gate-col"><div class="gate-h">Set a stage</div><div class="gate-txt">The stage sets the default forecast and focuses coaching on what moves this deal next.</div></div>`;
+    const right = next
+      ? `<div class="gate-col"><div class="gate-h">To reach ${esc(next.name)}</div><div class="gate-txt">${esc(next.gate)}</div><div class="focus-chips">${next.focus.map(k => focusChip(a.data, k)).join('')}</div></div>`
+      : `<div class="gate-col"><div class="gate-h">Last open stage</div><div class="gate-txt">Close it out: mark Closed Won when signed.</div></div>`;
+    gate = `<div class="gate-card">${left}${right}</div>`;
+  }
+  const behind = openEarlierGates(a);
+  const behindHTML = behind.length
+    ? `<div class="gate-warn">Earlier gates still open: ${behind.map(b => `${esc(focusLabel(b.key))} <span style="opacity:.7">(${esc(b.stage)})</span>`).join(', ')}</div>`
+    : '';
+
+  // Forecast row
+  const sf = stageForecast(a);
+  const ev = evidenceForecast(a);
+  const fs = forecastStatus(a);
+  const selected = dl.fcCall || (sf || '');
+  const chips = FC_CATS.map(c => {
+    const sel = c === selected ? (dl.fcCall ? ' sel-blue' : ' sel-default') : '';
+    return `<button class="chip${sel}" onclick="setForecastCall('${c}')">${c}</button>`;
+  }).join('');
+  const ahead = forecastAhead(a);
+  const reasonEmpty = dl.fcCall && !(dl.fcReason || '').trim();
+  const fcRow = `<div class="fc-row">
+  <div><div class="field-label">Stage default</div><span class="forecast-badge ${forecastBadgeClass(sf === undefined ? '' : (sf || 'Not forecast'))}">${sf === undefined ? 'No stage' : (sf || 'Not forecast')}</span></div>
+  <div><div class="field-label">MEDDPICC evidence</div><span class="forecast-badge ${forecastBadgeClass(ev)}">${ev}</span></div>
+  <div class="fc-wide"><div class="field-label">Your call</div><div class="chip-group">${chips}</div>
+    <div class="fc-note">${dl.fcCall ? `Overriding the stage default${dl.fcAt ? ' since ' + fmtShortDate(dl.fcAt) : ''}. Tap ${esc(dl.fcCall)} again to clear.` : (sf ? 'Using the stage default. Pick a different category to make your own call.' : 'Pick a category to make your own call.')}</div>
+  </div>
+</div>
+${dl.fcCall ? `<div class="field-full" style="margin-top:4px">
+  <div class="field-label">Why ${esc(dl.fcCall)}? ${reasonEmpty ? '<span class="fmt-hint" style="color:var(--text-warning)">add a reason, it is what makes the call credible in review</span>' : ''}</div>
+  <textarea class="field-input" rows="2" data-f="deal.fcReason" placeholder="What do you know that the stage and checklist don't?">${esc(dl.fcReason)}</textarea>
+</div>` : ''}
+${showAhead(a) ? `<div class="fc-ahead">Your forecast (${esc(fs.cat)}) is ${ahead} step${ahead > 1 ? 's' : ''} ahead of what the qualification evidence supports (${esc(ev)}). That can be right, just know why.</div>` : ''}`;
+
+  return `<div class="stage-track">${track}</div>
+<div class="stage-meta">${metaBits.join('<span class="stage-meta-sep"></span>')}${closeRow}</div>
+${gate}${behindHTML}
+${fcRow}`;
+}
+
+/* ── Stage gate context for AI prompts ── */
+function stageGateContext(a) {
+  const dl = dealOf(a);
+  const ci = stageIndex(dl.stage);
+  const s = stageDef(dl.stage);
+  const next = ci >= 0 ? STAGES[ci + 1] : null;
+  if (!s) return 'Sales stage: not set by the AE.';
+  const fmt = keys => keys.map(k => `${focusLabel(k)}: ${focusStatus(a.data, k)}`).join(', ');
+  const behind = openEarlierGates(a);
+  return `Sales stage: ${s.name} (in stage ${daysSince(dl.stageAt) ?? '?'} days)
+Work in this stage: ${s.work}
+Focus for this stage: ${fmt(s.focus)}
+${next ? `Next stage: ${next.name}. Entry gate: ${next.gate}\nNext-stage focus: ${fmt(next.focus)}` : 'This is the final open stage; next step is signature.'}
+${behind.length ? 'Earlier gates still open: ' + behind.map(b => focusLabel(b.key)).join(', ') : 'Earlier gates: clear'}
+Forecast: ${forecastStatus(a).cat}${dl.fcCall ? ' (AE call; reason: ' + (dl.fcReason || 'none given') + ')' : ''} | MEDDPICC evidence: ${evidenceForecast(a)}
+Close date pushed: ${(dl.slips || []).length} time(s)`;
+}
+
+/* ── Pipeline: live view of every deal (replaces Dashboard + the saved log) ── */
+const REVIEW_KEY = 'playbk_review_baseline';
+let pipeView = (window.innerWidth && window.innerWidth < 700) ? 'cards' : 'table';   // 'table' | 'cards'
+let pipeClosedOpen = false;
+
+function getReview() { try { return JSON.parse(localStorage.getItem(REVIEW_KEY) || 'null'); } catch (e) { return null; } }
+function meddYesFor(data) {
+  const ma = (data && data.meddpicc && data.meddpicc.meddAnswers) || {};
+  let y = 0, t = 0;
+  MEDD.forEach(s => s.questions.forEach((_, i) => { t++; if (ma[s.id + '_' + i] === 'yes') y++; }));
+  return { yes: y, total: t };
+}
+function snapForReview(a) {
+  return { stage: dealOf(a).stage || '', fc: forecastStatus(a).cat, arr: oppARR(a),
+           close: (a.data.snapshot && a.data.snapshot.renewalQ) || '', medd: meddYesFor(a.data).yes };
+}
+function markReviewed() {
+  const deals = {};
+  opps.forEach(a => { ensureOppId(a); deals[a.id] = snapForReview(a); });
+  try { localStorage.setItem(REVIEW_KEY, JSON.stringify({ at: Date.now(), deals })); } catch (e) {}
+  render();
+}
+function stageRankFor(id) {
+  if (id === 'won') return 10;
+  if (id === 'lost' || id === 'deferred') return -1;
+  return stageIndex(id);
+}
+function dealChanges(a, review) {
+  if (!review || !review.deals) return [];
+  ensureOppId(a);
+  const b = review.deals[a.id];
+  if (!b) return [{ txt: 'New', tone: 'neutral' }];
+  const n = snapForReview(a), out = [];
+  if (n.stage !== b.stage) {
+    const up = stageRankFor(n.stage) > stageRankFor(b.stage);
+    out.push({ txt: (stageName(n.stage) || 'Stage cleared'), tone: CLOSED_STAGES[n.stage] ? (n.stage === 'won' ? 'up' : 'down') : (up ? 'up' : 'down'), arrow: !CLOSED_STAGES[n.stage] });
+  }
+  if (n.fc !== b.fc && !CLOSED_STAGES[n.stage]) {
+    const ra = FC_RANK[n.fc], rb = FC_RANK[b.fc];
+    const tone = (ra !== undefined && rb !== undefined) ? (ra > rb ? 'up' : 'down') : 'neutral';
+    out.push({ txt: n.fc, tone, arrow: true });
+  }
+  if (n.arr !== b.arr) {
+    const diff = n.arr - b.arr;
+    out.push({ txt: (diff > 0 ? '+' : '−') + fmtARR(Math.abs(diff)), tone: diff > 0 ? 'up' : 'down' });
+  }
+  if (n.close !== b.close) {
+    const ta = parseLooseDate(b.close), tb = parseLooseDate(n.close);
+    if (ta && tb) out.push({ txt: tb > ta ? 'Close pushed' : 'Close pulled in', tone: tb > ta ? 'down' : 'up' });
+    else if (tb) out.push({ txt: 'Close date set', tone: 'neutral' });
+  }
+  if (n.medd !== b.medd) {
+    const diff = n.medd - b.medd;
+    out.push({ txt: (diff > 0 ? '+' : '−') + Math.abs(diff) + ' qualified', tone: diff > 0 ? 'up' : 'down' });
+  }
+  return out;
+}
+function chgHTML(list) {
+  return list.map(c => {
+    const arrow = c.arrow ? (c.tone === 'up' ? ' ↑' : c.tone === 'down' ? ' ↓' : '') : '';
+    return `<span class="chg ${c.tone}">${esc(c.txt)}${arrow}</span>`;
+  }).join('');
+}
+
+function stageSelectHTML(a, idx) {
+  const cur = dealOf(a).stage || '';
+  const opts = `<option value=""${cur ? '' : ' selected'} disabled>Set stage…</option>`
+    + STAGES.map(s => `<option value="${s.id}"${s.id === cur ? ' selected' : ''}>${esc(s.name)}</option>`).join('')
+    + `<optgroup label="Close out">${Object.keys(CLOSED_STAGES).map(k => `<option value="${k}"${k === cur ? ' selected' : ''}>${CLOSED_STAGES[k].name}</option>`).join('')}</optgroup>`;
+  return `<select class="stage-select${cur ? '' : ' unset'}" aria-label="Stage for ${esc(a.name)}" onclick="event.stopPropagation()" onchange="pipeSetStage(${idx}, this.value)">${opts}</select>`;
+}
+
+function setPipeView(v) { pipeView = v; renderCurrentSlide(); }
+function togglePipeClosed() { pipeClosedOpen = !pipeClosedOpen; renderCurrentSlide(); }
+
+function buildPipelinePage() {
+  if (opps.length === 0) return buildOnboarding();
+  const FIRM_TYPES = ['Single-family office', 'Multi-family office', 'Institutional WM', 'RIA', 'Private bank'];
+  const matchesFirm = a => dashFirmType === 'all' || ((a.data && a.data.snapshot && a.data.snapshot.firmType) || '') === dashFirmType;
+  const all = opps.map((a, i) => ({ a, i })).filter(o => matchesFirm(o.a));
+  const open = all.filter(o => isOpenDeal(o.a));
+  const closed = all.filter(o => !o.a.archived && isClosed(o.a));
+  const archived = all.filter(o => o.a.archived);
+  const review = getReview();
+
+  // Forecast strip — open deals only; Top of Funnel sits outside the forecast
+  const buckets = {}; FC_CATS.forEach(c => buckets[c] = { arr: 0, count: 0 });
+  let tofCount = 0, tofArr = 0;
+  open.forEach(({ a }) => {
+    const f = forecastStatus(a).cat;
+    if (buckets[f]) { buckets[f].arr += oppARR(a); buckets[f].count++; }
+    else { tofCount++; tofArr += oppARR(a); }
+  });
+  const maxB = Math.max(1, ...FC_CATS.map(c => buckets[c].arr));
+  const fillCol = { Commit: '#1D9E75', Upside: '#185fa5', Pipeline: '#EF9F27', Omit: 'var(--border-strong)' };
+  const forecastTotal = buckets.Commit.arr + buckets.Upside.arr + buckets.Pipeline.arr;
+  const strip = `<div class="pipe-strip">
+  ${FC_CATS.map(c => `<div class="pipe-cell">
+    <div class="pc-label"><span class="forecast-badge ${FC_CLASS[c]}" style="font-size:10px;padding:1px 8px">${c}</span><span class="pc-count">${buckets[c].count}</span></div>
+    <div class="pc-arr">${buckets[c].arr ? fmtARR(buckets[c].arr) : '—'}</div>
+    <div class="pc-bar"><div style="width:${buckets[c].count ? Math.max(4, Math.round(buckets[c].arr / maxB * 100)) : 0}%;background:${fillCol[c]}"></div></div>
+  </div>`).join('')}
+  <div class="pipe-cell pipe-cell-total">
+    <div class="pc-label">Forecast ARR <span class="pc-hint">Commit + Upside + Pipeline</span></div>
+    <div class="pc-arr">${forecastTotal ? fmtARR(forecastTotal) : '—'}</div>
+    <div class="pc-sub">${tofCount ? `${tofCount} at Top of Funnel${tofArr ? ' · ' + fmtARR(tofArr) : ''}, not forecast` : `${open.length} open deal${open.length === 1 ? '' : 's'}`}</div>
+  </div>
+</div>`;
+
+  // Deferred deals whose revisit date has arrived
+  const due = closed.filter(({ a }) => reviveLabel(a) === 'Revisit due');
+  const dueBanner = due.length
+    ? `<div class="revisit-banner">${due.length === 1 ? `${esc(due[0].a.name)} is` : `${due.length} deferred deals are`} due for a revisit. ${due.map(({ a, i }) => `<button class="link-btn" onclick="openReopenModal(${i})">Reopen ${esc(a.name)}</button>`).join(' ')}</div>`
+    : '';
+
+  const reviewLine = review
+    ? `<span class="review-line">Changes since review on ${new Date(review.at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span><button class="dash-sort-pill" onclick="markReviewed()" title="Reset the baseline to today">Mark reviewed</button>`
+    : `<button class="dash-sort-pill" onclick="markReviewed()" title="Snapshot today's pipeline so next time you see what moved">Start review baseline</button>`;
+
+  const toolbar = `<div class="pipe-toolbar">
+  <select class="dash-firm-select" aria-label="Segment" onchange="setDashFirmType(this.value)">
+    <option value="all"${dashFirmType === 'all' ? ' selected' : ''}>All segments</option>
+    ${FIRM_TYPES.map(t => `<option value="${esc(t)}"${dashFirmType === t ? ' selected' : ''}>${esc(t)}</option>`).join('')}
+  </select>
+  <span class="view-toggle" role="group" aria-label="View">
+    <button class="dash-sort-pill${pipeView === 'table' ? ' active' : ''}" onclick="setPipeView('table')">Table</button>
+    <button class="dash-sort-pill${pipeView === 'cards' ? ' active' : ''}" onclick="setPipeView('cards')">Cards</button>
+  </span>
+  <span style="margin-left:auto;display:flex;align-items:center;gap:8px">${reviewLine}</span>
+</div>`;
+
+  // Sorting
+  const fcSortRank = a => { const c = forecastStatus(a).cat; return FC_RANK[c] !== undefined ? FC_RANK[c] : -1; };
+  const val = (o, key) => {
+    const a = o.a;
+    switch (key) {
+      case 'opportunity': return (a.name || '').toLowerCase();
+      case 'stage':       return stageIndex(dealOf(a).stage);
+      case 'arr':         return oppARR(a);
+      case 'close':       return parseLooseDate(a.data.snapshot.renewalQ) || 0;
+      case 'qualify':     { const m = meddYesFor(a.data); return m.total ? m.yes / m.total : 0; }
+      case 'health':      return calcHealthScore(a.data);
+      case 'forecast':    return fcSortRank(a) * 10 + Math.max(0, stageIndex(dealOf(a).stage));
+      case 'nexttouch':   return ((a.data.map && a.data.map.nextTouch) || '').toLowerCase();
+      case 'changes':     return dealChanges(a, review).length;
+      default:            return 0;
+    }
+  };
+  const sorted = open.slice().sort((x, y) => {
+    const va = val(x, pipeSort.key), vb = val(y, pipeSort.key);
+    const cmp = typeof va === 'string' ? va.localeCompare(vb) : va - vb;
+    return pipeSort.dir === 'asc' ? cmp : -cmp;
+  });
+
+  const th = (key, label, w) => {
+    const on = pipeSort.key === key;
+    return `<th style="width:${w}px" class="sortable-th${on ? ' sorted' : ''}" aria-sort="${on ? (pipeSort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}">
+      <span class="th-inner"><span class="th-label" onclick="setPipeSort('${key}','toggle')">${label}</span>
+      <span class="th-arrows"><span class="th-arrow${on && pipeSort.dir === 'asc' ? ' on' : ''}" onclick="event.stopPropagation();setPipeSort('${key}','asc')">▲</span><span class="th-arrow${on && pipeSort.dir === 'desc' ? ' on' : ''}" onclick="event.stopPropagation();setPipeSort('${key}','desc')">▼</span></span></span></th>`;
+  };
+
+  const row = ({ a, i }) => {
+    const dl = dealOf(a);
+    const fs = forecastStatus(a);
+    const m = meddYesFor(a.data);
+    const pct = m.total ? Math.round(m.yes / m.total * 100) : 0;
     const hs = calcHealthScore(a.data);
-    const hsColor   = hs >= 70 ? '#1D9E75' : hs >= 40 ? '#EF9F27' : '#a32d2d';
-    const hsTextCol = hs >= 70 ? 'var(--text-success)' : hs >= 40 ? 'var(--text-warning)' : 'var(--text-danger)';
-    const fc      = oppForecast(a);
-    const fcClass = FC_CLASS[fc] || 'fc-omit';
-    const ma = (a.data.meddpicc && a.data.meddpicc.meddAnswers) || {};
-    let mYes = 0, mTotal = 0;
-    MEDD.forEach(s => s.questions.forEach((_, i) => { mTotal++; if (ma[s.id + '_' + i] === 'yes') mYes++; }));
-    const meddPct = mTotal ? Math.round((mYes / mTotal) * 100) : 0;
-    const s         = a.data.snapshot;
-    const champion  = a.data.stakeholders.find(st => st.role === 'Champion');
-    const nextTouch = a.data.map.nextTouch || '—';
+    const hsCol = hs >= 70 ? 'var(--text-success)' : hs >= 40 ? 'var(--text-warning)' : 'var(--text-danger)';
+    const s = a.data.snapshot || {};
+    const ahead = forecastAhead(a);
+    const inDays = daysSince(dl.stageAt);
+    const slips = (dl.slips || []).length;
+    const fcTitle = fs.source === 'ae' ? `Your call${dl.fcReason ? ': ' + dl.fcReason : ' (no reason given)'}` : fs.source === 'stage' ? 'Stage default' : 'From MEDDPICC (no stage set)';
+    return `<tr onclick="openOpp(${i})">
+  <td><div class="log-name">${esc(a.name)}</div><div class="log-sub">${esc(s.firmType || '—')}${s.journey ? ' · ' + esc(s.journey) : ''}</div></td>
+  <td>${stageSelectHTML(a, i)}${dl.stage && inDays !== null ? `<div class="days-in">${inDays}d in stage</div>` : ''}</td>
+  <td><div class="log-arr">${oppARR(a) ? fmtARR(oppARR(a)) : '—'}</div></td>
+  <td><span class="log-next">${esc(s.renewalQ || '—')}</span>${slips ? `<span class="slip-tag" title="Close date pushed ${slips} time${slips > 1 ? 's' : ''}">↻${slips}</span>` : ''}</td>
+  <td><div class="log-medd">${m.yes}/${m.total}</div><div class="log-medd-bar"><div class="log-medd-fill" style="width:${pct}%"></div></div></td>
+  <td style="text-align:center"><span class="hs-dot" style="background:${hsCol}">${hs}</span></td>
+  <td><span class="forecast-badge ${forecastBadgeClass(fs.cat)}" style="font-size:11px;padding:2px 9px" title="${esc(fcTitle)}">${esc(fs.cat)}${fs.source === 'ae' ? ' •' : ''}</span>${showAhead(a) ? `<div class="ahead-note" title="MEDDPICC evidence supports ${esc(evidenceForecast(a))}">ahead of evidence</div>` : ''}</td>
+  <td><span class="log-next pipe-next" title="${esc((a.data.map && a.data.map.nextTouch) || '')}">${esc((a.data.map && a.data.map.nextTouch) || '—')}</span></td>
+  <td>${chgHTML(dealChanges(a, review))}</td>
+  <td><button class="row-action" onclick="event.stopPropagation();archiveOppIdx(${i})" title="Hide from pipeline without closing">Archive</button></td>
+</tr>`;
+  };
 
-    // Ring with score centred inside
-    const size = 52, stroke = 3, r = (size - stroke) / 2;
-    const circ = 2 * Math.PI * r, fillArc = (hs / 100) * circ;
-    const ring = `<div style="position:relative;width:${size}px;height:${size}px;flex-shrink:0">
+  const table = `<div class="table-scroll"><table class="log-table">
+<thead><tr>
+  ${th('opportunity', 'Opportunity', 170)}${th('stage', 'Stage', 128)}${th('arr', 'ARR', 80)}${th('close', 'Close', 88)}
+  ${th('qualify', 'Qualify', 80)}${th('health', 'Health', 60)}${th('forecast', 'Forecast', 110)}${th('nexttouch', 'Next touch', 130)}
+  ${th('changes', 'Changes', 120)}<th style="width:64px"></th>
+</tr></thead>
+<tbody>${sorted.map(row).join('')}</tbody></table></div>
+${open.length === 0 ? '<div class="log-empty">No open deals in this segment.</div>' : ''}`;
+
+  const cards = `<div class="opp-cards">${sorted.map(({ a, i }) => oppCardHTML(a, i, review)).join('')}
+  <div class="opp-card-add" onclick="addOpp()"><div class="opp-card-add-plus">+</div><div class="opp-card-add-label">Add opportunity</div></div>
+</div>`;
+
+  // Closed + archived
+  const closedRow = ({ a, i }, isArch) => {
+    const dl = dealOf(a);
+    const st = isArch ? 'Archived' : stageName(dl.stage);
+    const cls = isArch ? 'fc-nf' : CLOSED_STAGES[dl.stage].cls;
+    const revive = reviveLabel(a);
+    const when = isArch ? '' : (dl.closedAt ? fmtShortDate(dl.closedAt) : '');
+    return `<tr onclick="openOpp(${i})">
+  <td><div class="log-name">${esc(a.name)}</div><div class="log-sub">${esc((a.data.snapshot && a.data.snapshot.firmType) || '—')}</div></td>
+  <td><span class="forecast-badge ${cls}" style="font-size:11px;padding:2px 9px">${esc(st)}</span>${revive ? `<div class="days-in"${revive === 'Revisit due' ? ' style="color:var(--text-warning);font-weight:600"' : ''}>${esc(revive)}</div>` : ''}</td>
+  <td><span class="log-next">${esc(dl.closedReason || '—')}</span>${dl.closedNote ? `<div class="log-sub">${esc(dl.closedNote)}</div>` : ''}</td>
+  <td><div class="log-arr">${oppARR(a) ? fmtARR(oppARR(a)) : '—'}</div></td>
+  <td><span class="log-updated">${when}</span></td>
+  <td>${isArch
+      ? `<button class="row-action restore" onclick="event.stopPropagation();restoreOppIdx(${i})">Restore</button>`
+      : (dl.stage === 'won' ? '' : `<button class="row-action restore" onclick="event.stopPropagation();openReopenModal(${i})">Reopen</button>`)}</td>
+</tr>`;
+  };
+  const closedCount = closed.length + archived.length;
+  const won = closed.filter(o => dealOf(o.a).stage === 'won');
+  const wonArr = won.reduce((s, o) => s + oppARR(o.a), 0);
+  const closedSection = closedCount ? `
+<button class="archived-section-header" style="width:100%;background:none;border-left:none;border-right:none;border-bottom:none;font-family:var(--font)" onclick="togglePipeClosed()" aria-expanded="${pipeClosedOpen}">
+  <span>${pipeClosedOpen ? '▾' : '▸'}</span> Closed, deferred &amp; archived (${closedCount})${won.length ? ` <span style="text-transform:none;letter-spacing:0;font-weight:500;color:var(--text-success)">· ${won.length} won${wonArr ? ' · ' + fmtARR(wonArr) : ''}</span>` : ''}
+</button>
+${pipeClosedOpen ? `<div class="table-scroll"><table class="log-table">
+<thead><tr><th style="width:170px">Opportunity</th><th style="width:120px">Outcome</th><th>Reason</th><th style="width:80px">ARR</th><th style="width:70px">Closed</th><th style="width:70px"></th></tr></thead>
+<tbody>${closed.map(o => closedRow(o, false)).join('')}${archived.map(o => closedRow(o, true)).join('')}</tbody></table></div>` : ''}` : '';
+
+  return `<div class="slide-title">Pipeline</div>
+<div class="dash-subtitle" style="font-size:13px;color:var(--text-tertiary);margin-top:-10px;margin-bottom:16px">${open.length} open deal${open.length === 1 ? '' : 's'}${dashFirmType !== 'all' ? ' in ' + esc(dashFirmType) : ''} · ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
+${strip}
+${dueBanner}
+${(() => { const m = open.map(o => ({ ...o, n: missedCount(o.a) })).filter(o => o.n); return m.length ? `<div class="revisit-banner">Some comms findings you accepted earlier didn't register. They're flagged for a quick re-check on ${m.map(o => `<button class="link-btn" style="margin-left:2px" onclick="openOppComms(${o.i})">${esc(o.a.name)} (${o.n})</button>`).join(', ')}.</div>` : ''; })()}
+${toolbar}
+${pipeView === 'cards' ? cards : table}
+${pipeView === 'table' ? `<button class="gaps-add-btn" style="margin-top:10px" onclick="addOpp()">+ Add opportunity</button>` : ''}
+${closedSection}`;
+}
+
+function oppCardHTML(a, idx, review) {
+  const hs = calcHealthScore(a.data);
+  const hsColor   = hs >= 70 ? '#1D9E75' : hs >= 40 ? '#EF9F27' : '#a32d2d';
+  const hsTextCol = hs >= 70 ? 'var(--text-success)' : hs >= 40 ? 'var(--text-warning)' : 'var(--text-danger)';
+  const fs = forecastStatus(a);
+  const m = meddYesFor(a.data);
+  const meddPct = m.total ? Math.round((m.yes / m.total) * 100) : 0;
+  const s = a.data.snapshot;
+  const dl = dealOf(a);
+  const champion = a.data.stakeholders.find(st => st.role === 'Champion');
+  const nextTouch = a.data.map.nextTouch || '—';
+  const size = 52, stroke = 3, r = (size - stroke) / 2;
+  const circ = 2 * Math.PI * r, fillArc = (hs / 100) * circ;
+  const ring = `<div style="position:relative;width:${size}px;height:${size}px;flex-shrink:0">
   <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="transform:rotate(-90deg);position:absolute;top:0;left:0">
     <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--border-light)" stroke-width="${stroke}"/>
-    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${hsColor}" stroke-width="${stroke}"
-      stroke-dasharray="${fillArc.toFixed(1)} ${circ.toFixed(1)}" stroke-linecap="round"/>
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${hsColor}" stroke-width="${stroke}" stroke-dasharray="${fillArc.toFixed(1)} ${circ.toFixed(1)}" stroke-linecap="round"/>
   </svg>
   <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:${hsTextCol};letter-spacing:-0.02em">${hs}</div>
 </div>`;
-
-    return `<div class="opp-card" onclick="openOpp(${idx})">
+  const changes = chgHTML(dealChanges(a, review));
+  return `<div class="opp-card" onclick="openOpp(${idx})">
   <div class="opp-card-top">
     <div style="flex:1;min-width:0">
       <div class="opp-card-name">${esc(a.name)}</div>
-      <div class="opp-card-type">${esc(s.firmType || 'Prospect')}</div>
+      <div class="opp-card-type">${esc(stageName(dl.stage) || 'No stage')} · ${esc(s.firmType || 'Prospect')}</div>
     </div>
     ${ring}
   </div>
   <div class="opp-card-mid" style="grid-template-columns:1fr 1fr 1fr">
-    <div class="opp-card-stat">
-      <div class="stat-label">ARR</div>
-      <div class="stat-val">${oppARR(a) ? fmtARR(oppARR(a)) : '—'}</div>
-      <div class="stat-sub">${modulesTotal(s.modules) ? modulesSummary(s.modules).split(' — ')[0] : 'No modules'}</div>
-    </div>
-    <div class="opp-card-stat">
-      <div class="stat-label">Next touch</div>
-      <div class="stat-val" style="font-size:12px;font-weight:500;line-height:1.4">${esc(nextTouch)}</div>
-      <div class="stat-sub">${champion && champion.name ? 'Champ: ' + esc(champion.name) : 'No champion'}</div>
-    </div>
-    <div class="opp-card-stat">
-      <div class="stat-label">Last updated</div>
-      <div class="stat-val" style="font-size:11px;font-weight:500">${a.updatedAt ? new Date(a.updatedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '—'}</div>
-      <div class="stat-sub">${a.updatedAt ? timeSince(a.updatedAt) : 'Never opened'}</div>
-    </div>
+    <div class="opp-card-stat"><div class="stat-label">ARR</div><div class="stat-val">${oppARR(a) ? fmtARR(oppARR(a)) : '—'}</div><div class="stat-sub">Close ${esc(s.renewalQ || '—')}${(dl.slips || []).length ? ' ↻' + dl.slips.length : ''}</div></div>
+    <div class="opp-card-stat"><div class="stat-label">Next touch</div><div class="stat-val" style="font-size:12px;font-weight:500;line-height:1.4">${esc(nextTouch)}</div><div class="stat-sub">${champion && champion.name ? 'Champ: ' + esc(champion.name) : 'No champion'}</div></div>
+    <div class="opp-card-stat"><div class="stat-label">Last updated</div><div class="stat-val" style="font-size:11px;font-weight:500">${a.updatedAt ? new Date(a.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—'}</div><div class="stat-sub">${a.updatedAt ? timeSince(a.updatedAt) : 'Never opened'}</div></div>
   </div>
+  ${changes ? `<div style="margin:-4px 0 8px">${changes}</div>` : ''}
   <div class="opp-card-footer">
     <div class="medd-prog">
-      <div class="medd-prog-label"><span>MEDDPICC</span><span>${mYes}/${mTotal}</span></div>
+      <div class="medd-prog-label"><span>MEDDPICC</span><span>${m.yes}/${m.total}</span></div>
       <div class="medd-prog-track"><div class="medd-prog-fill" style="width:${meddPct}%"></div></div>
     </div>
-    <span class="forecast-badge ${fcClass}" style="flex-shrink:0">${fc}</span>
-  </div>
-</div>`;
-  }).join('');
-
-  const activeOpps = baseOpps;
-  const FIRM_TYPES = ['Single-family office', 'Multi-family office', 'Institutional WM', 'RIA', 'Private bank'];
-  const firmLabel = dashFirmType === 'all' ? '' : ` · ${esc(dashFirmType)}`;
-  return `<div class="slide-title">Opportunity Dashboard</div>
-<div class="dash-subtitle" style="font-size:13px;color:var(--text-tertiary);margin-top:-10px;margin-bottom:18px">${activeOpps.length} opportunit${activeOpps.length !== 1 ? 'ies' : 'y'}${firmLabel} · ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
-<div class="waterfall">
-  <div class="waterfall-title">ARR by forecast</div>
-  <div class="waterfall-bars">${wfBars}</div>
-  <div class="waterfall-total">
-    <span class="wf-total-label">Total pipeline</span>
-    <span class="wf-total-arr">${totalARR > 0 ? fmtARR(totalARR) : '—'}</span>
-    <span class="wf-total-sub">ARR · ${baseOpps.length} opp${baseOpps.length !== 1 ? 's' : ''}</span>
-  </div>
-</div>
-<div class="dash-sort-row">
-  <span class="dash-sort-label">Segment</span>
-  <select class="dash-firm-select" onchange="setDashFirmType(this.value)">
-    <option value="all"${dashFirmType==='all'?' selected':''}>All segments</option>
-    ${FIRM_TYPES.map(t => `<option value="${esc(t)}"${dashFirmType===t?' selected':''}>${esc(t)}</option>`).join('')}
-  </select>
-  <span class="dash-sort-label" style="margin-left:10px">Sort</span>
-  ${[['qual-desc','Top qualified'],['qual-asc','Least qualified'],['health-desc','Deal health'],['arr-desc','ARR'],['recent','Recent']].map(([k,lbl]) => `<button class="dash-sort-pill${dashSort===k?' active':''}" onclick="setDashSort('${k}')">${lbl}</button>`).join('')}
-</div>
-<div class="opp-cards">
-  ${cards || '<div style="font-size:13px;color:var(--text-tertiary);padding:16px 0;grid-column:1/-1">No opportunities in this segment.</div>'}
-  <div class="opp-card-add" onclick="addOpp()">
-    <div class="opp-card-add-plus">+</div>
-    <div class="opp-card-add-label">Add opportunity</div>
+    <span class="forecast-badge ${forecastBadgeClass(fs.cat)}" style="flex-shrink:0">${esc(fs.cat)}${fs.source === 'ae' ? ' •' : ''}</span>
   </div>
 </div>`;
 }
@@ -2470,6 +3142,8 @@ function buildOnboarding() {
 
 function openOpp(idx) {
   showDashboard = false;
+  showPipeline = false;
+  showThemes = false;
   currentOpp = idx;
   opps[idx].currentSlide = 1;
   render();
@@ -2557,7 +3231,7 @@ function buildMeddpiccSlide() {
   <div class="medd-score-card"><div class="lbl">Score</div><div class="val">${yes}/${total}</div></div>
   <div class="medd-score-card"><div class="lbl">Sections green</div><div class="val">${MEDD.filter(s => meddStatus(s.id, s.questions.length) === 'full').length}/7</div></div>
   <div class="medd-score-card"><div class="lbl">Blockers weak</div><div class="val" style="color:${blockerWeak > 0 ? 'var(--text-danger)' : 'var(--text-success)'}">${blockerWeak > 0 ? blockerWeak + ' weak' : 'Clear'}</div></div>
-  <div class="medd-score-card"><div class="lbl">Forecast</div><div class="val" style="font-size:14px;padding-top:3px"><span class="forecast-badge ${FC_CLASS[fc]}">${fc}</span></div></div>
+  <div class="medd-score-card"><div class="lbl">Evidence says</div><div class="val" style="font-size:14px;padding-top:3px"><span class="forecast-badge ${FC_CLASS[fc]}">${fc}</span></div></div>
 </div>
 ${MEDD.map(s => buildMeddSection(s)).join('')}
 <div class="sec-div">Opportunity gaps & actions to close</div>
@@ -2581,14 +3255,14 @@ function buildMeddSection(s) {
       const key = s.id + '_' + i;
       const val = a[key] || '';
       body += `<div class="medd-question">
-  <div><div class="q-text">${q.text}</div><div class="q-tag">${q.tag}</div></div>
+  <div><div class="q-text">${q.text}</div><div class="q-tag">${q.tag}</div>${meddSourceLine(key)}</div>
   <div class="tog-group">
     <button class="tog ${val === 'yes' ? 'yes' : ''}" onclick="setMeddAnswer('${s.id}',${i},'yes')">Yes</button>
     <button class="tog ${val === 'no' ? 'no' : ''}" onclick="setMeddAnswer('${s.id}',${i},'no')">No</button>
   </div>
 </div>`;
     });
-    body += `<div class="medd-notes"><textarea rows="2" placeholder="Notes for ${s.title.toLowerCase()}…" onchange="setMeddNote('${s.id}',this.value)">${esc(notes[s.id] || '')}</textarea></div>`;
+    body += `<div class="medd-notes"><textarea rows="2" placeholder="Evidence for ${s.title.toLowerCase()}: what did the buyer say or do that proves it?" onchange="setMeddNote('${s.id}',this.value)">${esc(notes[s.id] || '')}</textarea></div>`;
     body += '</div>';
   }
   return `<div class="medd-section">
@@ -2599,8 +3273,9 @@ function buildMeddSection(s) {
         <div class="medd-title-row">
           <span class="medd-title">${s.title}</span>
           ${s.blocker ? '<span class="blocker-tag">blocker</span>' : ''}
+          ${stageFocusTag(s)}
         </div>
-        <div class="pip-row">${pips}</div>
+        <div class="pip-row">${pips}${meddSectionFreshness(s.id, total)}</div>
         <div class="medd-desc">${s.desc}</div>
       </div>
     </div>
@@ -2658,7 +3333,9 @@ function buildGapsTable() {
 function buildSnapshot() {
   const s = d().snapshot;
   return `${oppNameBadge()}<div class="slide-title">Snapshot</div>
-<div class="sec-div first">Account overview</div>
+<div class="sec-div first">Stage &amp; forecast</div>
+${buildStagePanel()}
+<div class="sec-div">Account overview</div>
 <div class="field-grid">
   <div>
     <div class="field-label">Account name</div>
@@ -2680,6 +3357,7 @@ function buildSnapshot() {
   <div>
     <div class="field-label">Opportunity close date</div>
     <input class="field-input" data-f="snapshot.renewalQ" placeholder="09/30/25" value="${esc(s.renewalQ)}">
+    <div class="slip-note" id="slipNote">${slipNoteText(opp())}</div>
   </div>
 </div>
 <div class="field-grid-3">
@@ -2730,7 +3408,7 @@ ${(() => {
 </div>
 <div class="field-grid">
   <div>
-    <div class="field-label">Journey stage</div>
+    <div class="field-label">Deal type</div>
     <div class="chip-group">
       ${['Land', 'Adopt', 'Expand', 'Renew'].map(v => `<button class="chip${s.journey === v ? ' sel-blue' : ''}" onclick="setDeep('snapshot.journey','${v}');render()">${v}</button>`).join('')}
     </div>
@@ -3021,7 +3699,10 @@ function toggleMedd(id) {
 function setMeddAnswer(sid, qi, val) {
   const key = sid + '_' + qi;
   const a = d().meddpicc.meddAnswers;
-  if (a[key] === val) delete a[key]; else a[key] = val;
+  if (!d().meddpicc.meta) d().meddpicc.meta = {};
+  const meta = d().meddpicc.meta;
+  if (a[key] === val) { delete a[key]; delete meta[key]; }
+  else { a[key] = val; meta[key] = { at: Date.now(), src: 'ae' }; }
   markCoachingStale();
   renderCurrentSlide();
   renderHeaderScore();
@@ -3288,7 +3969,7 @@ function addGapRow() {
   render();
 }
 function removeGapRow(i) { d().meddpicc.gapOverrides.__manual.splice(i, 1); render(); }
-function switchOpp(idx) { showDashboard = false; currentOpp = idx; render(); }
+function switchOpp(idx) { showDashboard = false; showPipeline = false; showThemes = false; currentOpp = idx; render(); }
 /* ================================================================
    INLINE MODAL — mobile-safe replacement for prompt() / confirm()
    ================================================================ */
@@ -3362,7 +4043,8 @@ function addOpp() {
     confirmLabel: 'Create',
     onConfirm: (name) => {
       if (!name) return;
-      opps.push({ name, currentSlide: 1, openMedd: new Set(['economic_buyer']), data: freshData(), updatedAt: Date.now() });
+      opps.push({ id: newOppId(), name, currentSlide: 1, openMedd: new Set(['economic_buyer']), data: freshData(), updatedAt: Date.now() });
+      applyStage(opps[opps.length - 1], 'discovery');
       currentOpp = opps.length - 1;
       showDashboard = false;
       showPipeline = false;
@@ -3391,9 +4073,9 @@ function exportPlan() {
   csv += csvRow(['ELEVEN SYSTEMS — OPPORTUNITY PLAN EXPORT', 'Generated: ' + new Date().toLocaleDateString()]);
   csv += '\r\n';
   csv += csvRow([
-    'Opportunity', 'Type', 'Financial Tier', 'Property Tier', 'Family Tier', 'Base Annual Price', 'Journey', 'Health',
+    'Opportunity', 'Type', 'Financial Tier', 'Property Tier', 'Family Tier', 'Base Annual Price', 'Stage', 'Deal Type', 'Health',
     'Current ARR', 'Target ARR', 'Renewal / Close',
-    'Forecast', 'MEDDPICC Score', 'MEDDPICC %', 'Weak Blockers',
+    'Forecast', 'MEDDPICC Evidence', 'Forecast Reason', 'Close Pushes', 'MEDDPICC Score', 'MEDDPICC %', 'Weak Blockers',
     'Why Change', 'Why Now', 'Why Eleven', 'Solution / Value',
     'Incumbents', 'Competitive Strategy',
     'Champion', 'Economic Buyer', 'Stakeholder Count',
@@ -3407,7 +4089,7 @@ function exportPlan() {
     const p  = a.data.accountpov;
     const o  = a.data.opppov;
     const m  = a.data.map;
-    const ma = o.meddAnswers || {};
+    const ma = (a.data.meddpicc && a.data.meddpicc.meddAnswers) || {};   // was reading the wrong object
 
     // Score
     let yes = 0, total = 0;
@@ -3435,9 +4117,9 @@ function exportPlan() {
       a.name, s.firmType,
       (s.modules || {}).financial || '', (s.modules || {}).property || '', (s.modules || {}).family || '',
       modulesTotal(s.modules) ? '$' + modulesTotal(s.modules) : '',
-      s.journey, s.healthStatus,
+      stageName(dealOf(a).stage), s.journey, s.healthStatus,
       s.currentArr, s.targetArr, s.renewalQ,
-      fc, yes + '/' + total, Math.round(pct * 100) + '%', weakBlockers || 'None',
+      forecastStatus(a).cat, fc, dealOf(a).fcReason || '', (dealOf(a).slips || []).length, yes + '/' + total, Math.round(pct * 100) + '%', weakBlockers || 'None',
       p.whyChange, p.whyNow, p.whyUs, p.whatSolution,
       o.incumbents, o.competitiveStrategy,
       champion ? champion.name + ' (' + champion.sentiment + ')' : '',
@@ -3598,7 +4280,7 @@ function updateLogCount() {
 
 // Build a normalized signal record per opp from live memory
 function themesBuildRecords() {
-  return opps.filter(o => !o.archived).map((o, idx) => {
+  return opps.filter(o => !o.archived && !isClosed(o)).map((o, idx) => {
     const data = o.data || {};
     const calls = data.calls || [];
     let findings = [];
@@ -3618,7 +4300,7 @@ function themesBuildRecords() {
       idx, id: o.id, name: o.name, data,
       firmType: (data.snapshot && data.snapshot.firmType) || '',
       arr: modulesTotal(data.snapshot && data.snapshot.modules),
-      forecast: calcForecastForData(data),
+      forecast: oppForecast(o),
       meddYes, stkCount: stk.length, callCount: calls.length,
       findings, redFlags, gaps, fText,
       sig: {
@@ -3801,157 +4483,6 @@ ${cards}${empty}
 <div class="theme-footnote">Synthesized live from ${totalCalls} logged call${totalCalls === 1 ? '' : 's'} and current qualification data across the book. Click any deal to drill in.</div>`;
 }
 
-function buildPipelinePage() {
-  const log = getLog();
-  const active   = log.filter(e => !e.archived);
-  const archived = log.filter(e => e.archived);
-
-  // ARR per log entry — prefer the live opp's Target ARR, fall back to stored Target ARR.
-  const entryARR = e => {
-    const lo = opps.find(o => o.id === e.id);
-    if (lo) return oppARR(lo);
-    return parseTargetArr(e.targetArr);
-  };
-
-  // Summary stats — active only
-  const totalARR = active.reduce((sum, e) => sum + entryARR(e), 0);
-  const commits  = active.filter(e => e.forecast === 'Commit').length;
-  const upsides  = active.filter(e => e.forecast === 'Upside').length;
-  const pipes    = active.filter(e => e.forecast === 'Pipeline').length;
-  const omits    = active.filter(e => e.forecast === 'Omit').length;
-
-  const summaryHTML = `
-<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px">
-  <div class="medd-score-card"><div class="lbl">Opportunities</div><div class="val">${active.length}</div></div>
-  <div class="medd-score-card"><div class="lbl">ARR</div><div class="val" style="font-size:18px">${totalARR > 0 ? fmtARR(totalARR) : '—'}</div></div>
-  <div class="medd-score-card"><div class="lbl">Commit / Upside</div><div class="val"><span style="color:var(--text-success)">${commits}</span> <span style="font-size:14px;color:var(--text-tertiary)">/ ${upsides}</span></div></div>
-  <div class="medd-score-card"><div class="lbl">Pipeline / Omit</div><div class="val"><span style="color:var(--text-warning)">${pipes}</span> <span style="font-size:14px;color:var(--text-tertiary)">/ ${omits}</span></div></div>
-</div>`;
-
-  const stageColors = { Land:'fc-pipeline', Adopt:'fc-upside', Expand:'fc-commit', Renew:'fc-upside' };
-
-  const makeRow = (e, isArchived) => {
-    const pct = Math.round((e.meddScore / e.meddTotal) * 100);
-    const saved = new Date(e.savedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    const fcClass = { Commit: 'fc-commit', Upside: 'fc-upside', Pipeline: 'fc-pipeline', Omit: 'fc-omit' }[e.forecast] || 'fc-omit';
-    const stageClass = stageColors[e.journey] || 'fc-pipeline';
-    // Prefer live in-memory score (always current); fall back to stored value
-    const liveOpp = opps.find(o => o.id === e.id);
-    const hs = liveOpp ? calcHealthScore(liveOpp.data) : (typeof e.healthScore === 'number' ? e.healthScore : null);
-    const hsCircle = hs === null
-      ? `<span class="hs-dot hs-empty">—</span>`
-      : `<span class="hs-dot" style="background:${hs >= 70 ? 'var(--text-success)' : hs >= 40 ? 'var(--text-warning)' : 'var(--text-danger)'}">${hs}</span>`;
-    const rowARR = entryARR(e);
-    const liveForSub = opps.find(o => o.id === e.id);
-    const modSub = liveForSub
-      ? (modulesSummary(liveForSub.data.snapshot.modules).split(' — ')[0] || 'No modules')
-      : (modulesSummary(e.modules).split(' — ')[0] || 'No modules');
-    const action = isArchived
-      ? `<button class="row-action restore" onclick="event.stopPropagation();restoreOpp('${e.id}')" title="Restore to active">Restore</button>`
-      : `<button class="row-action" onclick="event.stopPropagation();archiveOpp('${e.id}')" title="Archive opportunity">Archive</button>`;
-    return `<tr class="${isArchived ? 'archived-row' : ''}" onclick="${isArchived ? '' : `jumpToOpp('${e.id}')`}" style="cursor:${isArchived ? 'default' : 'pointer'}">
-  <td>
-    <div class="log-name">${esc(e.name)}</div>
-    <div class="log-sub">${esc(e.aum || '—')}${e.firmType ? ' · ' + esc(e.firmType) : ''}</div>
-  </td>
-  <td>
-    ${e.journey ? `<span class="forecast-badge ${stageClass}" style="font-size:11px;padding:2px 9px">${esc(e.journey)}</span>` : '—'}
-  </td>
-  <td>
-    <div class="log-arr">${rowARR ? fmtARR(rowARR) : '—'}</div>
-    <div class="log-arr-target">${modSub}</div>
-  </td>
-  <td>
-    <div class="log-medd">${e.meddScore}/${e.meddTotal}</div>
-    <div class="log-medd-bar"><div class="log-medd-fill" style="width:${pct}%"></div></div>
-  </td>
-  <td style="text-align:center">${hsCircle}</td>
-  <td><span class="forecast-badge ${fcClass}" style="font-size:11px;padding:2px 9px">${e.forecast}</span></td>
-  <td><span style="font-size:11px;color:var(--text-secondary)">${esc(e.renewalQ || '—')}</span></td>
-  <td><span class="log-next">${esc(e.nextTouch || '—')}</span></td>
-  <td><span class="log-updated">${saved}</span></td>
-  <td>${action}</td>
-</tr>`;
-  };
-
-  const fcRank = { Commit: 4, Upside: 3, Pipeline: 2, Omit: 1 };
-  const stageRank = { Land: 1, Adopt: 2, Expand: 3, Renew: 4 };
-  const pipeVal = (e, key) => {
-    switch (key) {
-      case 'opportunity': return (e.name || '').toLowerCase();
-      case 'stage':       return stageRank[e.journey] || 0;
-      case 'arr':         return entryARR(e);
-      case 'qualify':     return e.meddTotal ? e.meddScore / e.meddTotal : 0;
-      case 'health':      { const lo = opps.find(o => o.id === e.id); return lo ? calcHealthScore(lo.data) : (typeof e.healthScore === 'number' ? e.healthScore : -1); }
-      case 'forecast':    return fcRank[e.forecast] || 0;
-      case 'close':       return (e.renewalQ || '');
-      case 'nexttouch':   return (e.nextTouch || '');
-      case 'saved':       return e.savedAt || 0;
-      default:            return 0;
-    }
-  };
-  const sortRows = arr => arr.slice().sort((a, b) => {
-    const va = pipeVal(a, pipeSort.key), vb = pipeVal(b, pipeSort.key);
-    let cmp = typeof va === 'string' ? va.localeCompare(vb) : va - vb;
-    return pipeSort.dir === 'asc' ? cmp : -cmp;
-  });
-
-  const activeRows  = sortRows(active).map(e => makeRow(e, false)).join('');
-  const archivedRows = sortRows(archived).map(e => makeRow(e, true)).join('');
-
-  const emptyActive = active.length === 0
-    ? `<div style="text-align:center;padding:32px 0;color:var(--text-tertiary);font-size:13px">No saved opportunities yet. Open any opportunity plan and hit <strong>Save to Log</strong>.</div>`
-    : '';
-
-  const th = (key, label, w) => {
-    const active = pipeSort.key === key;
-    const upCol = active && pipeSort.dir === 'asc' ? 'var(--text-primary)' : 'var(--text-tertiary)';
-    const dnCol = active && pipeSort.dir === 'desc' ? 'var(--text-primary)' : 'var(--text-tertiary)';
-    return `<th style="width:${w}px" class="sortable-th${active?' sorted':''}">
-      <span class="th-inner">
-        <span class="th-label" onclick="setPipeSort('${key}','toggle')">${label}</span>
-        <span class="th-arrows">
-          <span class="th-arrow${active&&pipeSort.dir==='asc'?' on':''}" style="color:${upCol}" onclick="event.stopPropagation();setPipeSort('${key}','asc')">▲</span>
-          <span class="th-arrow${active&&pipeSort.dir==='desc'?' on':''}" style="color:${dnCol}" onclick="event.stopPropagation();setPipeSort('${key}','desc')">▼</span>
-        </span>
-      </span>
-    </th>`;
-  };
-  const tableHeaders = `<thead><tr>
-    ${th('opportunity','Opportunity',170)}
-    ${th('stage','Stage',80)}
-    ${th('arr','ARR',100)}
-    ${th('qualify','Qualify',90)}
-    ${th('health','Health',64)}
-    ${th('forecast','Forecast',90)}
-    ${th('close','Close',80)}
-    ${th('nexttouch','Next touch',120)}
-    ${th('saved','Saved',70)}
-    <th style="width:70px"></th>
-  </tr></thead>`;
-
-  const archivedSection = archived.length > 0 ? `
-<div class="archived-section-header" onclick="toggleArchivedSection()">
-  <span id="archivedChevron">▸</span>
-  Archived (${archived.length})
-</div>
-<div id="archivedRows" style="display:none">
-  <table class="log-table" style="width:100%">
-    ${tableHeaders}
-    <tbody>${archivedRows}</tbody>
-  </table>
-</div>` : '';
-
-  return `<div class="slide-title">Pipeline</div>
-${summaryHTML}
-<table class="log-table" style="width:100%">
-  ${tableHeaders}
-  <tbody>${activeRows}</tbody>
-</table>
-${emptyActive}
-${archivedSection}`;
-}
-
 function setPipeSort(key, dir) {
   if (dir === 'asc' || dir === 'desc') {
     pipeSort.key = key;
@@ -3965,41 +4496,26 @@ function setPipeSort(key, dir) {
   renderCurrentSlide();
 }
 
-function archiveOpp(id) {
-  const log = getLog();
-  const idx = log.findIndex(e => e.id === id);
-  if (idx >= 0) {
-    log[idx].archived = true;
-    setLog(log);
-  }
-  // Also mark in opps array
-  const oi = opps.findIndex(o => o.id === id);
-  if (oi >= 0) opps[oi].archived = true;
-  renderCurrentSlide();
-  updateLogCount();
+// Archive = hide without a close outcome. Kept in sync with the legacy log.
+function archiveOppIdx(i) {
+  const a = opps[i];
+  if (!a) return;
+  a.archived = true;
+  const log = getLog(); const li = log.findIndex(e => e.id === a.id);
+  if (li >= 0) { log[li].archived = true; setLog(log); }
+  render();
 }
-
-function restoreOpp(id) {
-  const log = getLog();
-  const idx = log.findIndex(e => e.id === id);
-  if (idx >= 0) {
-    log[idx].archived = false;
-    setLog(log);
-  }
-  const oi = opps.findIndex(o => o.id === id);
-  if (oi >= 0) opps[oi].archived = false;
-  renderCurrentSlide();
-  updateLogCount();
+function restoreOppIdx(i) {
+  const a = opps[i];
+  if (!a) return;
+  a.archived = false;
+  const log = getLog(); const li = log.findIndex(e => e.id === a.id);
+  if (li >= 0) { log[li].archived = false; setLog(log); }
+  render();
 }
-
-function toggleArchivedSection() {
-  const rows = document.getElementById('archivedRows');
-  const chev = document.getElementById('archivedChevron');
-  if (!rows) return;
-  const open = rows.style.display === 'block';
-  rows.style.display = open ? 'none' : 'block';
-  if (chev) chev.textContent = open ? '▸' : '▾';
-}
+// Back-compat for any id-based callers
+function archiveOpp(id) { const i = opps.findIndex(o => o.id === id); if (i >= 0) archiveOppIdx(i); }
+function restoreOpp(id) { const i = opps.findIndex(o => o.id === id); if (i >= 0) restoreOppIdx(i); }
 
 function deleteOpp() {
   if (!opp()) return;
@@ -4026,6 +4542,7 @@ function jumpToOpp(id) {
   if (idx >= 0) {
     showPipeline = false;
     showDashboard = false;
+    showThemes = false;
     currentOpp = idx;
     opps[idx].currentSlide = 1;
     render();
@@ -4047,7 +4564,7 @@ function buildCalls() {
     callsHTML = '<div class="call-log">'
       + (calls.length > 1 ? '<div class="call-log-bar"><button onclick="setAllCalls(false)">Collapse all</button><button onclick="setAllCalls(true)">Expand all</button></div>' : '')
       + calls.map((c, ci) => {
-      const accepted = (c.findings || []).filter(f => f.status === 'accepted').length;
+      const accepted = (c.findings || []).filter(f => f.status === 'accepted' && !f.legacyUnresolved).length;
       const pending  = (c.findings || []).filter(f => !f.status).length;
       const isOpen   = c.open !== false;
       let findingsHTML = '';
@@ -4074,13 +4591,10 @@ function buildCalls() {
       <div class="finding-title">${esc(f.title)}</div>
       ${f.evidence ? '<div class="finding-evidence">"' + esc(f.evidence) + '"</div>' : ''}
       ${f.suggestion ? '<div class="finding-suggestion">→ ' + esc(f.suggestion) + '</div>' : ''}
+      ${findingTargetLine(f)}
     </div>
   </div>
-  ${f.status ? '<div style="font-size:11px;padding:0 12px 8px;color:' + (f.status === 'accepted' ? 'var(--text-success)' : 'var(--text-tertiary)') + '">✓ ' + (f.status === 'accepted' ? 'Accepted' : 'Dismissed') + '</div>' :
-    `<div class="finding-actions">
-      <button class="finding-btn" onclick="dismissFinding(${ci},${fi})">Dismiss</button>
-      <button class="finding-btn accept" onclick="acceptFinding(${ci},${fi})">Accept &amp; apply</button>
-    </div>`}
+  ${findingActionsHTML(f, ci, fi)}
 </div>`;
         }).join('') + '</div>';
       }
@@ -4105,9 +4619,11 @@ function buildCalls() {
       <span class="call-date">${esc(c.date || 'Undated call')}</span>
       <span class="call-participants">${esc(c.participants || '')}${c.ourTeam ? ` · <span style="opacity:0.7">our: ${esc(c.ourTeam)}</span>` : ''}</span>
       ${c.findings && c.findings.length ? `<span class="call-finding-count">${accepted} applied · ${pending} pending</span>` : ''}
+      ${(() => { const m = (c.findings || []).filter(f => (f.missed && !f.status) || f.legacyUnresolved).length; return m ? `<span class="call-finding-count missed">${m} to re-check</span>` : ''; })()}
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <button class="call-toggle" onclick="event.stopPropagation();toggleCall(${ci})">${isOpen ? 'collapse' : 'expand'}</button>
+      ${c.transcript ? `<button class="call-toggle" onclick="event.stopPropagation();reanalyseCall(${ci})"${c.reanalysing ? ' disabled' : ''}>${c.reanalysing ? 're-analysing…' : 're-analyse'}</button>` : ''}
       <button class="call-remove" onclick="event.stopPropagation();removeCall(${ci})">remove</button>
       <svg style="width:14px;height:14px;stroke:var(--text-tertiary);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform 0.2s;${isOpen ? 'transform:rotate(180deg)' : ''}" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
     </div>
@@ -4126,6 +4642,7 @@ function buildCalls() {
   }
 
   return `${oppNameBadge()}<div class="slide-title">Comms Analysis</div>
+${commsRepairBanner()}
 ${callsHTML}
 <div class="call-form">
   <div class="call-form-title">Add a comms update</div>
@@ -4201,32 +4718,36 @@ async function analyseCall() {
   runCallAnalysis(transcript);
 }
 
-async function runCallAnalysis(transcript) {
-  const date         = document.getElementById('callDate').value.trim();
-  const participants  = document.getElementById('callParticipants').value.trim();
-  const ourTeamEl    = document.getElementById('callOurTeam');
-  const ourTeam      = ourTeamEl ? ourTeamEl.value.trim() : '';
+async function runCallAnalysis(transcript, opts) {
+  const _target = opp();   // attach results to this deal even if the AE navigates away mid-analysis
+  const re = opts && opts.call;   // re-analysing an existing call
+  const fieldVal = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+  const date         = re ? (re.date || '') : fieldVal('callDate');
+  const participants = re ? (re.participants || '') : fieldVal('callParticipants');
+  const ourTeam      = re ? (re.ourTeam || '') : fieldVal('callOurTeam');
 
-  setAnalysing(true);
+  if (re) { re.reanalysing = true; renderCurrentSlide(); } else setAnalysing(true);
 
   // Build plan context snapshot to send alongside the transcript
   const s   = d().snapshot;
   const p   = d().accountpov;
   const o   = d().opppov;
   const stk = d().stakeholders;
-  const ma  = o.meddAnswers || {};
+  const ma  = (d().meddpicc && d().meddpicc.meddAnswers) || {};   // was reading the wrong object — every answer looked blank
 
   const meddContext = MEDD.map(ms => {
     const answers = ms.questions.map((q, i) => {
       const a = ma[ms.id + '_' + i];
-      return `    [${a === 'yes' ? 'YES' : a === 'no' ? 'NO' : 'UNANSWERED'}] ${q.text}`;
+      return `    meddpicc.${ms.id}.${i} [${a === 'yes' ? 'YES' : a === 'no' ? 'NO' : 'UNANSWERED'}] ${q.text}`;
     }).join('\n');
-    return `  ${ms.title}${ms.blocker ? ' (BLOCKER)' : ''}:\n${answers}`;
+    return `  ${ms.title} — section id "${ms.id}"${ms.blocker ? ' (BLOCKER)' : ''}:\n${answers}`;
   }).join('\n');
 
   const planContext = `OPPORTUNITY: ${opp().name}
 FIRM TYPE: ${s.firmType || 'unknown'}
 MODULES & BASE PRICE: ${modulesSummary(s.modules) || 'none selected'}
+
+${stageGateContext(opp())}
 
 CURRENT MEDDPICC STATE:
 ${meddContext}
@@ -4286,10 +4807,10 @@ Return this exact structure:
 
 Rules:
 - Only surface findings that are NEW or CONTRADICTORY to the current plan state. Do not repeat what is already confirmed.
-- For type "meddpicc": apply.field = "meddpicc.[section_id].[question_index]", apply.value = "yes" or "no"
+- For type "meddpicc": apply.field must be copied exactly from the CURRENT MEDDPICC STATE list (e.g. "meddpicc.champion.2"), apply.value = "yes" or "no". Never invent ids or indexes; if no listed question fits, use type "gap" or "action" instead.
 - For type "pov": apply.field = "pov.[whyChange|whyNow|whyUs|whatSolution]", apply.value = updated text
 - For type "stakeholder": apply.field = "stakeholder.new" or "stakeholder.[name].sentiment", apply.value = the value
-- For type "gap": apply.field = "gap.[medd_section_id]", apply.value = gap description
+- For type "gap": apply.field = "gap.[section id]" using a section id from the list above (e.g. "gap.economic_buyer"), apply.value = gap description
 - For type "action": apply.field = "map.nextTouch", apply.value = suggested next action
 - For type "red_flag": no apply needed — these are warnings only. Use for signs champion is stalling, EB is blocked, competitor is advancing, or trust has eroded.
 - Be conservative. Prefer fewer high-confidence findings over many speculative ones.
@@ -4329,10 +4850,23 @@ Return this exact structure — all three keys required:
     const raw = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
     const clean = raw.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(clean);
-    const findings = (parsed.findings || []).map(f => ({ ...f, status: null }));
+    const findings = (parsed.findings || []).map(f => ({ ...f, status: null, _checked: 1 }));
 
-    if (!d().calls) d().calls = [];
-    d().calls.unshift({
+    if (re) {
+      // Keep what was genuinely applied; replace everything else with the fresh read
+      const kept = (re.findings || []).filter(f => f.status === 'accepted' && (f.appliedTo || f._undo));
+      re.findings = kept.concat(findings);
+      re.summary = parsed.summary || re.summary;
+      re.coaching = parsed.coaching || re.coaching;
+      re.reanalysedAt = Date.now();
+      re.reanalysing = false;
+      re.open = true;
+      if (_target === opp()) renderCurrentSlide(); else saveState();
+      return;
+    }
+    const tdata = _target.data;
+    if (!tdata.calls) tdata.calls = [];
+    tdata.calls.unshift({
       date: date || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       participants,
       ourTeam,
@@ -4344,9 +4878,18 @@ Return this exact structure — all three keys required:
     });
 
     setAnalysing(false);
-    renderCurrentSlide();
+    if (_target === opp()) {
+      // Clear the sent comms; keep "Our team" since it rarely changes between calls
+      const ourTeamKeep = (document.getElementById('callOurTeam') || {}).value || '';
+      ['callTranscript', 'callDate', 'callParticipants'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+      _commsDraft = { oppId: _target.id, vals: { callOurTeam: ourTeamKeep } };
+      renderCurrentSlide();
+    } else {
+      saveState();
+    }
 
   } catch (err) {
+    if (re) { re.reanalysing = false; if (_target === opp()) renderCurrentSlide(); }
     setAnalysing(false);
     showAnalyseError('Analysis failed: ' + err.message + '. Check your connection and try again.');
   }
@@ -4367,46 +4910,251 @@ function showAnalyseError(msg) {
   if (el) { el.textContent = msg; el.style.display = 'block'; }
 }
 
-function acceptFinding(ci, fi) {
-  const f = d().calls[ci].findings[fi];
-  f.status = 'accepted';
-  // Apply the finding to the plan
-  if (f.apply && f.apply.field) {
-    const { field, value } = f.apply;
-    if (field.startsWith('meddpicc.')) {
-      const parts = field.split('.');
-      const key = parts[1] + '_' + parts[2];
-      d().meddpicc.meddAnswers[key] = value;
-    } else if (field.startsWith('pov.')) {
-      const key = field.split('.')[1];
-      if (d().accountpov[key] !== undefined) d().accountpov[key] = value;
-    } else if (field === 'map.nextTouch') {
-      d().map.nextTouch = value;
-    } else if (field === 'stakeholder.new') {
-      const nm = (value || '').trim();
-      const existing = d().stakeholders.find(st => (st.name || '').trim().toLowerCase() === nm.toLowerCase());
-      if (nm && !existing) {
-        d().stakeholders.push({ role: 'Neutral', name: nm, title: '', sentiment: 'Neutral', win: '' });
-      }
-      // If the stakeholder already exists, skip — no duplicate added
-    } else if (field.startsWith('stakeholder.') && field.endsWith('.sentiment')) {
-      const nm = field.slice('stakeholder.'.length, -('.sentiment'.length)).trim();
-      const st = d().stakeholders.find(s => (s.name || '').trim().toLowerCase() === nm.toLowerCase());
-      if (st) st.sentiment = value;
-      else d().stakeholders.push({ role: 'Neutral', name: nm, title: '', sentiment: value || 'Neutral', win: '' });
-    } else if (field.startsWith('gap.')) {
-      const sid = field.split('.')[1];
-      if (!d().meddpicc.gapOverrides) d().meddpicc.gapOverrides = { __manual: [] };
-      d().meddpicc.gapOverrides[sid + '_gap'] = value;
-    }
+// Work out exactly what a finding would change, or null if it can't be applied.
+// Tolerates older findings that used section titles instead of ids.
+function resolveFindingTarget(f, data) {
+  const ap = f && f.apply;
+  if (!ap || !ap.field) return null;
+  const field = String(ap.field).trim();
+  const value = ap.value;
+  const findSec = raw => {
+    const k = String(raw || '').trim().toLowerCase();
+    return MEDD.find(s => s.id === k)
+      || MEDD.find(s => s.title.toLowerCase() === k.replace(/_/g, ' '))
+      || MEDD.find(s => k && s.title.toLowerCase().startsWith(k.replace(/_/g, ' ')));
+  };
+  if (field.startsWith('meddpicc.')) {
+    const parts = field.split('.');
+    const sec = findSec(parts[1]);
+    const qi = parseInt(parts[2], 10);
+    const v = String(value || '').trim().toLowerCase();
+    if (!sec || isNaN(qi) || qi < 0 || qi >= sec.questions.length || (v !== 'yes' && v !== 'no')) return null;
+    return { kind: 'medd', sid: sec.id, qi, value: v, label: `${sec.title} · ${sec.questions[qi].tag} → ${v === 'yes' ? 'Yes' : 'No'}` };
   }
+  if (/^(pov|accountpov|opppov)\./.test(field)) {
+    const key = field.split('.').pop();
+    if (!value) return null;
+    if (data.accountpov && key in data.accountpov) return { kind: 'field', path: 'accountpov.' + key, value, label: 'Opportunity · ' + key.replace(/([A-Z])/g, ' $1').toLowerCase() };
+    if (data.opppov && key in data.opppov) return { kind: 'field', path: 'opppov.' + key, value, label: 'Opportunity · ' + key.replace(/([A-Z])/g, ' $1').toLowerCase() };
+    return null;
+  }
+  if (field === 'map.nextTouch') return value ? { kind: 'field', path: 'map.nextTouch', value, label: 'Next touch' } : null;
+  if (field === 'stakeholder.new') {
+    const nm = String(value || '').trim();
+    if (!nm) return null;
+    const exists = (data.stakeholders || []).some(st => (st.name || '').trim().toLowerCase() === nm.toLowerCase());
+    return exists ? null : { kind: 'stk-new', name: nm, label: 'Add stakeholder · ' + nm };
+  }
+  if (field.startsWith('stakeholder.') && field.endsWith('.sentiment')) {
+    const nm = field.slice('stakeholder.'.length, -('.sentiment'.length)).trim();
+    return nm && value ? { kind: 'stk-sent', name: nm, value, label: `${nm} · sentiment → ${value}` } : null;
+  }
+  if (field.startsWith('gap.')) {
+    const sec = findSec(field.split('.')[1]);
+    return sec && value ? { kind: 'gap', sid: sec.id, value, label: `Gap · ${sec.title}` } : null;
+  }
+  return null;
+}
+
+/* ── One-time repair for findings accepted before the fix ──
+   Old accepts that never landed go back to pending (flagged), old accepts that did land
+   are marked applied, and ones that can't be mapped at all are flagged for a re-analyse. */
+function findingState(f, data) {
+  const ap = f.apply || {};
+  if (ap.field === 'stakeholder.new') {
+    const nm = String(ap.value || '').trim().toLowerCase();
+    if (nm && (data.stakeholders || []).some(st => (st.name || '').trim().toLowerCase() === nm)) return { applied: true, label: 'Add stakeholder · ' + ap.value };
+  }
+  const t = resolveFindingTarget(f, data);
+  if (!t) return { target: null };
+  let applied = false;
+  const mp = data.meddpicc || {};
+  if (t.kind === 'medd') applied = (mp.meddAnswers || {})[t.sid + '_' + t.qi] === t.value;
+  else if (t.kind === 'field') { const [x, y] = t.path.split('.'); applied = String((data[x] || {})[y] || '').trim() === String(t.value).trim(); }
+  else if (t.kind === 'stk-sent') { const st = (data.stakeholders || []).find(z => (z.name || '').trim().toLowerCase() === t.name.toLowerCase()); applied = !!st && st.sentiment === t.value; }
+  else if (t.kind === 'gap') applied = (mp.gapOverrides || {})[t.sid + '_gap'] === t.value;
+  return { target: t, applied, label: t.label };
+}
+function migrateOpps() {
+  opps.forEach(a => {
+    if (!a || !a.data) return;
+    // Anything already in Playbk is at least in Discovery
+    const dl = dealOf(a);
+    if (!dl.stage) { dl.stage = 'discovery'; dl.stageAt = 0; dl.history.push({ type: 'default', from: '', to: 'discovery', at: Date.now() }); }
+    (a.data.calls || []).forEach(c => (c.findings || []).forEach(f => {
+      if (f._checked) return;
+      f._checked = 1;
+      if (f.status !== 'accepted' || f.appliedTo || f._undo || f.type === 'red_flag') return;
+      const st = findingState(f, a.data);
+      if (st.applied) f.appliedTo = st.label;
+      else if (st.target) { f.status = null; f.missed = true; }
+      else if (f.apply && f.apply.field) f.legacyUnresolved = true;
+    }));
+  });
+}
+function missedCount(a) {
+  let n = 0;
+  ((a && a.data && a.data.calls) || []).forEach(c => (c.findings || []).forEach(f => { if ((f.missed && !f.status) || f.legacyUnresolved) n++; }));
+  return n;
+}
+function openOppComms(i) { openOpp(i); opps[i].currentSlide = SLIDES.findIndex(x => x.id === 'calls'); render(); }
+function commsRepairBanner() {
+  const n = missedCount(opp());
+  if (!n) return '';
+  return `<div class="revisit-banner">${n} earlier finding${n === 1 ? '' : 's'} didn't register when accepted. ${n === 1 ? "It's" : "They're"} flagged below: re-accept what still holds, or hit <strong>re-analyse</strong> on a call to run it fresh against today's plan.</div>`;
+}
+function reanalyseCall(ci) {
+  const c = d().calls && d().calls[ci];
+  if (!c || !c.transcript || c.reanalysing) return;
+  showModal({
+    title: 'Re-analyse this call?',
+    desc: "Runs it again against the plan as it stands today. Anything you've already applied stays applied; pending and unregistered findings are replaced with fresh ones.",
+    confirmLabel: 'Re-analyse',
+    onConfirm: () => runCallAnalysis(c.transcript, { call: c })
+  });
+}
+
+function acceptFinding(ci, fi) {
+  const call = d().calls && d().calls[ci];
+  const f = call && call.findings && call.findings[fi];
+  if (!f || f.status) return;
+  const t = resolveFindingTarget(f, d());
+  if (t) {
+    const undo = { kind: t.kind };
+    if (t.kind === 'medd') {
+      const key = t.sid + '_' + t.qi;
+      const mp = d().meddpicc;
+      if (!mp.meta) mp.meta = {};
+      if (!mp.meddNotes) mp.meddNotes = {};
+      undo.key = key; undo.prev = mp.meddAnswers[key]; undo.prevMeta = mp.meta[key] || null; undo.prevNote = mp.meddNotes[t.sid] || '';
+      mp.meddAnswers[key] = t.value;
+      mp.meta[key] = { at: Date.now(), src: 'call', call: call.date || '' };
+      // Keep the buyer's words as evidence on the section
+      if (f.evidence) {
+        const line = `“${f.evidence}” (${call.date || 'call'})`;
+        const cur = mp.meddNotes[t.sid] || '';
+        if (!cur.includes(f.evidence)) mp.meddNotes[t.sid] = cur ? cur + '\n' + line : line;
+      }
+    } else if (t.kind === 'field') {
+      const parts = t.path.split('.');
+      undo.path = t.path; undo.prev = (d()[parts[0]] || {})[parts[1]];
+      setDeep(t.path, t.value);
+    } else if (t.kind === 'stk-new') {
+      d().stakeholders.push({ role: 'Neutral', name: t.name, title: '', sentiment: 'Neutral', win: '' });
+      undo.name = t.name;
+    } else if (t.kind === 'stk-sent') {
+      const st = d().stakeholders.find(s => (s.name || '').trim().toLowerCase() === t.name.toLowerCase());
+      if (st) { undo.name = t.name; undo.prev = st.sentiment; st.sentiment = t.value; }
+      else { d().stakeholders.push({ role: 'Neutral', name: t.name, title: '', sentiment: t.value || 'Neutral', win: '' }); undo.kind = 'stk-new'; undo.name = t.name; }
+    } else if (t.kind === 'gap') {
+      if (!d().meddpicc.gapOverrides) d().meddpicc.gapOverrides = { __manual: [] };
+      undo.key = t.sid + '_gap'; undo.prev = d().meddpicc.gapOverrides[undo.key];
+      d().meddpicc.gapOverrides[undo.key] = t.value;
+    }
+    f.appliedTo = t.label;
+    f._undo = undo;
+  }
+  f.status = 'accepted';
+  f._checked = 1;
+  delete f.missed;
+  delete f.legacyUnresolved;
+  markCoachingStale();
   renderCurrentSlide();
   renderHeaderScore();
 }
 
 function dismissFinding(ci, fi) {
-  d().calls[ci].findings[fi].status = 'rejected';
+  const f = d().calls[ci] && d().calls[ci].findings[fi];
+  if (!f || f.status) return;
+  f.status = 'rejected';
   renderCurrentSlide();
+}
+
+// Put a finding back to pending; reverses what Accept changed where possible
+function undoFinding(ci, fi) {
+  const f = d().calls[ci] && d().calls[ci].findings[fi];
+  if (!f || !f.status) return;
+  const u = f._undo;
+  if (f.status === 'accepted' && u) {
+    const mp = d().meddpicc;
+    if (u.kind === 'medd') {
+      if (u.prev === undefined) delete mp.meddAnswers[u.key]; else mp.meddAnswers[u.key] = u.prev;
+      if (mp.meta) { if (u.prevMeta) mp.meta[u.key] = u.prevMeta; else delete mp.meta[u.key]; }
+      const sid = u.key.slice(0, u.key.lastIndexOf('_'));
+      if (mp.meddNotes) mp.meddNotes[sid] = u.prevNote || '';
+    } else if (u.kind === 'field') {
+      setDeep(u.path, u.prev === undefined ? '' : u.prev);
+    } else if (u.kind === 'stk-new') {
+      const i = d().stakeholders.findIndex(s => (s.name || '').trim().toLowerCase() === (u.name || '').toLowerCase());
+      if (i >= 0) d().stakeholders.splice(i, 1);
+    } else if (u.kind === 'stk-sent') {
+      const st = d().stakeholders.find(s => (s.name || '').trim().toLowerCase() === (u.name || '').toLowerCase());
+      if (st) st.sentiment = u.prev;
+    } else if (u.kind === 'gap') {
+      if (u.prev === undefined) delete mp.gapOverrides[u.key]; else mp.gapOverrides[u.key] = u.prev;
+    }
+  }
+  f.status = null;
+  delete f._undo;
+  delete f.appliedTo;
+  markCoachingStale();
+  renderCurrentSlide();
+  renderHeaderScore();
+}
+
+/* ── MEDDPICC freshness: who confirmed what, and when ── */
+function meddMeta(key) { const m = d().meddpicc && d().meddpicc.meta; return (m && m[key]) || null; }
+function meddSourceLine(key) {
+  const m = meddMeta(key);
+  if (!m || !m.at) return '';
+  const days = daysSince(m.at);
+  const when = days === 0 ? 'today' : days === 1 ? 'yesterday' : `${days}d ago`;
+  const src = m.src === 'call' ? `From call${m.call ? ' ' + esc(m.call) : ''}` : 'Set by you';
+  const stale = days >= STALE_DAYS;
+  return `<div class="q-src${stale ? ' stale' : ''}">${src} · ${when}${stale ? ' · re-confirm' : ''}</div>`;
+}
+// Most recent confirmation across a section's Yes answers; flags if the oldest Yes is stale
+function meddSectionFreshness(sid, count) {
+  const a = (d().meddpicc && d().meddpicc.meddAnswers) || {};
+  let newest = 0, oldest = Infinity, dated = 0, yes = 0;
+  for (let i = 0; i < count; i++) {
+    if (a[sid + '_' + i] !== 'yes') continue;
+    yes++;
+    const m = meddMeta(sid + '_' + i);
+    if (m && m.at) { dated++; newest = Math.max(newest, m.at); oldest = Math.min(oldest, m.at); }
+  }
+  if (!yes || !dated) return '';
+  const stale = daysSince(oldest) >= STALE_DAYS;
+  const d0 = daysSince(newest);
+  return `<span class="medd-fresh${stale ? ' stale' : ''}">${stale ? 'Some answers stale · re-confirm' : 'Confirmed ' + (d0 === 0 ? 'today' : d0 + 'd ago')}</span>`;
+}
+
+function findingTargetLine(f) {
+  if (f.status === 'accepted' && f.legacyUnresolved) return `<div class="finding-missed">Accepted earlier but couldn't be applied to the plan. Re-analyse this call for a usable version.</div>`;
+  if (f.status === 'accepted') return f.appliedTo ? `<div class="finding-target">Updated: ${esc(f.appliedTo)}</div>` : '';
+  if (f.status) return '';
+  const t = resolveFindingTarget(f, d());
+  return (f.missed ? `<div class="finding-missed">Didn't register when you accepted it before. Review and accept again.</div>` : '') + (t ? `<div class="finding-target">Will update: ${esc(t.label)}</div>` : `<div class="finding-target none">Note only. Nothing in the plan changes.</div>`);
+}
+function findingActionsHTML(f, ci, fi) {
+  if (f.status) {
+    const col = f.status === 'accepted' ? 'var(--text-success)' : 'var(--text-tertiary)';
+    return `<div class="finding-status"><span style="color:${col}">✓ ${f.status === 'accepted' ? (f.appliedTo ? 'Applied' : 'Acknowledged') : 'Dismissed'}</span><button class="finding-undo" onclick="undoFinding(${ci},${fi})">Undo</button></div>`;
+  }
+  const t = resolveFindingTarget(f, d());
+  return `<div class="finding-actions">
+      <button class="finding-btn" onclick="dismissFinding(${ci},${fi})">Dismiss</button>
+      <button class="finding-btn accept" onclick="acceptFinding(${ci},${fi})">${t ? 'Accept &amp; apply' : 'Acknowledge'}</button>
+    </div>`;
+}
+function stageFocusTag(sec) {
+  if (!opp()) return '';
+  const ci = stageIndex(dealOf(opp()).stage);
+  if (ci < 0) return '';
+  const inFocus = (st) => st && (st.focus.includes(sec.id) || (sec.blocker && st.focus.includes('blockers')));
+  if (inFocus(STAGES[ci])) return '<span class="focus-tag">stage focus</span>';
+  if (inFocus(STAGES[ci + 1])) return '<span class="focus-tag next">next gate</span>';
+  return '';
 }
 
 /* ================================================================
@@ -4921,6 +5669,8 @@ function buildExampleOpp() {
     note: 'Deal is real — Marcus has budget authority and a Q3 deadline. Win is uncertain until we get EB (Okafor) directly engaged. Should play: AUM profile and timeline are exactly the ICP.'
   };
 
+  data.deal = { ...freshDeal(), stage: 'alignment', stageAt: Date.now() - 12 * DAY_MS,
+    history: [{ type: 'stage', from: 'qualification', to: 'alignment', at: Date.now() - 12 * DAY_MS }] };
   return data;
 }
 
@@ -4957,10 +5707,12 @@ function loadState() {
     if (saved.opps && saved.opps.length) {
       opps = saved.opps.map(o => ({
         ...o,
+        id: o.id || newOppId(),
         openMedd: new Set(o.openMedd || ['metrics']),
         // Ensure freshData fills any fields added since last save
         data: { ...freshData(), ...o.data,
-          meddpicc: { meddAnswers:{}, meddNotes:{}, gapOverrides:{__manual:[]}, ...(o.data.meddpicc||{}) },
+          meddpicc: { meddAnswers:{}, meddNotes:{}, meta:{}, gapOverrides:{__manual:[]}, ...(o.data.meddpicc||{}) },
+          deal: { ...freshDeal(), ...(o.data.deal || {}) },
           accountpov: { ...freshData().accountpov, ...(o.data.accountpov || o.data.pov || {}) },
           accountpovteam: { execSponsor:"", ae:"", se:"", csm:"", ...(o.data.accountpovteam||{}) },
           opppov: { ...freshData().opppov, ...(o.data.opppov || {}) },
@@ -4969,8 +5721,11 @@ function loadState() {
         }
       }));
       currentOpp = Math.min(saved.currentOpp || 0, opps.length - 1);
-      showDashboard = saved.showDashboard !== false;
-      showPipeline  = saved.showPipeline  || false;
+      migrateOpps();
+      // Always open on the live Pipeline
+      showDashboard = false;
+      showPipeline  = true;
+      showThemes    = false;
     }
   } catch(e) { /* corrupted state — start fresh */ }
   render();
@@ -4988,7 +5743,8 @@ function backupToFile() {
       exportedAt: new Date().toISOString(),
       state: JSON.parse(localStorage.getItem(STATE_KEY) || 'null'),
       log:   JSON.parse(localStorage.getItem('eleven_opp_log') || '[]'),
-      collapsedBranches: JSON.parse(localStorage.getItem('playbk_collapsed_branches') || '[]')
+      collapsedBranches: JSON.parse(localStorage.getItem('playbk_collapsed_branches') || '[]'),
+      reviewBaseline: JSON.parse(localStorage.getItem(REVIEW_KEY) || 'null')
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -5033,6 +5789,7 @@ function restoreFromFile(event) {
             if (parsed.state) localStorage.setItem(STATE_KEY, JSON.stringify(parsed.state));
             localStorage.setItem('eleven_opp_log', JSON.stringify(parsed.log || []));
             localStorage.setItem('playbk_collapsed_branches', JSON.stringify(parsed.collapsedBranches || []));
+            if (parsed.reviewBaseline) localStorage.setItem(REVIEW_KEY, JSON.stringify(parsed.reviewBaseline));
           } else {
             localStorage.setItem(STATE_KEY, JSON.stringify(parsed));
           }
