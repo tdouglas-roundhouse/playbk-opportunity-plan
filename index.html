@@ -3438,7 +3438,7 @@ ${buildStagePanel()}
 <div class="field-grid">
   <div>
     <div class="field-label">Key contacts <span class="fmt-hint">from Stakeholders</span></div>
-    ${keyContactsHTML()}
+    <div class="field-input" style="background:var(--bg-tertiary);color:var(--text-secondary);cursor:default">${(d().stakeholders || []).filter(st => (st.name || '').trim()).length}</div>
   </div>
   <div>
     <div class="field-label">Opportunity close date</div>
