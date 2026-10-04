@@ -769,6 +769,11 @@ select.field-input{cursor:pointer}
 .contacts-names{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .contacts-add{font-size:11px;font-family:var(--font);color:var(--text-info);background:none;border:none;padding:4px 0 0;cursor:pointer;text-align:left}
 .contacts-add:hover{text-decoration:underline}
+.comms-kind-row{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:12px 0 2px}
+.pdf-attach{font-size:12px;padding:5px 12px;cursor:pointer}
+.pdf-attach:focus-within{outline:2px solid var(--text-info);outline-offset:1px}
+.pdf-status{font-size:11px;color:var(--text-tertiary)}
+.call-kind{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:var(--bg-info);color:var(--text-info);border:0.5px solid var(--border-info)}
 .pipe-next{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:200px}
 @media(max-width:760px){
   .stage-track{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -1140,7 +1145,7 @@ function modulesSummary(modules) {
   return `${parts.join(' · ')} — $${(modulesTotal(m) / 1000)}K`;
 }
 // Pricing breakdown: gross platform fees → discount/credit → net platform fees (= ARR)
-// → implementation fee (20% of net, one-time). The discount/credit is free text per deal:
+// → implementation fee (20% of the annual platform total, before discount; one-time). The discount/credit is free text per deal:
 // "10%" takes a percentage off gross; "$5K" / "5000" takes a fixed amount off. Capped at gross.
 function parseDiscount(raw, gross) {
   const t = String(raw == null ? '' : raw).trim();
@@ -1160,7 +1165,7 @@ function pricingBreakdown(snapshot) {
     : (Number(s.platformDiscount) ? s.platformDiscount + '%' : '');
   const { amount: discount, pct: discPct } = parseDiscount(raw, gross);
   const net = gross - discount;
-  const implementation = Math.round(net * 0.20);
+  const implementation = Math.round(gross * 0.20);
   return { gross, discPct, discount, net, implementation, total: net + implementation,
            discountLabel: (s.discountLabel || '').trim() };
 }
@@ -3488,7 +3493,7 @@ ${(() => {
       </span>
     </div>
     ${row('ARR (net platform fees)', b.net, { border: true, bold: true })}
-    ${row('Implementation fee (20%, one-time)', b.implementation)}
+    ${row('Implementation (20% of platform total, one-time)', b.implementation)}
     ${row('Year-one contract value', b.total, { border: true })}
   </div>
 </div>`;
@@ -3565,6 +3570,7 @@ function buildStakeholders() {
   </div>
   <div style="margin-bottom:3px"><input class="stk-input stk-name" data-stk="${i}.name" value="${esc(s.name)}" placeholder="Name"></div>
   <div><input class="stk-input stk-sub" data-stk="${i}.title" value="${esc(s.title)}" placeholder="Title / role"></div>
+  <div><input class="stk-input stk-sub" data-stk="${i}.note" value="${esc(s.note || '')}" placeholder="Notes" title="${esc(s.note || '')}"></div>
   <div style="margin-top:5px;display:flex;align-items:center;gap:6px">
     <a class="stk-li-icon${s.linkedin ? ' active' : ''}" ${s.linkedin ? `href="${esc(normalizeLinkedIn(s.linkedin))}" target="_blank" rel="noopener noreferrer"` : 'aria-disabled="true"'} title="${s.linkedin ? 'Open LinkedIn profile' : 'Add a LinkedIn URL to enable'}">
       <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.22.79 24 1.77 24h20.45c.98 0 1.78-.78 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>
@@ -3988,7 +3994,8 @@ function renderStakeholderMap() {
 
     // name + title below
     const nm = mEl('text', { x: s.x, y: s.y + r + 14, 'text-anchor': 'middle', class: 'node-name' });
-    nm.textContent = s.name || 'Unnamed'; g.appendChild(nm);
+    const nmTxt = String(s.name || 'Unnamed').split('|')[0].trim();
+    nm.textContent = nmTxt.length > 26 ? nmTxt.slice(0, 25) + '…' : nmTxt; g.appendChild(nm);
     if (s.title) { const tt = mEl('text', { x: s.x, y: s.y + r + 26, 'text-anchor': 'middle', class: 'node-title' }); tt.textContent = s.title; g.appendChild(tt); }
 
     svg.appendChild(g);
@@ -4728,8 +4735,8 @@ function buildCalls() {
         }
         findingsHTML += '<div class="findings-list">' + others.map((f) => {
           const fi = c.findings.indexOf(f);
-          const typeClass = { meddpicc: 'ft-meddpicc', pov: 'ft-pov', stakeholder: 'ft-stakeholder', gap: 'ft-gap', action: 'ft-action' }[f.type] || 'ft-action';
-          const typeLabel = { meddpicc: 'Qualification', pov: 'POV update', stakeholder: 'Stakeholder', gap: 'Gap', action: 'Next action' }[f.type] || f.type;
+          const typeClass = { meddpicc: 'ft-meddpicc', pov: 'ft-pov', stakeholder: 'ft-stakeholder', gap: 'ft-gap', action: 'ft-action', issue: 'ft-pov', pricing: 'ft-meddpicc' }[f.type] || 'ft-action';
+          const typeLabel = { meddpicc: 'Qualification', pov: 'POV update', stakeholder: 'Stakeholder', gap: 'Gap', action: 'Next action', issue: 'Proposal issue', pricing: 'Pricing' }[f.type] || f.type;
           const cardClass = f.status === 'accepted' ? ' accepted' : f.status === 'rejected' ? ' rejected' : '';
           return `<div class="finding-card${cardClass}">
   <div class="finding-header">
@@ -4764,6 +4771,7 @@ function buildCalls() {
   <div class="call-entry-header" onclick="toggleCall(${ci})">
     <div class="call-entry-meta">
       <span class="call-date">${esc(c.date || 'Undated call')}</span>
+      ${c.kind && c.kind !== 'Call' ? `<span class="call-kind">${esc(c.kind)}</span>` : ''}${c.fileName ? `<span class="call-participants" title="${esc(c.fileName)}">${esc(c.fileName.length > 34 ? c.fileName.slice(0, 32) + '…' : c.fileName)}</span>` : ''}
       <span class="call-participants">${esc(c.participants || '')}${c.ourTeam ? ` · <span style="opacity:0.7">our: ${esc(c.ourTeam)}</span>` : ''}</span>
       ${c.findings && c.findings.length ? `<span class="call-finding-count">${accepted} applied · ${pending} pending</span>` : ''}
       ${(() => { const m = (c.findings || []).filter(f => (f.missed && !f.status) || f.legacyUnresolved).length; return m ? `<span class="call-finding-count missed">${m} to re-check</span>` : ''; })()}
@@ -4807,15 +4815,22 @@ ${callsHTML}
       <input class="field-input" id="callOurTeam" placeholder="e.g. Austin, Beth, me">
     </div>
   </div>
+  <div class="comms-kind-row">
+    <span class="chip-group" id="commsKind" role="group" aria-label="Comms type">
+      ${['Call', 'Email', 'Proposal'].map(k => `<button class="chip${commsKind === k ? ' sel-blue' : ''}" data-kind="${k}" onclick="setCommsKind('${k}')">${k}</button>`).join('')}
+    </span>
+    <label class="action-btn pdf-attach" title="Read a PDF (e.g. a proposal deck) into the box below">Attach PDF<input type="file" accept="application/pdf,.pdf" onchange="attachCommsPdf(this)" hidden></label>
+    <span id="pdfStatus" class="pdf-status">${_commsPdfName ? esc(_commsPdfName) + ' attached' : ''}</span>
+  </div>
   <div class="field-full">
-    <div class="field-label">Comms <span class="fmt-hint">call transcript, meeting notes, email thread, Fireflies/Gong/Fathom export — anything</span></div>
+    <div class="field-label">Comms <span class="fmt-hint">call transcript, meeting notes, email thread, Fireflies/Gong/Fathom export, or an attached PDF</span></div>
     <textarea class="field-input" id="callTranscript" rows="8" placeholder="Paste a transcript, notes, or an email thread here…&#10;&#10;Speaker labels help but aren't required. The more context, the better the analysis."></textarea>
   </div>
   <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
     <button class="analyse-btn" id="analyseBtn" onclick="analyseCall()">
-      <span id="analyseBtnText">Analyse against plan</span>
+      <span id="analyseBtnText">${commsKind === 'Proposal' ? 'Check proposal against plan' : 'Analyse against plan'}</span>
     </button>
-    <span style="font-size:11px;color:var(--text-tertiary)">Claude will map findings to your Qualification, POV, stakeholders, and gaps. You review before anything is applied.</span>
+    <span id="commsKindHint" style="font-size:11px;color:var(--text-tertiary)">${commsKind === 'Proposal' ? 'Checks pricing, commitments, people and gaps against the plan. You review before anything is applied.' : 'Claude will map findings to your Qualification, POV, stakeholders, and gaps. You review before anything is applied.'}</span>
   </div>
   <div id="analyseError" style="font-size:12px;color:var(--text-danger);margin-top:8px;display:none"></div>
 </div>`;
@@ -4846,9 +4861,141 @@ function removeCall(ci) {
   });
 }
 
+/* ── Comms type + PDF attach ── */
+let commsKind = 'Call';          // 'Call' | 'Email' | 'Proposal'
+let _commsPdfName = '';
+const PDFJS_VER = '3.11.174';
+let _pdfjsPromise = null;
+function loadPdfJs() {
+  if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+  if (_pdfjsPromise) return _pdfjsPromise;
+  _pdfjsPromise = new Promise((resolve, reject) => {
+    const sc = document.createElement('script');
+    sc.src = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VER}/pdf.min.js`;
+    sc.onload = () => {
+      const lib = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
+      if (!lib) { _pdfjsPromise = null; reject(new Error('The PDF reader did not load.')); return; }
+      lib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VER}/pdf.worker.min.js`;
+      resolve(lib);
+    };
+    sc.onerror = () => { _pdfjsPromise = null; reject(new Error('Could not load the PDF reader. Check your connection and try again.')); };
+    document.head.appendChild(sc);
+  });
+  return _pdfjsPromise;
+}
+// Text only — nothing is uploaded and the file itself isn't stored.
+async function extractPdfText(buf) {
+  const lib = await loadPdfJs();
+  const pdf = await lib.getDocument({ data: buf }).promise;
+  const pages = [];
+  for (let n = 1; n <= pdf.numPages; n++) {
+    const page = await pdf.getPage(n);
+    const tc = await page.getTextContent();
+    const txt = tc.items.map(it => (it.str || '') + (it.hasEOL ? '\n' : ' ')).join('')
+      .replace(/[ \t]+/g, ' ').replace(/ *\n */g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+    if (txt) pages.push(`[Page ${n}]\n${txt}`);
+  }
+  return { text: pages.join('\n\n'), pages: pdf.numPages };
+}
+function setCommsKind(k) {
+  commsKind = k;
+  document.querySelectorAll('#commsKind .chip').forEach(b => b.classList.toggle('sel-blue', b.dataset.kind === k));
+  const btn = document.getElementById('analyseBtnText');
+  if (btn) btn.textContent = k === 'Proposal' ? 'Check proposal against plan' : 'Analyse against plan';
+  const hint = document.getElementById('commsKindHint');
+  if (hint) hint.textContent = k === 'Proposal'
+    ? 'Checks pricing, commitments, people and gaps against the plan. You review before anything is applied.'
+    : 'Claude will map findings to your Qualification, POV, stakeholders, and gaps. You review before anything is applied.';
+}
+async function attachCommsPdf(input) {
+  const file = input.files && input.files[0];
+  input.value = '';
+  if (!file) return;
+  const status = document.getElementById('pdfStatus');
+  const say = (t, err) => { if (status) { status.textContent = t; status.style.color = err ? 'var(--text-danger)' : 'var(--text-tertiary)'; } };
+  if (!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf') { say('Only PDF files are supported.', true); return; }
+  say('Reading ' + file.name + '…');
+  try {
+    const { text, pages } = await extractPdfText(await file.arrayBuffer());
+    if (text.replace(/\[Page \d+\]/g, '').trim().length < 200) {
+      say(`${file.name} has little or no selectable text (likely scanned images). Paste the text instead.`, true);
+      return;
+    }
+    const ta = document.getElementById('callTranscript');
+    if (ta) ta.value = text.length > 60000 ? text.slice(0, 60000) + '\n[…truncated]' : text;
+    _commsPdfName = file.name;
+    if (/proposal|quote|pricing|order form|sow/i.test(file.name + ' ' + text.slice(0, 2000)) || commsKind === 'Call') setCommsKind('Proposal');
+    say(`${file.name} · ${pages} page${pages === 1 ? '' : 's'} read. Review the text below, then run the check.`);
+  } catch (e) {
+    say('Could not read that PDF: ' + e.message, true);
+  }
+}
+
+// Plan pricing + commitments, for checking a proposal against
+function proposalPlanBlock() {
+  const sn = d().snapshot || {};
+  const b = pricingBreakdown(sn);
+  const mods = Object.keys(MODULE_TIERS).map(k => {
+    const t = MODULE_TIERS[k].tiers.find(x => x.tier === (sn.modules || {})[k]);
+    return `- ${MODULE_TIERS[k].label}: ${t ? `${t.tier} (${t.max === null ? t.min + '+' : t.min + '–' + t.max}) $${t.price.toLocaleString()}` : 'not selected'}`;
+  }).join('\n');
+  const tierTable = Object.keys(MODULE_TIERS).map(k => `- ${MODULE_TIERS[k].label} (field snapshot.modules.${k}): ` + MODULE_TIERS[k].tiers.map(t => `${t.tier} ${t.max === null ? t.min + '+' : t.min + '–' + t.max} = $${t.price / 1000}K`).join('; ')).join('\n');
+  const rows = (d().map.rows || []).filter(r => (r.action || '').trim());
+  return `PRICE LIST (the only valid tiers and prices):
+${tierTable}
+PRICING RULES: implementation = 20% of the annual platform total BEFORE discount (one-time). Year-one cost = (platform total − discount) + implementation. ARR = platform total − discount.
+
+PRICING CURRENTLY ON THE PLAN:
+${mods}
+- Annual platform total: $${b.gross.toLocaleString()}
+- Discount / credit: ${b.discount ? `${b.discountLabel || 'Discount'} ${sn.discountCredit || ''} = −$${b.discount.toLocaleString()}` : 'none'}
+- ARR: $${b.net.toLocaleString()} · Implementation: $${b.implementation.toLocaleString()} · Year one: $${b.total.toLocaleString()}
+
+CLOSE DATE ON THE PLAN: ${sn.renewalQ || 'not set'}
+MUTUAL ACTION PLAN ROWS ALREADY ON THE PLAN:
+${rows.length ? rows.map(r => `- ${r.action} | ours: ${r.ownerEleven || '—'} | theirs: ${r.ownerAccount || '—'} | ${r.date || 'no date'} | ${r.status || 'Open'}`).join('\n') : 'None'}
+
+TODAY: ${todayMMDDYY()}`;
+}
+function buildProposalPrompt(planContext, ourTeamBlock, custBlock, docText) {
+  return `You are reviewing a sales PROPOSAL that the seller (Eleven Systems) wrote for this customer. Check it against the opportunity plan before it is finalized or sent. Be precise with numbers.
+
+CURRENT PLAN STATE:
+${planContext}
+
+${proposalPlanBlock()}
+${ourTeamBlock}${custBlock}
+
+PROPOSAL TEXT (extracted from the PDF; tables may be flattened into lines):
+${docText}
+
+Work through these checks:
+1. PRICING. Read the modules, tiers, prices, discount, implementation and totals in the proposal. Check them against the PRICE LIST and PRICING RULES, and recompute the arithmetic. Any arithmetic error, a price that doesn't match the list, or an implementation fee that breaks the rule → type "issue" (no apply), stating the correct figure.
+   If the proposal's modules/tiers or discount differ from PRICING CURRENTLY ON THE PLAN, and the proposal is internally consistent, offer to update the plan:
+   - module tier: type "pricing", apply.field "snapshot.modules.financial" | "snapshot.modules.property" | "snapshot.modules.family", apply.value "Tier N"
+   - discount: type "pricing", apply.field "snapshot.discountCredit", apply.value like "20%" or "$14K"
+2. COMMITMENTS. For each dated commitment / next step in the proposal that is NOT already in MUTUAL ACTION PLAN ROWS: type "action", apply.field "map.row", apply.value "Action | Seller owner | Customer owner | mm/dd/yy" (leave an owner empty if it belongs only to the other side; "Rafferty & Eleven" style means both). If the contract-signature date differs from CLOSE DATE ON THE PLAN: type "action", apply.field "snapshot.renewalQ", apply.value "mm/dd/yy".
+3. PEOPLE. Customer-side people named in the proposal who are not in CURRENT STAKEHOLDERS: type "stakeholder", apply.field "stakeholder.new", apply.value "Full Name | Title | Role | Sentiment | short note" (Role one of Economic buyer, Evaluator, Champion, Coach, Blocker, Neutral; Sentiment one of Advocate, Neutral, Risk; leave unknown parts empty). Seller-side people are NEVER stakeholders.
+4. GAPS the proposal exposes, using MEDDPICC: e.g. no defined success metric or baseline, a thin paper process (no legal/procurement step before signature), customer roles left TBD, economic buyer not engaged. Type "gap", apply.field "gap.[section id]" from the MEDDPICC list, apply.value = the gap.
+5. QUALITY. Dates already in the past relative to TODAY, internal inconsistencies, typos, wrong names, mismatched copyright years → type "issue" (no apply).
+
+Rules: only report what is new or wrong versus the plan; don't restate what already matches. Maximum 15 findings. Evidence = the exact proposal wording or figure (max 30 words).
+
+Return ONLY valid JSON, no markdown:
+{
+  "summary": "one sentence, max 25 words: is the proposal ready, and the biggest fix",
+  "findings": [
+    { "type": "issue" | "pricing" | "action" | "stakeholder" | "gap" | "pov", "title": "max 12 words", "evidence": "…", "suggestion": "max 20 words", "apply": { "field": "…", "value": "…" } }
+  ],
+  "coaching": [
+    { "priority": "high" | "medium", "action": "specific fix before sending or finalizing (max 15 words)", "rationale": "max 20 words", "section": "snapshot | meddpicc | stakeholder | map" }
+  ]
+}`;
+}
+
 async function analyseCall() {
   const transcript = document.getElementById('callTranscript').value.trim();
-  if (!transcript) { showAnalyseError('Please paste a transcript first.'); return; }
+  if (!transcript) { showAnalyseError(commsKind === 'Proposal' ? 'Attach the proposal PDF or paste its text first.' : 'Please paste a transcript first.'); return; }
 
   // Duplicate guard — normalize whitespace/case and compare against logged calls
   const normT = transcript.replace(/\s+/g, ' ').toLowerCase();
@@ -4872,6 +5019,8 @@ async function runCallAnalysis(transcript, opts) {
   const date         = re ? (re.date || '') : fieldVal('callDate');
   const participants = re ? (re.participants || '') : fieldVal('callParticipants');
   const ourTeam      = re ? (re.ourTeam || '') : fieldVal('callOurTeam');
+  const kind         = re ? (re.kind || 'Call') : commsKind;
+  const fileName     = re ? (re.fileName || '') : _commsPdfName;
 
   if (re) { re.reanalysing = true; renderCurrentSlide(); } else setAnalysing(true);
 
@@ -4925,7 +5074,7 @@ HOW WE WIN: ${o.competitive || 'not set'}`;
     ? `\nCUSTOMER PARTICIPANTS: ${participants}`
     : '';
 
-  const prompt = `You are a B2B sales analyst reviewing a call transcript against an opportunity plan for Eleven Systems, an AI platform for UHNW wealth management and family office life management.
+  const prompt = kind === 'Proposal' ? buildProposalPrompt(planContext, ourTeamBlock, custBlock, transcript) : `You are a B2B sales analyst reviewing a ${kind === 'Email' ? 'customer email thread' : 'call transcript'} against an opportunity plan for Eleven Systems, an AI platform for UHNW wealth management and family office life management.
 
 CURRENT PLAN STATE:
 ${planContext}
@@ -4956,7 +5105,7 @@ Rules:
 - Only surface findings that are NEW or CONTRADICTORY to the current plan state. Do not repeat what is already confirmed.
 - For type "meddpicc": apply.field must be copied exactly from the CURRENT MEDDPICC STATE list (e.g. "meddpicc.champion.2"), apply.value = "yes" or "no". Never invent ids or indexes; if no listed question fits, use type "gap" or "action" instead.
 - For type "pov": apply.field = "pov.[whyChange|whyNow|whyUs|whatSolution]", apply.value = updated text
-- For type "stakeholder": apply.field = "stakeholder.new" or "stakeholder.[name].sentiment", apply.value = the value
+- For type "stakeholder": apply.field = "stakeholder.new" or "stakeholder.[name].sentiment". For "stakeholder.new", apply.value = "Full Name | Title | Role | Sentiment | short note" where Role is one of Economic buyer, Evaluator, Champion, Coach, Blocker, Neutral and Sentiment is one of Advocate, Neutral, Risk; leave a part empty if unknown, never write "Unknown". For sentiment, apply.value = Advocate, Neutral or Risk. Skip anyone already on the stakeholder map.
 - For type "gap": apply.field = "gap.[section id]" using a section id from the list above (e.g. "gap.economic_buyer"), apply.value = gap description
 - For type "action": apply.field = "map.nextTouch", apply.value = suggested next action
 - For type "red_flag": no apply needed — these are warnings only. Use for signs champion is stalling, EB is blocked, competitor is advancing, or trust has eroded.
@@ -5018,6 +5167,8 @@ Return this exact structure — all three keys required:
       participants,
       ourTeam,
       transcript,
+      kind,
+      fileName,
       summary: parsed.summary || '',
       findings,
       coaching: parsed.coaching || [],
@@ -5029,6 +5180,7 @@ Return this exact structure — all three keys required:
       // Clear the sent comms; keep "Our team" since it rarely changes between calls
       const ourTeamKeep = (document.getElementById('callOurTeam') || {}).value || '';
       ['callTranscript', 'callDate', 'callParticipants'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+      commsKind = 'Call'; _commsPdfName = '';
       _commsDraft = { oppId: _target.id, vals: { callOurTeam: ourTeamKeep } };
       renderCurrentSlide();
     } else {
@@ -5055,6 +5207,78 @@ function setAnalysing(on) {
 function showAnalyseError(msg) {
   const el = document.getElementById('analyseError');
   if (el) { el.textContent = msg; el.style.display = 'block'; }
+}
+
+// The AI writes new stakeholders as "Name | Title | Role | Sentiment | note".
+// Split that into the right fields instead of using the whole string as a name.
+const STK_ROLES = ['Economic buyer', 'Evaluator', 'Champion', 'Coach', 'Blocker', 'Neutral'];
+function parseStakeholderText(raw) {
+  const slots = String(raw || '').split('|').map(x => x.trim());
+  // Canonical "Name | Title | Role | Sentiment | note" — read by position so empty slots don't shift fields
+  if (slots.length >= 4) {
+    const roleOf = v => { const k = v.toLowerCase(); return /economic buyer|^eb$|decision maker/.test(k) ? 'Economic buyer' : /champion/.test(k) ? 'Champion' : /evaluator/.test(k) ? 'Evaluator' : /^coach$/.test(k) ? 'Coach' : /blocker|detractor/.test(k) ? 'Blocker' : /^neutral$/.test(k) ? 'Neutral' : ''; };
+    const sentOf = v => { const k = v.toLowerCase(); if (!k || /unknown/.test(k)) return ''; return /^(positive|supportive|advocate|enthusiastic|favorable|warm|engaged)$/.test(k) ? 'Advocate' : /skeptical|negative|resistant|cold|risk|opposed/.test(k) ? 'Risk' : 'Neutral'; };
+    const junk = v => /^unknown( role)?$|^n\/?a$|^tbd$/i.test(v);
+    const role = roleOf(slots[2] || '');
+    const notes = [!role && slots[2] && !junk(slots[2]) ? slots[2] : '', ...slots.slice(4)].filter(x => x && !junk(x));
+    return { name: slots[0], title: junk(slots[1] || '') ? '' : (slots[1] || ''), role, sentiment: sentOf(slots[3] || ''), note: notes.join(' · ') };
+  }
+  const parts = slots.filter(Boolean);
+  const out = { name: parts.shift() || '', title: '', role: '', sentiment: '', note: '' };
+  const notes = [];
+  parts.forEach(p => {
+    const k = p.toLowerCase();
+    if (/^unknown( role)?$|^n\/?a$|^tbd$/.test(k)) return;
+    const role = /economic buyer|^eb$|decision maker/.test(k) ? 'Economic buyer'
+      : /champion/.test(k) ? 'Champion'
+      : /evaluator/.test(k) ? 'Evaluator'
+      : /^coach$/.test(k) ? 'Coach'
+      : /blocker|detractor/.test(k) ? 'Blocker'
+      : /^neutral$/.test(k) && !out.role ? 'Neutral' : '';
+    if (role && !out.role) { out.role = role; return; }
+    if (/^(cautiously )?(positive|supportive|advocate|enthusiastic|engaged|favorable|warm|neutral|skeptical|negative|resistant|cold|exploratory|risk|opposed|lukewarm|unclear)$/.test(k)) {
+      if (!out.sentiment) out.sentiment = /^(positive|supportive|advocate|enthusiastic|favorable|warm|engaged)$/.test(k) ? 'Advocate'
+        : /skeptical|negative|resistant|cold|risk|opposed/.test(k) ? 'Risk' : 'Neutral';
+      return;
+    }
+    if (!out.title && p.length <= 40 && p.split(/\s+/).length <= 5) { out.title = p; return; }
+    notes.push(p);
+  });
+  out.note = notes.join(' · ');
+  return out;
+}
+// One-time cleanup of stakeholders whose name holds the whole "a | b | c" string.
+// Merges into an existing person of the same name, or rewrites the entry in place.
+function repairStakeholders(data) {
+  const stk = data.stakeholders || [];
+  for (let i = stk.length - 1; i >= 0; i--) {
+    const s0 = stk[i];
+    if (!s0 || !String(s0.name || '').includes('|')) continue;
+    const p = parseStakeholderText(s0.name);
+    if (!p.name) continue;
+    const j = stk.findIndex((x, k) => k !== i && (x.name || '').trim().toLowerCase() === p.name.toLowerCase());
+    if (j >= 0) {
+      const keep = stk[j];
+      if (!keep.title && (s0.title || p.title)) keep.title = s0.title || p.title;
+      if ((!keep.role || keep.role === 'Neutral') && p.role && p.role !== 'Neutral') keep.role = p.role;
+      if ((!keep.sentiment || keep.sentiment === 'Neutral') && p.sentiment && p.sentiment !== 'Neutral') keep.sentiment = p.sentiment;
+      if (!keep.note && p.note) keep.note = p.note;
+      if (!keep.win && s0.win) keep.win = s0.win;
+      // remove the duplicate and re-point its map links at the person we kept
+      stk.splice(i, 1);
+      const target = j > i ? j - 1 : j;
+      data.edges = (data.edges || [])
+        .map(e => ({ ...e, from: e.from === i ? target : (e.from > i ? e.from - 1 : e.from), to: e.to === i ? target : (e.to > i ? e.to - 1 : e.to) }))
+        .filter(e => e.from !== e.to);
+    } else {
+      s0.name = p.name;
+      if (s0.title == null) s0.title = '';
+      if (!s0.title && p.title) s0.title = p.title;
+      if ((!s0.role || s0.role === 'Neutral') && p.role) s0.role = p.role;
+      if ((!s0.sentiment || s0.sentiment === 'Neutral') && p.sentiment) s0.sentiment = p.sentiment;
+      if (!s0.note && p.note) s0.note = p.note;
+    }
+  }
 }
 
 // Work out exactly what a finding would change, or null if it can't be applied.
@@ -5086,11 +5310,39 @@ function resolveFindingTarget(f, data) {
     return null;
   }
   if (field === 'map.nextTouch') return value ? { kind: 'field', path: 'map.nextTouch', value, label: 'Next touch' } : null;
+  if (field === 'map.row') {
+    const [action = '', ownerEleven = '', ownerAccount = '', date = ''] = String(value || '').split('|').map(x => x.trim());
+    if (!action) return null;
+    const norm = t => t.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+    if (((data.map && data.map.rows) || []).some(r => norm(r.action || '') === norm(action))) return null;
+    const dt = normalizeCommsDate(date);
+    return { kind: 'map-row', row: { action, ownerEleven, ownerAccount, date: dt, status: 'Open' }, label: `Add to Mutual Action Plan · ${action}${dt ? ' (' + dt + ')' : ''}` };
+  }
+  if (field === 'snapshot.renewalQ') {
+    const dt = normalizeCommsDate(value);
+    if (!/^\d{2}\/\d{2}\/\d{2}$/.test(dt) || dt === ((data.snapshot && data.snapshot.renewalQ) || '')) return null;
+    return { kind: 'field', path: 'snapshot.renewalQ', value: dt, label: 'Close date → ' + dt };
+  }
+  if (/^snapshot\.modules\.(financial|property|family)$/.test(field)) {
+    const k = field.split('.')[2];
+    const m = String(value || '').match(/tier\s*([1-5])/i);
+    if (!m) return null;
+    const tier = 'Tier ' + m[1];
+    if (((data.snapshot && data.snapshot.modules) || {})[k] === tier) return null;
+    const t = MODULE_TIERS[k].tiers.find(x => x.tier === tier);
+    return { kind: 'module', mod: k, value: tier, label: `${MODULE_TIERS[k].label} module → ${tier} ($${t.price / 1000}K)` };
+  }
+  if (field === 'snapshot.discountCredit' || field === 'snapshot.discountLabel') {
+    const v = String(value || '').trim();
+    if (!v || v === String(((data.snapshot || {})[field.split('.')[1]]) || '')) return null;
+    return { kind: 'field', path: field, value: v, label: (field.endsWith('Credit') ? 'Discount / credit → ' : 'Discount label → ') + v };
+  }
   if (field === 'stakeholder.new') {
-    const nm = String(value || '').trim();
-    if (!nm) return null;
-    const exists = (data.stakeholders || []).some(st => (st.name || '').trim().toLowerCase() === nm.toLowerCase());
-    return exists ? null : { kind: 'stk-new', name: nm, label: 'Add stakeholder · ' + nm };
+    const p = parseStakeholderText(value);
+    if (!p.name) return null;
+    const exists = (data.stakeholders || []).some(st => (st.name || '').trim().toLowerCase() === p.name.toLowerCase());
+    const extra = [p.title, p.role].filter(Boolean).join(', ');
+    return exists ? null : { kind: 'stk-new', name: p.name, person: p, label: 'Add stakeholder · ' + p.name + (extra ? ` (${extra})` : '') };
   }
   if (field.startsWith('stakeholder.') && field.endsWith('.sentiment')) {
     const nm = field.slice('stakeholder.'.length, -('.sentiment'.length)).trim();
@@ -5109,7 +5361,7 @@ function resolveFindingTarget(f, data) {
 function findingState(f, data) {
   const ap = f.apply || {};
   if (ap.field === 'stakeholder.new') {
-    const nm = String(ap.value || '').trim().toLowerCase();
+    const nm = parseStakeholderText(ap.value).name.toLowerCase();
     if (nm && (data.stakeholders || []).some(st => (st.name || '').trim().toLowerCase() === nm)) return { applied: true, label: 'Add stakeholder · ' + ap.value };
   }
   const t = resolveFindingTarget(f, data);
@@ -5120,12 +5372,14 @@ function findingState(f, data) {
   else if (t.kind === 'field') { const [x, y] = t.path.split('.'); applied = String((data[x] || {})[y] || '').trim() === String(t.value).trim(); }
   else if (t.kind === 'stk-sent') { const st = (data.stakeholders || []).find(z => (z.name || '').trim().toLowerCase() === t.name.toLowerCase()); applied = !!st && st.sentiment === t.value; }
   else if (t.kind === 'gap') applied = (mp.gapOverrides || {})[t.sid + '_gap'] === t.value;
+  else if (t.kind === 'module') applied = ((data.snapshot || {}).modules || {})[t.mod] === t.value;
   return { target: t, applied, label: t.label };
 }
 function migrateOpps() {
   opps.forEach(a => {
     if (!a || !a.data) return;
     // Anything already in Playbk is at least in Discovery
+    repairStakeholders(a.data);
     const sn = a.data.snapshot || (a.data.snapshot = {});
     if (!(sn.firmName || '').trim() && a.name) sn.firmName = a.name;
     if (Number(sn.platformDiscount) && !(sn.discountCredit && String(sn.discountCredit).trim())) {
@@ -5202,9 +5456,23 @@ function acceptFinding(ci, fi) {
     } else if (t.kind === 'field') {
       const parts = t.path.split('.');
       undo.path = t.path; undo.prev = (d()[parts[0]] || {})[parts[1]];
+      if (t.path === 'snapshot.renewalQ') {
+        const a0 = parseLooseDate(undo.prev), b0 = parseLooseDate(t.value);
+        if (a0 && b0 && b0 - a0 >= DAY_MS) { const dl = dealOf(opp()); dl.slips.push({ from: undo.prev, to: t.value, at: Date.now() }); dl.history.push({ type: 'slip', from: undo.prev, to: t.value, at: Date.now() }); undo.slip = true; }
+      }
+      if (t.path === 'snapshot.discountCredit') delete d().snapshot.platformDiscount;
       setDeep(t.path, t.value);
+    } else if (t.kind === 'map-row') {
+      if (!d().map.rows) d().map.rows = [];
+      d().map.rows.push({ ...t.row });
+      undo.action = t.row.action;
+    } else if (t.kind === 'module') {
+      if (!d().snapshot.modules) d().snapshot.modules = {};
+      undo.mod = t.mod; undo.prev = d().snapshot.modules[t.mod];
+      d().snapshot.modules[t.mod] = t.value;
     } else if (t.kind === 'stk-new') {
-      d().stakeholders.push({ role: 'Neutral', name: t.name, title: '', sentiment: 'Neutral', win: '' });
+      const p = t.person || { name: t.name };
+      d().stakeholders.push({ role: p.role || 'Neutral', name: p.name, title: p.title || '', sentiment: p.sentiment || 'Neutral', note: p.note || '', win: '', influence: 3 });
       undo.name = t.name;
     } else if (t.kind === 'stk-sent') {
       const st = d().stakeholders.find(s => (s.name || '').trim().toLowerCase() === t.name.toLowerCase());
@@ -5248,6 +5516,12 @@ function undoFinding(ci, fi) {
       if (mp.meddNotes) mp.meddNotes[sid] = u.prevNote || '';
     } else if (u.kind === 'field') {
       setDeep(u.path, u.prev === undefined ? '' : u.prev);
+      if (u.slip) { const dl = dealOf(opp()); dl.slips.pop(); }
+    } else if (u.kind === 'map-row') {
+      const rows = d().map.rows || [];
+      for (let k = rows.length - 1; k >= 0; k--) if (rows[k].action === u.action) { rows.splice(k, 1); break; }
+    } else if (u.kind === 'module') {
+      if (u.prev === undefined) delete d().snapshot.modules[u.mod]; else d().snapshot.modules[u.mod] = u.prev;
     } else if (u.kind === 'stk-new') {
       const i = d().stakeholders.findIndex(s => (s.name || '').trim().toLowerCase() === (u.name || '').toLowerCase());
       if (i >= 0) d().stakeholders.splice(i, 1);
