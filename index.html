@@ -3448,8 +3448,8 @@ ${buildStagePanel()}
     </div>
   </div>
   <div>
-    <div class="field-label">Referred by ${s.source === 'Referral' ? '' : '<span class="fmt-hint">for referrals</span>'}</div>
-    <input class="field-input" data-f="snapshot.referrer" placeholder="e.g. Jeff Erdman, Merrill Lynch" value="${esc(s.referrer || '')}"${s.source === 'Referral' ? '' : ' disabled'}>
+    <div class="field-label">Referred by <span class="fmt-hint">sets Source to Referral</span></div>
+    <input class="field-input" data-f="snapshot.referrer" placeholder="e.g. Jeff Erdman, Merrill Lynch" value="${esc(s.referrer || '')}">
   </div>
 </div>
 <div class="field-grid">
@@ -3761,6 +3761,14 @@ function sourceLabel(s) {
 }
 
 function attachListeners() {
+  // Typing a referrer marks the deal as a Referral (chips update in place so focus isn't lost)
+  const refEl = document.querySelector('[data-f="snapshot.referrer"]');
+  if (refEl) refEl.addEventListener('input', () => {
+    if (refEl.value.trim() && d().snapshot.source !== 'Referral') {
+      d().snapshot.source = 'Referral';
+      refEl.closest('.field-grid').querySelectorAll('.chip').forEach(c => c.classList.toggle('sel-blue', c.textContent.trim() === 'Referral'));
+    }
+  });
   const fn = document.querySelector('[data-f="snapshot.firmName"]');
   if (fn) {
     fn.addEventListener('focus', () => { fn.dataset.prev = fn.value; });
