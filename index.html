@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Opportunity Plan</title>
-<link rel="icon" href="/favicon.ico" sizes="any">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -776,6 +774,15 @@ select.field-input{cursor:pointer}
 .pdf-attach:focus-within{outline:2px solid var(--text-info);outline-offset:1px}
 .pdf-status{font-size:11px;color:var(--text-tertiary)}
 .call-kind{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:var(--bg-info);color:var(--text-info);border:0.5px solid var(--border-info)}
+.pov-suggest{margin-top:6px;padding:8px 10px;border-radius:8px;background:var(--bg-info);border:0.5px dashed var(--border-info);color:var(--text-info)}
+.pov-suggest-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;opacity:.9}
+.pov-suggest-btns{display:flex;gap:4px;text-transform:none;letter-spacing:0}
+.pov-suggest-btns button{font-size:11px;font-family:var(--font);padding:2px 9px;border-radius:6px;border:0.5px solid var(--border-info);background:var(--bg-primary);color:var(--text-info);cursor:pointer}
+.pov-suggest-btns button:first-child{font-weight:600}
+.pov-suggest-strat{font-size:11px;font-weight:600;margin-top:5px}
+.pov-suggest-text{font-size:13px;line-height:1.5;margin-top:4px}
+.pov-suggest-ask{font-size:12px;line-height:1.45;margin-top:6px;color:var(--text-secondary)}
+.pov-grid textarea.field-input{resize:vertical;overflow:hidden}
 .pipe-next{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:200px}
 @media(max-width:760px){
   .stage-track{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -1859,6 +1866,7 @@ function renderCurrentSlide() {
   c.innerHTML = '';
   _renderSlideBody(c);
   _lastViewKey = viewKey;
+  autosizeTextareas(c);
   _lastRenderedOppId = opp() ? opp().id : null;
   if (_commsDraft && opp() && _commsDraft.oppId === opp().id) {
     Object.keys(_commsDraft.vals).forEach(id => { const el = document.getElementById(id); if (el && (_commsDraft.vals[id] || !el.value)) el.value = _commsDraft.vals[id]; });
@@ -3269,7 +3277,7 @@ function buildOppPov() {
   return `${oppNameBadge()}<div class="slide-title">Opportunity</div>
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
   <div style="font-size:13px;color:var(--text-tertiary)">Start with why they'd change. The rest follows.</div>
-  <button class="ai-draft-btn" onclick="draftAccountPov()" title="Draft all four from what you know">✦ Draft all</button>
+  <button class="ai-draft-btn" onclick="draftAccountPov()" title="Drafts the four Why questions, and suggests the four below for you to confirm in discovery">✦ Draft all</button>
 </div>
 <div class="pov-grid">
   <div class="pov-card${!hasAnyWhy ? ' pov-card-active' : ''}">
@@ -3290,15 +3298,18 @@ function buildOppPov() {
   </div>
   <div class="pov-card">
     <div class="pov-q">Business problem <span class="fmt-hint" style="font-weight:400">operational / financial pain</span></div>
-    <div class="talk-wrap"><textarea class="field-input" rows="2" data-f="opppov.businessProblem" placeholder="e.g. The principal's team spends 3 days per month reconciling data across 6 systems with no single view of net worth or exposure. A control and reputational risk problem, not a reporting problem.">${esc(o.businessProblem)}</textarea><button class="talk-btn" onclick="startTalk(event,'opppov.businessProblem')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_opppov_businessProblem"></div>
+    <div class="talk-wrap"><textarea class="field-input" rows="3" data-f="opppov.businessProblem" placeholder="e.g. The principal's team spends 3 days per month reconciling data across 6 systems with no single view of net worth or exposure. A control and reputational risk problem, not a reporting problem.">${esc(o.businessProblem)}</textarea><button class="talk-btn" onclick="startTalk(event,'opppov.businessProblem')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div>
+    ${povSuggestHTML('businessProblem')}<div class="talk-status" id="ts_opppov_businessProblem"></div>
   </div>
   <div class="pov-card">
     <div class="pov-q">Success metric <span class="fmt-hint" style="font-weight:400">quantified, EB-ready</span></div>
-    <div class="talk-wrap"><textarea class="field-input" rows="2" data-f="opppov.successMetric" placeholder="e.g. Reduce monthly reporting prep from 3 days to 2 hours. Single dashboard the principal reviews weekly without advisor involvement.">${esc(o.successMetric)}</textarea><button class="talk-btn" onclick="startTalk(event,'opppov.successMetric')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_opppov_successMetric"></div>
+    <div class="talk-wrap"><textarea class="field-input" rows="3" data-f="opppov.successMetric" placeholder="e.g. Reduce monthly reporting prep from 3 days to 2 hours. Single dashboard the principal reviews weekly without advisor involvement.">${esc(o.successMetric)}</textarea><button class="talk-btn" onclick="startTalk(event,'opppov.successMetric')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div>
+    ${povSuggestHTML('successMetric')}<div class="talk-status" id="ts_opppov_successMetric"></div>
   </div>
   <div class="pov-card">
     <div class="pov-q">The alternative <span class="fmt-hint" style="font-weight:400">status quo = the real competitor</span></div>
-    <div class="talk-wrap"><textarea class="field-input" rows="2" data-f="opppov.alternative" placeholder="e.g. Status quo is Excel + Addepar reports emailed monthly — 'works well enough.' Real competition is inertia plus Addepar's account team. Trigger: a data discrepancy in front of the principal last quarter.">${esc(o.alternative)}</textarea><button class="talk-btn" onclick="startTalk(event,'opppov.alternative')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_opppov_alternative"></div>
+    <div class="talk-wrap"><textarea class="field-input" rows="3" data-f="opppov.alternative" placeholder="e.g. Status quo is Excel + Addepar reports emailed monthly — 'works well enough.' Real competition is inertia plus Addepar's account team. Trigger: a data discrepancy in front of the principal last quarter.">${esc(o.alternative)}</textarea><button class="talk-btn" onclick="startTalk(event,'opppov.alternative')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div>
+    ${povSuggestHTML('alternative')}<div class="talk-status" id="ts_opppov_alternative"></div>
   </div>
   <div class="pov-card">
     <div class="pov-q">Strategy &amp; how we win</div>
@@ -3310,7 +3321,8 @@ function buildOppPov() {
         ['Defend',           'We\'re the incumbent — protect and expand']
       ].map(([v, tip]) => `<button class="chip${o.competitiveStrategy === v ? ' sel-blue' : ''}" onclick="setDeep('opppov.competitiveStrategy','${v}');render()" title="${tip}">${v}</button>`).join('')}
     </div>
-    <div class="talk-wrap"><textarea class="field-input" rows="2" data-f="opppov.competitive" placeholder="How do we win? Differentiated angle vs. the alternative?">${esc(o.competitive)}</textarea><button class="talk-btn" onclick="startTalk(event,'opppov.competitive')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div><div class="talk-status" id="ts_opppov_competitive"></div>
+    <div class="talk-wrap"><textarea class="field-input" rows="3" data-f="opppov.competitive" placeholder="How do we win? Differentiated angle vs. the alternative?">${esc(o.competitive)}</textarea><button class="talk-btn" onclick="startTalk(event,'opppov.competitive')" title="Talk this field" tabindex="-1"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div>
+    ${povSuggestHTML('competitive')}<div class="talk-status" id="ts_opppov_competitive"></div>
   </div>
 </div>`;
 }
@@ -5609,7 +5621,7 @@ function stageFocusTag(sec) {
    AI DRAFT HELPERS — AE-first shortcuts
    ================================================================ */
 
-async function callClaude(prompt, btnId, loadingText) {
+async function callClaude(prompt, btnId, loadingText, maxTokens) {
   const claudeKey = getClaudeKey();
   if (!claudeKey) return null;
   const btn = document.getElementById(btnId);
@@ -5618,7 +5630,7 @@ async function callClaude(prompt, btnId, loadingText) {
     const resp = await fetch('/api/claude', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 1000,
+      body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: maxTokens || 1000,
         messages: [{ role: 'user', content: prompt }] })
     });
     const data = await resp.json();
@@ -5650,27 +5662,127 @@ Return ONLY JSON: { "brief": "2-3 sentence brief covering situation, key risk, a
   if (btn) { btn.disabled = false; btn.textContent = '✦ Draft'; }
 }
 
+
+/* ── Opportunity: suggested answers for the discovery fields ──
+   The four "why" questions are drafted straight into their fields. The four below
+   (business problem, success metric, alternative, how we win) are the ones only the
+   customer can confirm, so they come back as blue suggestions with a question to ask.
+   A suggestion never counts as filled until the AE chooses Use. */
+const POV_SUGGEST_FIELDS = ['businessProblem', 'successMetric', 'alternative', 'competitive'];
+function povSuggestHTML(field) {
+  const o = d().opppov || {};
+  const sg = o.suggest && o.suggest[field];
+  if (!sg || !sg.text || (o[field] || '').trim()) return '';
+  const basis = sg.basis === 'evidence' ? 'From your calls and plan' : 'Typical pattern, no evidence yet';
+  return `<div class="pov-suggest" role="note">
+  <div class="pov-suggest-head"><span>✦ Suggested · ${basis}</span>
+    <span class="pov-suggest-btns"><button onclick="usePovSuggestion('${field}')">Use</button><button onclick="dismissPovSuggestion('${field}')">Dismiss</button></span></div>
+  ${field === 'competitive' && sg.strategy ? `<div class="pov-suggest-strat">Strategy: ${esc(sg.strategy)}</div>` : ''}
+  <div class="pov-suggest-text">${esc(sg.text)}</div>
+  ${sg.ask ? `<div class="pov-suggest-ask"><strong>Ask to confirm:</strong> ${esc(sg.ask)}</div>` : ''}
+</div>`;
+}
+function usePovSuggestion(field) {
+  const o = d().opppov;
+  const sg = o.suggest && o.suggest[field];
+  if (!sg) return;
+  o[field] = sg.text;
+  if (field === 'competitive' && sg.strategy && !o.competitiveStrategy) o.competitiveStrategy = sg.strategy;
+  delete o.suggest[field];
+  markCoachingStale();
+  render();
+}
+function dismissPovSuggestion(field) {
+  const o = d().opppov;
+  if (o.suggest) delete o.suggest[field];
+  render();
+}
+// Grow textareas to fit their text, so drafts aren't cut off mid-line
+function autosizeTextareas(root) {
+  (root || document).querySelectorAll('.pov-grid textarea.field-input').forEach(ta => {
+    const fit = () => { ta.style.height = 'auto'; ta.style.height = Math.max(ta.scrollHeight + 2, 64) + 'px'; };
+    fit();
+    if (!ta.dataset.autosize) { ta.dataset.autosize = '1'; ta.addEventListener('input', fit); }
+  });
+}
+// Everything the plan knows about this deal, for drafting
+function oppDraftContext() {
+  const s = d().snapshot || {}, p = d().accountpov || {}, o = d().opppov || {};
+  const b = pricingBreakdown(s);
+  const ma = (d().meddpicc && d().meddpicc.meddAnswers) || {};
+  const mn = (d().meddpicc && d().meddpicc.meddNotes) || {};
+  const confirmed = [];
+  MEDD.forEach(sec => sec.questions.forEach((q, i) => { if (ma[sec.id + '_' + i] === 'yes') confirmed.push(`${sec.title}: ${q.tag}`); }));
+  const evidence = MEDD.map(sec => (mn[sec.id] || '').trim() ? `${sec.title}: ${mn[sec.id].trim().slice(0, 300)}` : '').filter(Boolean);
+  const calls = (d().calls || []).slice(0, 6).map(c => {
+    const acc = (c.findings || []).filter(f => f.status === 'accepted').map(f => `${f.title}${f.evidence ? ' ("' + f.evidence + '")' : ''}`).slice(0, 5);
+    return `- ${c.date || ''} ${c.kind && c.kind !== 'Call' ? '[' + c.kind + '] ' : ''}${c.summary || ''}${acc.length ? '\n  accepted: ' + acc.join('; ') : ''}`;
+  });
+  return `FIRM: ${s.firmName || opp().name} | Type: ${s.firmType || 'unknown'} | Source: ${s.source || 'unknown'}${s.referrer ? ' (referred by ' + s.referrer + ')' : ''}
+MODULES: ${modulesSummary(s.modules) || 'none selected'} | ARR ${fmtARR(b.net)} | Implementation ${fmtARR(b.implementation)}
+${stageGateContext(opp())}
+SITUATION BRIEF: ${s.notes || 'none'}
+STAKEHOLDERS: ${(d().stakeholders || []).map(st => `${st.name || 'unnamed'} (${[st.title, st.role, st.sentiment].filter(Boolean).join(', ')})${st.note ? ': ' + st.note : ''}${st.win ? ' | wins: ' + st.win : ''}`).join('; ') || 'none'}
+WHY CHANGE: ${p.whyChange || '—'} | WHY NOW: ${p.whyNow || '—'} | WHY US: ${p.whyUs || '—'} | SOLUTION: ${p.whatSolution || '—'}
+CONFIRMED QUALIFICATION: ${confirmed.join('; ') || 'none'}
+QUALIFICATION EVIDENCE NOTES:
+${evidence.join('\n') || 'none'}
+RECENT COMMS:
+${calls.join('\n') || 'none logged'}`;
+}
+const ELEVEN_KB = `ELEVEN SYSTEMS — what we sell (use only these capabilities):
+- Eleven Financial: live net worth across accounts, entities and trusts on web and mobile; private equity, venture, hedge funds and directs in one place with capital calls, distributions and valuations; self-serve reports and alerts that show what moved and why.
+- Eleven Property: residences organized (assets, documents, contacts, insurance); art, vehicles and vessels catalogued and tied to coverage and the balance sheet; pre-arrival checklists, issue tracking, a secure Vault per home.
+- Eleven Family: trusts across generations in one ownership view; passports, visas, estate and insurance documents kept current; residency tracking from the travel calendar; giving; a secure Wallet.
+- Onboarding: signature to one live view in about 90 days (scoping, foundation, connected view, go-live value review).
+Common status quo in family offices: spreadsheets and hand-built reports, general ledgers (Sage Intacct, QuickBooks) that don't connect, separate systems for alternatives, point tools such as art CMSs, and advisor-produced reporting. Inertia ("works well enough") is the most common real competitor.`;
+
 async function draftAccountPov() {
   const s = d().snapshot;
   const p = d().accountpov || {};
-  if (!s.firmName) { alert('Add a firm name first.'); return; }
+  const o = d().opppov || (d().opppov = {});
+  if (!s.firmName && !opp().name) { alert('Add a firm name first.'); return; }
   const btn = document.querySelector('[onclick="draftAccountPov()"]');
   if (btn) { btn.disabled = true; btn.textContent = '…'; }
-  const stk = d().stakeholders.map(st => `${st.role}: ${st.name || 'unnamed'}`).join(', ');
-  const prompt = `You are a B2B sales coach. Draft account POV answers for a sales opportunity.
-Firm: ${s.firmName} | Type: ${s.firmType || 'unknown'} | Modules: ${modulesSummary(s.modules) || 'none'} | Stage: ${s.journey || 'Land'}
-Notes: ${s.notes || 'none'} | Stakeholders: ${stk || 'none yet'}
+  const emptyBelow = POV_SUGGEST_FIELDS.filter(f => !(o[f] || '').trim());
+  const prompt = `You are a B2B sales coach helping an account executive plan an opportunity for Eleven Systems.
+
+${ELEVEN_KB}
+
+OPPORTUNITY CONTEXT:
+${oppDraftContext()}
+
+Tasks:
+A. Draft the four "why" answers, 1-2 sentences each, specific to this firm. Ground them in the context; where context is thin, write the most plausible version for this firm type. Never invent numbers the context doesn't support.
+B. For these discovery fields: ${emptyBelow.join(', ') || 'none'}, write a SUGGESTED answer the AE can test with the customer, plus the single best discovery question to confirm or correct it.
+   - businessProblem: the operational or financial pain, in the customer's terms.
+   - successMetric: a quantified, economic-buyer-ready measure. If no numbers exist in the context, propose a measurable shape with clear placeholders (e.g. "from X days to Y hours") rather than invented figures.
+   - alternative: the real status quo or competitor and why it "works well enough" today.
+   - competitive: how we win against that alternative, plus a strategy: one of Direct, Flank, Divide & conquer, Defend.
+   For each, basis = "evidence" if it rests on the calls, notes or plan above, or "typical" if it's a pattern for this kind of firm without evidence yet.
+
 Return ONLY JSON:
-{ "whyChange": "1-2 sentences on cost of doing nothing",
-  "whyNow": "1-2 sentences on trigger or urgency",
-  "whyUs": "1-2 sentences on unique angle",
-  "whatSolution": "1-2 sentences on solution scope and ROI" }`;
-  const result = await callClaude(prompt, null, '…');
+{ "whyChange": "...", "whyNow": "...", "whyUs": "...", "whatSolution": "...",
+  "suggestions": {
+    "businessProblem": { "text": "1-2 sentences", "ask": "one question", "basis": "evidence" | "typical" },
+    "successMetric":   { "text": "...", "ask": "...", "basis": "..." },
+    "alternative":     { "text": "...", "ask": "...", "basis": "..." },
+    "competitive":     { "text": "...", "ask": "...", "basis": "...", "strategy": "Direct" | "Flank" | "Divide & conquer" | "Defend" }
+  } }
+Only include suggestions for the fields listed in B.`;
+  const result = await callClaude(prompt, null, '…', 2000);
   if (result) {
     if (result.whyChange && !p.whyChange) setDeep('accountpov.whyChange', result.whyChange);
     if (result.whyNow   && !p.whyNow)   setDeep('accountpov.whyNow',    result.whyNow);
     if (result.whyUs    && !p.whyUs)    setDeep('accountpov.whyUs',     result.whyUs);
     if (result.whatSolution && !p.whatSolution) setDeep('accountpov.whatSolution', result.whatSolution);
+    const sg = result.suggestions || {};
+    if (!o.suggest) o.suggest = {};
+    emptyBelow.forEach(f => {
+      const x = sg[f];
+      if (x && x.text) o.suggest[f] = { text: String(x.text), ask: String(x.ask || ''), basis: x.basis === 'evidence' ? 'evidence' : 'typical',
+        strategy: ['Direct', 'Flank', 'Divide & conquer', 'Defend'].includes(x.strategy) ? x.strategy : '', at: Date.now() };
+    });
     render();
   }
   if (btn) { btn.disabled = false; btn.textContent = '✦ Draft all'; }
