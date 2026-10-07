@@ -794,6 +794,58 @@ select.field-input{cursor:pointer}
   .pipe-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
   .pipe-cell-total{grid-column:1/-1}
 }
+/* ── Ask Playbk panel ── */
+.ask-panel{position:fixed;top:0;right:0;bottom:0;width:440px;max-width:100vw;z-index:150;display:flex;flex-direction:column;background:var(--bg-primary);border-left:0.5px solid var(--border-mid);box-shadow:-12px 0 32px rgba(14,30,46,0.14);transform:translateX(100%);visibility:hidden;transition:transform .22s ease,visibility 0s linear .22s}
+.ask-panel.open{transform:none;visibility:visible;transition:transform .22s ease}
+.ask-head{background:#0e1e2e;color:#fff;padding:16px 18px 14px;display:flex;align-items:flex-start;gap:12px;flex-shrink:0}
+.ask-head-txt{flex:1;min-width:0}
+.ask-title{font-size:16px;font-weight:600;letter-spacing:0.01em}
+.ask-sub{font-size:11.5px;color:rgba(255,255,255,0.5);margin-top:3px;line-height:1.4}
+.ask-icon-btn{background:transparent;border:0.5px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.7);border-radius:6px;font-family:var(--font);font-size:11.5px;padding:4px 9px;cursor:pointer}
+.ask-icon-btn:hover{background:rgba(255,255,255,0.08);color:#fff}
+.ask-icon-btn:focus-visible,.ask-send:focus-visible,.ask-src:focus-visible,.ask-sugg:focus-visible,.ask-cite:focus-visible,.ask-chip button:focus-visible{outline:2px solid var(--text-info);outline-offset:2px}
+.ask-thread{flex:1;overflow-y:auto;padding:18px 18px 8px;display:flex;flex-direction:column;gap:18px}
+.ask-q{align-self:flex-end;max-width:86%;background:var(--bg-tertiary);color:var(--text-primary);font-size:13.5px;line-height:1.45;padding:9px 12px;border-radius:12px 12px 3px 12px;white-space:pre-wrap;word-wrap:break-word}
+.ask-a{font-size:13.5px;line-height:1.6;color:var(--text-primary)}
+.ask-a p{margin:0 0 9px}
+.ask-a ul{margin:0 0 9px;padding-left:18px}
+.ask-a li{margin-bottom:5px}
+.ask-a strong{font-weight:600}
+.ask-cite{display:inline-flex;align-items:center;justify-content:center;min-width:17px;height:17px;padding:0 4px;margin:0 1px;border-radius:4px;border:0.5px solid var(--border-info);background:var(--bg-info);color:var(--text-info);font-size:10px;font-weight:600;font-family:var(--font);vertical-align:2px;cursor:pointer;line-height:1}
+.ask-cite:hover{border-color:var(--text-info)}
+.ask-meta{font-size:11px;color:var(--text-tertiary);margin-top:2px;line-height:1.45}
+.ask-srcs{display:flex;flex-direction:column;gap:5px;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border-light)}
+.ask-src{display:flex;align-items:baseline;gap:8px;text-align:left;width:100%;background:transparent;border:0.5px solid var(--border-light);border-radius:7px;padding:6px 9px;cursor:pointer;font-family:var(--font);color:var(--text-primary);font-size:12px;line-height:1.35}
+.ask-src:hover{background:var(--bg-secondary);border-color:var(--border-mid)}
+.ask-src .n{font-size:10px;font-weight:600;color:var(--text-info);min-width:12px}
+.ask-src .deal{font-weight:600;white-space:nowrap}
+.ask-src .sec{color:var(--text-secondary)}
+.ask-src[disabled]{cursor:default;opacity:.6}
+.ask-fups{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.ask-sugg{background:var(--bg-primary);border:0.5px solid var(--border-mid);border-radius:16px;padding:6px 11px;font-family:var(--font);font-size:12px;color:var(--text-secondary);cursor:pointer;text-align:left;line-height:1.35}
+.ask-sugg:hover{border-color:var(--text-info);color:var(--text-info)}
+.ask-empty{padding:4px 0}
+.ask-empty h3{font-size:15px;font-weight:600;margin:0 0 6px}
+.ask-empty p{font-size:13px;color:var(--text-secondary);line-height:1.55;margin:0 0 14px}
+.ask-empty .ask-sugg{display:block;width:100%;border-radius:8px;padding:9px 12px;margin-bottom:7px;font-size:12.5px;color:var(--text-primary)}
+.ask-loading{font-size:12.5px;color:var(--text-tertiary);display:flex;align-items:center;gap:8px}
+.ask-loading i{width:7px;height:7px;border-radius:50%;background:var(--text-info);animation:askPulse 1.1s ease-in-out infinite}
+@keyframes askPulse{0%,100%{opacity:.25}50%{opacity:1}}
+.ask-err{font-size:12.5px;line-height:1.5;color:var(--text-danger);background:var(--bg-danger);border:0.5px solid var(--border-danger);border-radius:8px;padding:9px 11px}
+.ask-compose{flex-shrink:0;border-top:0.5px solid var(--border-light);padding:10px 14px 12px;background:var(--bg-primary)}
+.ask-scope{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.ask-scope:empty{display:none}
+.ask-chip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-info);background:var(--bg-info);border:0.5px solid var(--border-info);border-radius:14px;padding:3px 4px 3px 10px}
+.ask-chip button{background:transparent;border:none;color:var(--text-info);cursor:pointer;font-size:12px;padding:0 5px;line-height:1;border-radius:8px}
+.ask-row{display:flex;gap:8px;align-items:flex-end}
+.ask-input{flex:1;resize:none;font-family:var(--font);font-size:14px;line-height:1.4;padding:9px 11px;border-radius:8px;border:0.5px solid var(--border-mid);background:var(--bg-primary);color:var(--text-primary);max-height:140px;min-height:40px}
+.ask-input:focus{outline:none;border-color:var(--text-info);box-shadow:0 0 0 3px var(--bg-info)}
+.ask-send{background:#0e1e2e;color:#fff;border:none;border-radius:8px;font-family:var(--font);font-size:13px;font-weight:500;padding:0 16px;height:40px;cursor:pointer}
+.ask-send[disabled]{opacity:.45;cursor:default}
+.ask-foot{font-size:10.5px;color:var(--text-tertiary);margin-top:7px;line-height:1.4}
+@media(prefers-color-scheme:dark){.ask-send{background:#2a4a6a}}
+@media(max-width:700px){.ask-panel{width:100vw;border-left:none;height:100dvh;bottom:auto}.ask-input{font-size:16px}}
+@media(prefers-reduced-motion:reduce){.ask-panel,.ask-panel.open{transition:none}.ask-loading i{animation:none;opacity:.7}}
 </style>
 </head>
 <body>
@@ -851,6 +903,27 @@ select.field-input{cursor:pointer}
     </div>
   </div>
 </div>
+
+<!-- Ask Playbk — natural-language questions over the AE's own deals -->
+<aside class="ask-panel" id="askPanel" aria-label="Ask Playbk" aria-hidden="true">
+  <div class="ask-head">
+    <div class="ask-head-txt">
+      <div class="ask-title">Ask Playbk</div>
+      <div class="ask-sub" id="askSub">Questions about your deals, answered from your plans and calls</div>
+    </div>
+    <button class="ask-icon-btn" id="askClear" onclick="clearAsk()" style="display:none">New</button>
+    <button class="ask-icon-btn" onclick="closeAsk()" aria-label="Close Ask Playbk">&#x2715;</button>
+  </div>
+  <div class="ask-thread" id="askThread" aria-live="polite"></div>
+  <div class="ask-compose">
+    <div class="ask-scope" id="askScope"></div>
+    <div class="ask-row">
+      <textarea class="ask-input" id="askInput" rows="1" placeholder="Ask about your deals" aria-label="Your question"></textarea>
+      <button class="ask-send" id="askSend" onclick="sendAsk()">Ask</button>
+    </div>
+    <div class="ask-foot" id="askFoot"></div>
+  </div>
+</aside>
 
 <script>
 /* ================================================================
@@ -1224,19 +1297,10 @@ function calcScore() {
   MEDD.forEach(s => s.questions.forEach((_, i) => { total++; if (a[s.id + '_' + i] === 'yes') yes++; }));
   return { yes, total };
 }
-function calcForecast() {
-  const a = (d().meddpicc && d().meddpicc.meddAnswers) || {};
-  const bl = MEDD.filter(s => s.blocker);
-  let bY = 0, bT = 0, tY = 0, tQ = 0;
-  bl.forEach(s => s.questions.forEach((_, i) => { bT++; if (a[s.id + '_' + i] === 'yes') bY++; }));
-  MEDD.forEach(s => s.questions.forEach((_, i) => { tQ++; if (a[s.id + '_' + i] === 'yes') tY++; }));
-  const p = tY / tQ, bp = bY / bT;
-  if (bp >= 0.75 && p >= 0.70) return 'Commit';
-  if (bp >= 0.55 && p >= 0.50) return 'Upside';
-  if (p >= 0.25 || tY >= 5) return 'Pipeline';
-  return 'Omit';
-}
+// MEDDPICC evidence forecast for the current opp. Single source of truth: calcForecastForData.
+function calcForecast() { return calcForecastForData(d()); }
 const FC_CLASS = { Commit: 'fc-commit', Upside: 'fc-upside', Pipeline: 'fc-pipeline', Omit: 'fc-omit' };
+// The only implementation of the MEDDPICC evidence forecast. Blocker sections gate Commit/Upside.
 function calcForecastForData(data) {
   const a = (data && data.meddpicc && data.meddpicc.meddAnswers) || {};
   const bl = MEDD.filter(s => s.blocker);
@@ -1244,18 +1308,6 @@ function calcForecastForData(data) {
   bl.forEach(s => s.questions.forEach((_, i) => { bT++; if (a[s.id + '_' + i] === 'yes') bY++; }));
   MEDD.forEach(s => s.questions.forEach((_, i) => { tQ++; if (a[s.id + '_' + i] === 'yes') tY++; }));
   const p = tQ ? tY / tQ : 0, bp = bT ? bY / bT : 0;
-  if (bp >= 0.75 && p >= 0.70) return 'Commit';
-  if (bp >= 0.55 && p >= 0.50) return 'Upside';
-  if (p >= 0.25 || tY >= 5) return 'Pipeline';
-  return 'Omit';
-}
-function calcForecastForData(data) {
-  const a = (data && data.meddpicc && data.meddpicc.meddAnswers) || {};
-  const bl = MEDD.filter(s => s.blocker);
-  let bY = 0, bT = 0, tY = 0, tQ = 0;
-  bl.forEach(s => s.questions.forEach((_, i) => { bT++; if (a[s.id + '_' + i] === 'yes') bY++; }));
-  MEDD.forEach(s => s.questions.forEach((_, i) => { tQ++; if (a[s.id + '_' + i] === 'yes') tY++; }));
-  const p = tY / tQ, bp = bT ? bY / bT : 0;
   if (bp >= 0.75 && p >= 0.70) return 'Commit';
   if (bp >= 0.55 && p >= 0.50) return 'Upside';
   if (p >= 0.25 || tY >= 5) return 'Pipeline';
@@ -1780,6 +1832,13 @@ function renderTopNav(el, beforeNav) {
   themesBtn.textContent = 'THEMES';
   themesBtn.onclick = () => { showThemes = true; showPipeline = false; showDashboard = false; if (beforeNav) beforeNav(); render(); };
   el.appendChild(themesBtn);
+  const askBtn = document.createElement('button');
+  askBtn.className = 'nav-pill' + (typeof isAskOpen === 'function' && isAskOpen() ? ' active' : '');
+  askBtn.style.cssText = topPillStyle;
+  askBtn.title = 'Ask Playbk (press /)';
+  askBtn.textContent = 'ASK PLAYBK';
+  askBtn.onclick = () => { if (isAskOpen()) closeAsk(); else openAsk(); };
+  el.appendChild(askBtn);
 }
 
 function renderSidebar() {
@@ -4120,7 +4179,7 @@ function showRelModal(title, bodyHtml) {
 }
 function closeRelModal() { const m = document.getElementById('relModal'); if (m) m.remove(); }
 
-function addMapRow() { if (!d().map.rows) d().map.rows = []; d().map.rows.push({ date: '', ownerEleven: '', ownerAccount: '', action: '', status: 'Open' }); render(); }
+function addMapRow() { if (!d().map.rows) d().map.rows = []; d().map.rows.push({ date: '', ownerEleven: '', ownerAccount: '', action: '', status: 'Open', createdAt: Date.now() }); render(); }
 function deleteMapRow(i) { if (!d().map.rows) return; d().map.rows.splice(i, 1); render(); }
 function clearMapRows() {
   const n = (d().map.rows || []).length;
@@ -4269,14 +4328,8 @@ function exportPlan() {
       total++;
       if (ma[ms.id + '_' + i] === 'yes') yes++;
     }));
-    const bl = MEDD.filter(sec => sec.blocker);
-    let bY = 0, bT = 0;
-    bl.forEach(ms => ms.questions.forEach((_, i) => { bT++; if (ma[ms.id + '_' + i] === 'yes') bY++; }));
-    const pct = yes / total, bp = bY / bT;
-    let fc = 'Omit';
-    if (bp >= 0.75 && pct >= 0.70) fc = 'Commit';
-    else if (bp >= 0.55 && pct >= 0.50) fc = 'Upside';
-    else if (pct >= 0.25 || yes >= 5) fc = 'Pipeline';
+    const pct = total ? yes / total : 0;
+    const fc  = calcForecastForData(a.data);
 
     const weakBlockers = MEDD.filter(ms => ms.blocker &&
       ms.questions.filter((_, i) => ma[ms.id + '_' + i] === 'yes').length < Math.ceil(ms.questions.length / 2)
@@ -4387,14 +4440,7 @@ function buildLogEntry(a) {
     total++;
     if (ma[ms.id + '_' + i] === 'yes') yes++;
   }));
-  const bl = MEDD.filter(sec => sec.blocker);
-  let bY = 0, bT = 0;
-  bl.forEach(ms => ms.questions.forEach((_, i) => { bT++; if (ma[ms.id + '_' + i] === 'yes') bY++; }));
-  const p = yes / total, bp = bT ? bY / bT : 0;
-  let fc = 'Omit';
-  if (bp >= 0.75 && p >= 0.70) fc = 'Commit';
-  else if (bp >= 0.55 && p >= 0.50) fc = 'Upside';
-  else if (p >= 0.25 || yes >= 5) fc = 'Pipeline';
+  const fc = calcForecastForData(a.data);
   const stage = deriveStage(s.journey, yes, total, ma);
   return {
     id:          a.id || (a.id = Date.now() + '_' + Math.random().toString(36).slice(2)),
@@ -5486,7 +5532,7 @@ function acceptFinding(ci, fi) {
       setDeep(t.path, t.value);
     } else if (t.kind === 'map-row') {
       if (!d().map.rows) d().map.rows = [];
-      d().map.rows.push({ ...t.row });
+      d().map.rows.push({ ...t.row, createdAt: t.row.createdAt || Date.now() });
       undo.action = t.row.action;
     } else if (t.kind === 'module') {
       if (!d().snapshot.modules) d().snapshot.modules = {};
@@ -5801,7 +5847,7 @@ Return ONLY JSON: { "actions": [
 ]}`;
   const result = await callClaude(prompt, null, '…');
   if (result && result.actions) {
-    result.actions.forEach(a => d().map.rows.push(a));
+    result.actions.forEach(a => d().map.rows.push({ ...a, createdAt: Date.now() }));
     render();
   }
   if (btn) { btn.disabled = false; btn.textContent = '✦ Suggest from gaps'; }
@@ -6608,6 +6654,461 @@ function showStkTalkStatus(idx, field, msg) {
   if (msg && !msg.startsWith('<')) el.textContent = msg;
   else if (!msg) { if (!el.querySelector('.talk-coaching')) el.textContent = ''; }
 }
+
+/* ================================================================
+   ASK PLAYBK — natural-language questions over the AE's own book
+   ----------------------------------------------------------------
+   The model never sees raw state. askBuildDigest() hands it the
+   values the UI already computes (stage, forecast, health, gates),
+   so answers always match the screen. Rules:
+   - Call transcripts are excluded unless a deal is in scope
+     (named in the question, or the deal open when Ask was opened).
+   - Rejected call findings are dropped; unreviewed ones are marked.
+   - The legacy eleven_opp_log is never read: it holds names that
+     are not live deals and would produce phantom answers.
+   - AE-first is enforced here, at the data layer: ASK_ROLE_EXCLUDES
+     strips judgment fields before anything leaves the browser for
+     any role other than the AE.
+   ================================================================ */
+const ASK_ROLE = 'player';            // player (AE) | coach | gm | owner — single-user until Supabase auth
+const ASK_ROLE_EXCLUDES = {
+  player: [],
+  coach:  ['conviction'],
+  gm:     ['conviction'],
+  owner:  ['conviction']
+};
+const ASK_TX_BUDGET   = 120000;       // transcript chars across in-scope deals (~30k tokens)
+const ASK_HISTORY     = 3;            // prior Q&A turns sent with each question
+const ASK_SECTIONS    = { snapshot: 'Snapshot', stakeholders: 'Stakeholders', opppov: 'Opportunity', meddpicc: 'Qualification', map: 'Mutual Action Plan', calls: 'Comms Analysis', coaching: 'Coaching' };
+const ASK_NAME_STOP   = new Set(['family', 'office', 'capital', 'holdings', 'management', 'partners', 'group', 'ventures', 'advisors', 'pilot', 'house', 'consulting', 'wealth', 'trust']);
+
+let askThread = [];                   // [{ q, scope:[names], a:{answer,sources,followups}, err, loading }]
+let askFocusId = null;                // deal pinned as in-scope (set when Ask opens inside a deal)
+let askBusy = false;
+
+/* ── Date helpers ── */
+function askFmtDate(ts) {
+  if (!ts) return '';
+  return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+// parseLooseDate falls back to Date.parse, which reads "May 28" as 2001. Pin year-less dates to this year.
+function askParseDate(str) {
+  const s = String(str || '').trim();
+  if (!s) return null;
+  if (/^[A-Za-z]{3,9}\.?\s+\d{1,2}(st|nd|rd|th)?$/.test(s)) {
+    const t = Date.parse(s.replace(/(st|nd|rd|th)$/, '') + ' ' + new Date().getFullYear());
+    return isNaN(t) ? null : t;
+  }
+  const t = parseLooseDate(s);
+  if (t == null) return null;
+  return new Date(t).getFullYear() < 2015 ? null : t;
+}
+function askAddBusinessDays(ts, n) {
+  const d0 = new Date(ts);
+  let left = n;
+  while (left > 0) { d0.setDate(d0.getDate() + 1); const wd = d0.getDay(); if (wd !== 0 && wd !== 6) left--; }
+  return d0.getTime();
+}
+// Resolve a MAP row's due date. Relative dates ("Within 1 week") need the row's createdAt anchor.
+function askResolveDue(row) {
+  const raw = String(row.date || '').trim();
+  if (!raw) return { due: null, why: 'no date set' };
+  const abs = askParseDate(raw);
+  if (abs) return { due: abs };
+  const m = raw.match(/within\s+(\d+)\s*(business\s+)?(hour|day|week|month)s?/i);
+  if (m) {
+    if (!row.createdAt) return { due: null, why: 'relative date ("' + raw + '") with no anchor date' };
+    const n = +m[1], unit = m[3].toLowerCase();
+    if (m[2]) return { due: askAddBusinessDays(row.createdAt, n) };
+    const mult = { hour: 3600000, day: DAY_MS, week: 7 * DAY_MS, month: 30 * DAY_MS }[unit];
+    return { due: row.createdAt + n * mult };
+  }
+  return { due: null, why: 'unrecognized date ("' + raw + '")' };
+}
+
+/* ── Stage path: collapse UI back-and-forth (edits under an hour apart) ── */
+function askStagePath(dl) {
+  const moves = (dl.history || []).filter(h => h.type !== 'slip' && h.to).slice().sort((x, y) => (x.at || 0) - (y.at || 0));
+  const out = [];
+  moves.forEach(h => {
+    const last = out[out.length - 1];
+    if (last && h.at && last.at && h.at - last.at < 3600000) { last.to = h.to; last.at = h.at; }
+    else out.push({ to: h.to, at: h.at });
+  });
+  const clean = out.filter((s, i) => i === 0 || s.to !== out[i - 1].to);
+  return clean.map(s => `${stageName(s.to) || s.to}${s.at ? ' (' + askFmtDate(s.at) + ')' : ''}`).join(' → ');
+}
+
+/* ── One deal → compact, model-readable record ── */
+function askDealDigest(a, role, txIds, txBudget) {
+  const data = a.data || {};
+  const dl = dealOf(a);
+  const sn = data.snapshot || {};
+  const pb = pricingBreakdown(sn);
+  const fs = forecastStatus(a);
+  const closed = isClosed(a);
+  const excl = new Set(ASK_ROLE_EXCLUDES[role] || ASK_ROLE_EXCLUDES.owner);
+  const md = data.meddpicc || {};
+  const ma = md.meddAnswers || {}, meta = md.meta || {}, mnotes = md.meddNotes || {};
+  const nonEmpty = o => { const r = {}; Object.keys(o || {}).forEach(k => { const v = o[k]; if (v != null && String(v).trim() !== '' && typeof v !== 'object') r[k] = v; }); return r; };
+  const clip = (s, n) => { s = String(s || ''); return s.length > n ? s.slice(0, n) + '…' : s; };
+
+  const rec = {
+    deal: a.name,
+    status: closed ? CLOSED_STAGES[dl.stage].name : 'Open',
+    stage: stageName(dl.stage) || 'not set',
+    daysInStage: closed ? undefined : daysSince(dl.stageAt),
+    stagePath: askStagePath(dl) || undefined,
+    forecast: fs.cat + (fs.source === 'ae' ? ' (AE override)' : fs.source === 'stage' ? ' (stage default)' : ''),
+    forecastReason: dl.fcCall ? (dl.fcReason || 'none given') : undefined,
+    meddpiccEvidenceSupports: closed ? undefined : evidenceForecast(a),
+    healthScore: calcHealthScore(data),
+    arrNet: pb.net || undefined,
+    implementationFee: pb.implementation || undefined,
+    closeDate: sn.renewalQ || undefined,
+    closeDatePushes: (dl.slips || []).length ? dl.slips.map(s => `${s.from} → ${s.to} (changed ${askFmtDate(s.at)})`) : undefined,
+    closedReason: closed ? (dl.closedReason || 'none given') : undefined,
+    closedNote: closed && dl.closedNote ? dl.closedNote : undefined,
+    revisitDate: dl.revisitDate || undefined,
+    lastEdited: a.updatedAt ? askFmtDate(a.updatedAt) : undefined,
+    gates: closed ? undefined : stageGateContext(a),
+    snapshot: nonEmpty({ firmType: sn.firmType, modules: modulesSummary(sn.modules), accountHealth: sn.healthStatus, source: sn.source, referrer: sn.referrer, discount: sn.discountCredit, notes: sn.notes, stakeholderGaps: sn.stakeholderGaps }),
+    pov: nonEmpty({ ...(data.accountpov || {}), ...(data.opppov || {}) }),
+    team: nonEmpty(data.accountpovteam),
+    stakeholders: (data.stakeholders || []).map(s => nonEmpty({ name: s.name, title: s.title, role: s.role, sentiment: s.sentiment, influence: s.influence, win: s.win })),
+    relationships: (data.edges || []).map(e => {
+      const st = data.stakeholders || [];
+      const f = st[e.from], t = st[e.to];
+      return f && t ? `${f.name} ${e.type} ${t.name}` : null;
+    }).filter(Boolean),
+    meddpicc: MEDD.map(s => {
+      const yes = [], no = [], unanswered = [];
+      s.questions.forEach((q, i) => {
+        const k = s.id + '_' + i, v = ma[k], m = meta[k];
+        const prov = m ? ` [${m.src === 'call' ? 'from call ' + (m.call || '') : 'set by AE'}${m.at ? ', ' + askFmtDate(m.at) : ''}]` : '';
+        (v === 'yes' ? yes : v === 'no' ? no : unanswered).push(q.tag + prov);
+      });
+      return nonEmpty({ id: s.id, section: s.title, blocker: s.blocker ? 'yes' : '', score: `${yes.length}/${s.questions.length}`,
+        yes: yes.join('; '), no: no.join('; '), unanswered: unanswered.join('; '), note: mnotes[s.id] });
+    }),
+    manualGaps: ((md.gapOverrides && md.gapOverrides.__manual) || []).filter(g => g.gap || g.action).map(g => nonEmpty(g)),
+    map: {
+      ...nonEmpty({ topAsk: data.map && data.map.topAsk, lastEngagement: data.map && data.map.lastEngagement, nextTouch: data.map && data.map.nextTouch }),
+      rows: ((data.map && data.map.rows) || []).filter(r => r.action).map(r => {
+        const res = askResolveDue(r);
+        const done = r.status === 'Done';
+        return nonEmpty({ action: r.action, ourOwner: r.ownerEleven, buyerOwner: r.ownerAccount, status: r.status || 'Open', dateAsWritten: r.date,
+          due: res.due ? askFmtDate(res.due) : '', overdue: res.due && !done ? (res.due < Date.now() ? 'yes' : 'no') : '', undatable: res.due ? '' : res.why });
+      })
+    },
+    calls: (data.calls || []).map((c, ci) => {
+      const findings = (c.findings || []).filter(f => f.status !== 'rejected').map(f => nonEmpty({
+        type: f.type, title: f.title, evidence: clip(f.evidence, 240), review: f.status === 'accepted' ? 'accepted by AE' : 'unreviewed'
+      }));
+      return { date: c.date, kind: c.kind || 'Call', participants: c.participants || undefined, summary: c.summary || undefined, findings, _ci: ci };
+    }),
+    playbkCoaching: (a.coaching && Array.isArray(a.coaching.actions)) ? a.coaching.actions.map(x => x.action).filter(Boolean) : undefined
+  };
+  if (!excl.has('conviction') && data.conviction && (data.conviction.deal || data.conviction.win || data.conviction.play)) {
+    rec.conviction = nonEmpty({ isTheDealReal: data.conviction.deal, canWeWin: data.conviction.win, shouldWePlay: data.conviction.play, note: data.conviction.note });
+  }
+  // Transcripts only for deals in scope, within the shared budget
+  if (txIds && txIds.has(a.id)) {
+    rec.calls.forEach(c => {
+      const t = ((data.calls || [])[c._ci] || {}).transcript || '';
+      if (!t || txBudget.left <= 0) return;
+      const take = Math.min(t.length, txBudget.left);
+      c.transcript = t.slice(0, take) + (take < t.length ? ' …[truncated]' : '');
+      txBudget.left -= take;
+    });
+  }
+  rec.calls.forEach(c => { delete c._ci; });
+  if (!rec.calls.length) delete rec.calls;
+  return JSON.parse(JSON.stringify(rec));   // drops undefined keys
+}
+
+function askBuildDigest(role, txIds) {
+  const budget = { left: ASK_TX_BUDGET };
+  const live = opps.filter(a => !a.archived);
+  // Open deals first, then most recently edited
+  live.sort((x, y) => (isClosed(x) - isClosed(y)) || ((y.updatedAt || 0) - (x.updatedAt || 0)));
+  return {
+    today: askFmtDate(Date.now()),
+    viewerRole: role,
+    openDeals: live.filter(a => !isClosed(a)).length,
+    closedDeals: live.filter(a => isClosed(a)).length,
+    deals: live.map(a => askDealDigest(a, role, txIds, budget))
+  };
+}
+
+/* ── Which deals does a question name? ── */
+function askNameKeys(name) {
+  const n = String(name || '').toLowerCase();
+  const keys = [n.replace(/\s*\(.*?\)\s*/g, ' ').trim()];
+  n.split(/[^a-z0-9]+/).forEach(w => { if (w.length >= 5 && !ASK_NAME_STOP.has(w)) keys.push(w); });
+  return keys.filter(Boolean);
+}
+function askScopeFor(question) {
+  const q = ' ' + String(question || '').toLowerCase() + ' ';
+  const ids = new Set();
+  opps.filter(a => !a.archived).forEach(a => {
+    if (askNameKeys(a.name).some(k => new RegExp('(^|[^a-z0-9])' + k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '([^a-z0-9]|$)').test(q))) ids.add(a.id);
+  });
+  if (askFocusId && opps.some(a => a.id === askFocusId)) ids.add(askFocusId);
+  return ids;
+}
+
+/* ── Prompt ── */
+function askBuildPrompt(question, digest, scopeNames) {
+  const prior = askThread.filter(t => t.a && t.a.answer).slice(-ASK_HISTORY)
+    .map(t => `AE: ${t.q}\nAsk Playbk: ${t.a.answer.replace(/\[\d+\]/g, '').slice(0, 1200)}`).join('\n\n');
+  const sec = Object.keys(ASK_SECTIONS).join('|');
+  return `You are Ask Playbk, the assistant inside an account executive's opportunity planning tool. Answer the AE's question using ONLY the pipeline data below. Today is ${digest.today}.
+
+How to read the data:
+- "meddpicc" is the AE's committed qualification record. Each answered item shows where it came from (set by AE, or from a call) and when.
+- "calls" holds analysed calls and proposals. Findings marked "accepted by AE" are confirmed evidence. "unreviewed" findings are AI-extracted and not yet confirmed: if you rely on one, say it is unconfirmed.
+- When call evidence and the qualification record disagree (for example a call names the economic buyer but that item is unanswered), say so plainly: the plan is behind the evidence, and name the section to update.
+- healthScore, forecast, stage, daysInStage and gates are computed by Playbk. Quote them; never recompute or second-guess the arithmetic.
+- MAP rows carry a resolved "due" date and "overdue" flag. Rows marked "undatable" have no usable date: never guess one; say they can't be dated and that the AE should set a real date.
+- Closed (lost/deferred/won) deals are history. There are only ${digest.closedDeals} closed deals: present patterns as anecdotes, not statistics, and say so.
+- "conviction" is the AE's own judgment on whether the deal is real, winnable and worth playing.
+- "playbkCoaching" is Playbk's own earlier suggestion, not a fact about the buyer.
+- Judge progress by buyer signal and evidence, never by seller activity volume.
+- If the data doesn't answer the question, say exactly what is missing and which Playbk section would hold it. Never invent names, dates, numbers or quotes.
+${scopeNames.length ? `- Full transcripts are included for: ${scopeNames.join(', ')}. For every other deal you only have call summaries and findings.` : '- No transcripts are included, only call summaries and findings. If the answer needs a transcript, say which deal to name so it can be loaded.'}
+
+Style: direct and specific, like a sharp sales leader talking to a peer. Lead with the answer. Use deal and people names. Short paragraphs or "- " bullet lines; **bold** sparingly; no headings. Keep it under about 220 words unless the question is deal prep or asks for detail.
+
+Citations: after a claim, add [n] where n is the 1-based index into "sources". Each source points at exactly one deal and one Playbk section. Reuse a source number when citing the same place again. Cite only places that actually contain the supporting data.
+
+Return ONLY a JSON object, no code fences, no text before or after:
+{"answer":"...","sources":[{"deal":"exact deal name from the data","section":"${sec}","medd":"MEDDPICC section id, only when section is meddpicc","label":"2 to 5 words on what is there"}],"followups":["at most 2 short follow-up questions the AE might ask next"]}
+${prior ? `\nConversation so far:\n${prior}\n` : ''}
+AE's question: ${question}
+
+PIPELINE DATA (JSON):
+${JSON.stringify(digest)}`;
+}
+
+/* ── Model call (same /api/claude proxy as every other AI feature) ── */
+async function askCallModel(prompt) {
+  const resp = await fetch('/api/claude', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 1600, temperature: 0, messages: [{ role: 'user', content: prompt }] })
+  });
+  let data;
+  try { data = await resp.json(); } catch (e) { throw new Error(`the server returned ${resp.status} without a readable response`); }
+  if (data.error) throw new Error(data.error.message || String(data.error));
+  const raw = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('').trim();
+  return askParseReply(raw);
+}
+function askParseReply(raw) {
+  const clean = String(raw || '').replace(/```json|```/g, '').trim();
+  const s = clean.indexOf('{'), e = clean.lastIndexOf('}');
+  if (s >= 0 && e > s) {
+    try {
+      const j = JSON.parse(clean.slice(s, e + 1));
+      if (j && typeof j.answer === 'string') {
+        return { answer: j.answer, sources: Array.isArray(j.sources) ? j.sources : [], followups: Array.isArray(j.followups) ? j.followups.slice(0, 2) : [] };
+      }
+    } catch (err) { /* fall through to plain text */ }
+  }
+  return { answer: clean || 'No answer came back. Try asking again.', sources: [], followups: [] };
+}
+
+/* ── Navigation from a citation ── */
+function askFindDeal(name) {
+  const n = String(name || '').trim().toLowerCase();
+  if (!n) return -1;
+  let i = opps.findIndex(a => !a.archived && a.name.toLowerCase() === n);
+  if (i < 0) i = opps.findIndex(a => !a.archived && (a.name.toLowerCase().includes(n) || n.includes(a.name.toLowerCase())));
+  return i;
+}
+function askGoTo(turnIdx, srcIdx) {
+  const t = askThread[turnIdx];
+  const src = t && t.a && t.a.sources[srcIdx];
+  if (!src) return;
+  const i = askFindDeal(src.deal);
+  if (i < 0) return;
+  const slide = SLIDES.findIndex(s => s.id === src.section);
+  showDashboard = false; showPipeline = false; showThemes = false;
+  currentOpp = i;
+  opp().currentSlide = slide > 0 ? slide : 1;
+  if (src.section === 'meddpicc' && src.medd && MEDD.some(m => m.id === src.medd)) {
+    if (!(opp().openMedd instanceof Set)) opp().openMedd = new Set(opp().openMedd || []);
+    opp().openMedd.add(src.medd);
+  }
+  if (window.innerWidth < 1100) closeAsk();
+  render();
+  const host = document.querySelector('.content-area');
+  if (host && host.scrollTo) host.scrollTo({ top: 0 });
+  window.scrollTo({ top: 0 });
+}
+
+/* ── Rendering ── */
+function askInline(s) {
+  // escape, then **bold**; citations handled by caller
+  return esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+}
+function askRenderAnswer(text, turnIdx, sources) {
+  const withCites = (html) => html.replace(/\[(\d+)\]/g, (m, n) => {
+    const k = +n - 1;
+    if (k < 0 || k >= sources.length) return '';
+    return askFindDeal(sources[k].deal) >= 0
+      ? `<button class="ask-cite" onclick="askGoTo(${turnIdx},${k})" title="Open source ${n}" aria-label="Open source ${n}">${n}</button>`
+      : `<span class="ask-cite" style="cursor:default;opacity:.6" title="Source not found in your deals">${n}</span>`;
+  });
+  const blocks = String(text || '').replace(/\r/g, '').split(/\n{2,}/);
+  return blocks.map(b => {
+    const lines = b.split('\n').filter(l => l.trim());
+    if (lines.length && lines.every(l => /^\s*[-•*]\s+/.test(l))) {
+      return '<ul>' + lines.map(l => `<li>${withCites(askInline(l.replace(/^\s*[-•*]\s+/, '')))}</li>`).join('') + '</ul>';
+    }
+    return lines.map(l => /^\s*[-•*]\s+/.test(l)
+      ? `<ul><li>${withCites(askInline(l.replace(/^\s*[-•*]\s+/, '')))}</li></ul>`
+      : `<p>${withCites(askInline(l))}</p>`).join('');
+  }).join('');
+}
+
+function askSuggestions() {
+  const live = opps.filter(a => !a.archived);
+  const open = live.filter(a => !isClosed(a));
+  const lastCallTs = a => Math.max(0, ...((a.data.calls || []).map(c => askParseDate(c.date) || 0)));
+  const prep = open.filter(a => (a.data.calls || []).length).sort((x, y) => lastCallTs(y) - lastCallTs(x))[0];
+  const out = [];
+  if (prep) out.push(`Brief me for my next ${prep.name} conversation`);
+  if (open.length) out.push('Where is my call evidence ahead of my qualification?');
+  if (open.some(a => (a.data.map && a.data.map.rows || []).length)) out.push("What's due on my mutual action plans in the next two weeks?");
+  if (live.some(a => isClosed(a))) out.push("What's behind the deals I've lost or deferred?");
+  if (!out.length) out.push('What should I focus on this week?');
+  return out;
+}
+
+function renderAsk() {
+  const thread = document.getElementById('askThread');
+  if (!thread) return;
+  const live = opps.filter(a => !a.archived);
+  const foot = document.getElementById('askFoot');
+  if (foot) foot.textContent = `Reads the ${live.length} deal${live.length === 1 ? '' : 's'} saved in this browser. Name a deal to include its call transcripts.`;
+  const clr = document.getElementById('askClear');
+  if (clr) clr.style.display = askThread.length ? '' : 'none';
+
+  if (!askThread.length) {
+    thread.innerHTML = `<div class="ask-empty">
+  <h3>Ask about your deals</h3>
+  <p>Answers come from your plans, qualification and analysed calls, with links back to where each point lives.</p>
+  ${askSuggestions().map(s => `<button class="ask-sugg" data-ask="${esc(s)}">${esc(s)}</button>`).join('')}
+</div>`;
+  } else {
+    thread.innerHTML = askThread.map((t, ti) => {
+      let body = '';
+      if (t.loading) {
+        body = `<div class="ask-loading"><i></i>Reading ${live.length} deals${t.scope.length ? ' and ' + t.scope.length + ' transcript set' + (t.scope.length > 1 ? 's' : '') : ''}…</div>`;
+      } else if (t.err) {
+        body = `<div class="ask-err">Couldn't get an answer: ${esc(t.err)}. Check that the /api/claude function is deployed, then <button class="ask-sugg" style="padding:2px 9px;margin-left:2px" data-retry="${ti}">ask again</button></div>`;
+      } else if (t.a) {
+        const srcs = t.a.sources || [];
+        body = `<div class="ask-a">${askRenderAnswer(t.a.answer, ti, srcs)}</div>`
+          + (t.scope.length ? `<div class="ask-meta">Included transcripts: ${esc(t.scope.join(', '))}</div>` : '')
+          + (srcs.length ? `<div class="ask-srcs">${srcs.map((s, si) => {
+              const ok = askFindDeal(s.deal) >= 0;
+              const secName = ASK_SECTIONS[s.section] || s.section || '';
+              const medd = s.section === 'meddpicc' && s.medd ? (MEDD.find(m => m.id === s.medd) || {}).title : '';
+              return `<button class="ask-src"${ok ? ` onclick="askGoTo(${ti},${si})"` : ' disabled'}><span class="n">${si + 1}</span><span><span class="deal">${esc(s.deal || 'Unknown deal')}</span> <span class="sec">${esc(secName)}${medd ? ', ' + esc(medd) : ''}${s.label ? ': ' + esc(s.label) : ''}</span></span></button>`;
+            }).join('')}</div>` : '')
+          + ((t.a.followups || []).length && ti === askThread.length - 1
+              ? `<div class="ask-fups">${t.a.followups.map(f => `<button class="ask-sugg" data-ask="${esc(f)}">${esc(f)}</button>`).join('')}</div>` : '');
+      }
+      return `<div class="ask-q">${esc(t.q)}</div><div>${body}</div>`;
+    }).join('');
+  }
+  thread.querySelectorAll('[data-ask]').forEach(b => b.onclick = () => sendAsk(b.getAttribute('data-ask')));
+  thread.querySelectorAll('[data-retry]').forEach(b => b.onclick = () => {
+    const t = askThread[+b.getAttribute('data-retry')];
+    if (!t) return;
+    askThread.splice(askThread.indexOf(t), 1);
+    sendAsk(t.q);
+  });
+  thread.scrollTop = thread.scrollHeight;
+  renderAskScope();
+  const send = document.getElementById('askSend');
+  if (send) send.disabled = askBusy;
+}
+
+function renderAskScope() {
+  const el = document.getElementById('askScope');
+  if (!el) return;
+  const a = askFocusId ? opps.find(o => o.id === askFocusId) : null;
+  el.innerHTML = a ? `<span class="ask-chip">Including ${esc(a.name)} transcripts<button onclick="askClearFocus()" aria-label="Stop including ${esc(a.name)} transcripts">&#x2715;</button></span>` : '';
+}
+function askClearFocus() { askFocusId = null; renderAskScope(); }
+
+/* ── Open / close / send ── */
+function isAskOpen() { const p = document.getElementById('askPanel'); return !!(p && p.classList.contains('open')); }
+function openAsk() {
+  const p = document.getElementById('askPanel');
+  if (!p) return;
+  const drawer = document.getElementById('sidebarDrawer');
+  if (drawer && drawer.style.display === 'flex') closeDrawer();
+  const inDeal = !showDashboard && !showPipeline && !showThemes && opp();
+  askFocusId = inDeal ? opp().id : null;
+  p.classList.add('open');
+  p.setAttribute('aria-hidden', 'false');
+  renderAsk();
+  renderSidebar(); renderMobile();
+  setTimeout(() => { const i = document.getElementById('askInput'); if (i) i.focus(); }, 60);
+}
+function closeAsk() {
+  const p = document.getElementById('askPanel');
+  if (!p) return;
+  p.classList.remove('open');
+  p.setAttribute('aria-hidden', 'true');
+  renderSidebar(); renderMobile();
+}
+function clearAsk() { if (askBusy) return; askThread = []; renderAsk(); const i = document.getElementById('askInput'); if (i) i.focus(); }
+
+async function sendAsk(preset) {
+  if (askBusy) return;
+  const input = document.getElementById('askInput');
+  const q = String(preset != null ? preset : (input ? input.value : '')).trim();
+  if (!q) return;
+  if (input) { input.value = ''; input.style.height = ''; }
+  const ids = askScopeFor(q);
+  const scopeNames = opps.filter(a => ids.has(a.id) && (a.data.calls || []).some(c => c.transcript)).map(a => a.name);
+  const turn = { q, scope: scopeNames, loading: true };
+  askThread.push(turn);
+  askBusy = true;
+  renderAsk();
+  try {
+    const digest = askBuildDigest(ASK_ROLE, ids);
+    turn.a = await askCallModel(askBuildPrompt(q, digest, scopeNames));
+  } catch (e) {
+    turn.err = (e && e.message) || 'unknown error';
+  } finally {
+    turn.loading = false;
+    askBusy = false;
+    renderAsk();
+  }
+}
+
+/* ── Wiring ── */
+(function initAsk() {
+  const input = document.getElementById('askInput');
+  if (input) {
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); sendAsk(); }
+    });
+    input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 140) + 'px'; });
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && isAskOpen()) { closeAsk(); return; }
+    const tag = (e.target && e.target.tagName) || '';
+    const typing = /INPUT|TEXTAREA|SELECT/.test(tag) || (e.target && e.target.isContentEditable);
+    if (e.key === '/' && !typing && !e.metaKey && !e.ctrlKey && !e.altKey && !isAskOpen()) { e.preventDefault(); openAsk(); }
+  });
+})();
 
 </script>
 <!-- Inline modal — replaces all prompt() and confirm() for mobile compatibility -->
